@@ -16,6 +16,8 @@ library(sf)
 library(here)
 library(leaflet)
 library(googlesheets4)
+library(terra)
+library(tidyterra)
 
 # Set the study name
 name <- "GeographeAMP"
@@ -28,7 +30,8 @@ metadata_bathy_derivatives <- readRDS(paste0("data/geographe/tidy/", name, "_met
 benthos <- readRDS(paste0("data/geographe/tidy/", name, "_benthos-count.RDS")) %>%
   CheckEM::clean_names() %>%
   dplyr::select(campaignid, sample, reef, total_pts) %>%
-  dplyr::filter(!str_detect(sample, "MF")) %>%
+  dplyr::mutate(reef = reef/total_pts) %>%
+  dplyr::filter(!str_detect(sample, "MF")) %>% # Removes 2007 habitat data
   dplyr::mutate(campaignid = "2014-12_Geographe.Bay_stereoBRUVs") %>%
   glimpse()
 
@@ -61,7 +64,7 @@ tempdat <- read.csv("data/geographe/raw/temp/2007-2014-Geographe-stereo-BRUVs.co
   dplyr::select(campaignid, sample, family, genus, species, maxn) %>%
   dplyr::rename(count = maxn) %>%
   dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
-  dplyr::filter(!campaignid %in% "2007-03_Capes.MF_stereoBRUVs") %>%
+  dplyr::filter(!campaignid %in% "2007-03_Capes.MF_stereoBRUVs") %>% # Remove 2007 data
   glimpse()
 
 ta.sr <- tempdat %>%
@@ -107,18 +110,18 @@ tidy_maxn <- bind_rows(ta.sr, cti) %>%
   dplyr::select(-c(log_count, w_sti, CTI)) %>%
   dplyr::left_join(benthos) %>%
   dplyr::left_join(metadata_bathy_derivatives) %>%
+  dplyr::filter(!is.na(reef), # Errors to check - against the habitat
+                !is.na(longitude_dd), # This should be fixed in the synthesis data downloaded from API
+                !is.na(geoscience_roughness)) %>% # This should be fixed in the synthesis data downloaded from API
   glimpse()
 
-# This data will have NAs for habitat in it - need to fix these at the source and re-export
 saveRDS(tidy_maxn, file = paste0("data/geographe/tidy/", name, "_tidy-count.rds"))
 
 templength <- read.csv("data/geographe/raw/temp/2007-2014-Geographe-stereo-BRUVs.expanded.length.csv") %>%
   dplyr::filter(successful.length %in% "Yes") %>%
   dplyr::select(campaignid, sample, family, genus, species, length)
 
-
 lengths <- templength %>%
-  left_join(benthos) %>%
   left_join(large_bodied_carnivores) %>%
   dplyr::mutate(number = 1,
                 scientific_name = paste(genus, species, sep = " ")) %>%
@@ -133,83 +136,83 @@ test_species <- lengths %>%
   distinct(scientific_name) %>%
   glimpse()
 
-metadata.length <- lengths %>%
-  distinct(campaignid, sample, status) %>%
+metadata_length <- lengths %>%
+  distinct(campaignid, sample) %>%
   glimpse()
 
 big_carn <- lengths %>%
-  dplyr::filter(length > l50, # This gets rid of the non-large bodied carnivore ones e.g. NAs
-                !species %in% c("truttaceus")) %>%
+  dplyr::filter(length > l50) %>%
   dplyr::group_by(campaignid, sample) %>%
   dplyr::summarise(number = sum(number)) %>%
   ungroup() %>%
-  right_join(metadata.length) %>%
+  right_join(metadata_length) %>%
   dplyr::mutate(number = ifelse(is.na(number), 0, number)) %>%
-  dplyr::mutate(response = "greater than Lm carinvores") %>%
-  left_join(habitat) %>%
+  dplyr::mutate(response = "greater than Lm carnivores") %>%
+  left_join(benthos) %>%
   dplyr::glimpse()
+# Check number of samples that are > 0
+nrow(filter(big_carn, number > 0))/nrow(big_carn)
 
 small_carn <- lengths %>%
-  dplyr::filter(length < l50, # This gets rid of the non-large bodied carnivore ones e.g. NAs
-                !species %in% c("truttaceus")) %>%
+  dplyr::filter(length < l50) %>%
   dplyr::group_by(campaignid, sample) %>%
   dplyr::summarise(number = sum(number)) %>%
   ungroup() %>%
-  right_join(metadata.length) %>%
+  right_join(metadata_length) %>%
   dplyr::mutate(number = ifelse(is.na(number), 0, number)) %>%
   dplyr::mutate(response = "smaller than Lm carnivores") %>%
-  left_join(habitat) %>%
+  left_join(benthos) %>%
   dplyr::glimpse()
+# Check number of samples that are > 0
+nrow(filter(small_carn, number > 0))/nrow(small_carn)
 
-mature_nanny <- lengths %>%
-  dplyr::filter(length > l50 &
-                  species %in% c("gerrardi")) %>%
+big_snap <- lengths %>%
+  dplyr::filter(species %in% "auratus",
+                length > l50) %>%
   dplyr::group_by(campaignid, sample) %>%
   dplyr::summarise(number = sum(number)) %>%
   ungroup() %>%
-  right_join(metadata.length) %>%
-  dplyr::mutate(number = if_else(is.na(number), 0, number)) %>%
-  dplyr::mutate(response = "Nannygai greater than Lm") %>%
-  left_join(habitat) %>%
+  right_join(metadata_length) %>%
+  dplyr::mutate(number = ifelse(is.na(number), 0, number)) %>%
+  dplyr::mutate(response = "greater than Lm Pink snapper") %>%
+  left_join(benthos) %>%
   dplyr::glimpse()
+# Check number of samples that are > 0
+nrow(filter(big_snap, number > 0))/nrow(big_snap) # This won't run
 
-immature_nanny <- lengths %>%
-  dplyr::filter(length < l50 &
-                  species %in% c("gerrardi")) %>%
+small_snap <- lengths %>%
+  dplyr::filter(species %in% "auratus",
+                length < l50) %>%
   dplyr::group_by(campaignid, sample) %>%
   dplyr::summarise(number = sum(number)) %>%
   ungroup() %>%
-  right_join(metadata.length) %>%
-  dplyr::mutate(number = if_else(is.na(number), 0, number)) %>%
-  dplyr::mutate(response = "Nannygai smaller than Lm") %>%
-  left_join(habitat) %>%
+  right_join(metadata_length) %>%
+  dplyr::mutate(number = ifelse(is.na(number), 0, number)) %>%
+  dplyr::mutate(response = "smaller than Lm Pink snapper") %>%
+  left_join(benthos) %>%
   dplyr::glimpse()
+# Check number of samples that are > 0
+nrow(filter(small_snap, number > 0))/nrow(small_snap)
 
-tidy.length <- bind_rows(big_carn, small_carn, mature_nanny, immature_nanny) %>%
-  dplyr::left_join(metadata.bathy.derivatives) %>%
+tidy_length <- bind_rows(big_carn, small_carn, small_snap) %>% # Removed snapper - not enough non-zero data
+  dplyr::left_join(metadata_bathy_derivatives) %>%
+  dplyr::filter(!is.na(reef), # Errors to check - against the habitat
+                !is.na(longitude_dd), # This should be fixed in the synthesis data downloaded from API
+                !is.na(geoscience_roughness)) %>% # This should be fixed in the synthesis data downloaded from API
   glimpse()
 
-# Abundant species
-top10 <- lengths %>%
-  dplyr::filter(!is.na(l50)) %>%
-  dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
-  dplyr::group_by(scientific) %>%
-  dplyr::summarise(number = sum(number)) %>%
-  arrange(desc(number)) %>%
-  slice_head(n = 10) %>%
-  glimpse()
+# Visualise spatial patterns
+preds <- readRDS(paste0("data/geographe/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
+plot(preds)
+names(preds)
 
-plot_dat <- lengths %>%
-  mutate(scientific = paste(genus, species, sep = " ")) %>%
-  group_by(sample, longitude_dd, latitude_dd, scientific) %>%
-  summarise(number = sum(number)) %>%
-  ungroup() %>%
-  glimpse()
-
-# Spatial distribution - there are 15 with nannygai
 ggplot() +
-  geom_point(data = dplyr::filter(plot_dat, scientific %in% "Centroberyx gerrardi"),
-             aes(x = longitude_dd, y = latitude_dd, size = number)) +
-  theme_classic()
+  geom_spatraster(data = preds, aes(fill = geoscience_depth)) +
+  geom_point(data = tidy_length,
+             aes(x = longitude_dd, y = latitude_dd, size = number, colour = I(if_else(number == 0, "white", "darkblue"))),
+             show.legend = F) +
+  facet_wrap(~response) +
+  theme_classic() +
+  coord_sf()
 
-saveRDS(tidy.length, file = paste0("data/tidy/", name, "_tidy-length.rds"))
+saveRDS(tidy_length, file = paste0("data/geographe/tidy/", name, "_tidy-length.rds"))
