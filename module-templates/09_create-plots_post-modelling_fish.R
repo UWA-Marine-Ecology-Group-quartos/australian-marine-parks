@@ -161,10 +161,13 @@ gg_grid
 dev.off()
 
 # Temporal predictions
-# Need values for - CTI - Species richness - > Lm carnivores
-# By zone - AMP only?
+# NEED TO ADD IN SST TO CTI PLOT
+
+# Function for standard error
 se <- function(x) sd(x, na.rm = T)/sqrt(length(x[!is.na(x)]))
 
+# Spatial standard error for each marine park zone in the data
+# Be careful if you have multiple of the same zone type in dataset!
 errors <- terra::extract(dat, marine_parks_amp) %>%
   dplyr::group_by(ID) %>%
   dplyr::summarise(across(starts_with("p"), se)) %>%
@@ -175,6 +178,8 @@ errors <- terra::extract(dat, marine_parks_amp) %>%
   dplyr::select(ID, year, cti_se, richness_se, Lm_se) %>%
   glimpse()
 
+# Mean metrics for each marine park zone in the data
+# Be careful if you have multiple of the same zone type in dataset!
 means <- terra::extract(dat, marine_parks_amp) %>%
   dplyr::group_by(ID) %>%
   dplyr::summarise(across(starts_with("p"), ~mean(.x, na.rm = T))) %>%
@@ -185,6 +190,7 @@ means <- terra::extract(dat, marine_parks_amp) %>%
   dplyr::select(ID, year, cti, richness, Lm) %>%
   glimpse()
 
+# Join the data back to the zone data by ID
 park_dat <- as.data.frame(marine_parks_amp) %>%
   tibble::rownames_to_column() %>%
   dplyr::rename(ID = rowname) %>%
@@ -195,12 +201,16 @@ park_dat <- as.data.frame(marine_parks_amp) %>%
   dplyr::filter(!is.na(Lm)) %>%
   glimpse()
 
-temporal_dat <- data.frame(year = rep(c(2013:2024), 4)) %>%
+# Make a temporal dataframe for plotting
+
+# NEED TO WORK OUT WHAT TO DO WITH DATA FROM MULTIPLE YEARS!
+
+temporal_dat <- data.frame(year = rep(c(2013:2024), 4)) %>% # Change rep here for number of park zones
   arrange(year) %>%
   dplyr::mutate(year = as.numeric(year),
                 zone = rep(c("Multiple Use Zone", "Habitat Protection Zone",
                                     "National Park Zone", 'Special Purpose Zone'),
-                                  (nrow(.))/4)) %>%
+                                  (nrow(.))/4)) %>% # Change here too
   left_join(park_dat) %>%
   glimpse()
 
@@ -212,12 +222,9 @@ gg_sr <- ggplot(data = temporal_dat, aes(x = year, y = richness, fill = zone)) +
   geom_point(size = 3, position = position_dodge(width = 0.6),
              stroke = 0.2, color = "black", alpha = 0.8, shape = 21) +
   theme_classic() +
-  # scale_y_continuous(limits = c(10, 16)) +
   scale_x_continuous(limits = c(2013, 2024),
-                     breaks = c(2015, 2017, 2019, 2021, 2023)) +
+                     breaks = c(2013, 2015, 2017, 2019, 2021, 2023)) +
   geom_vline(xintercept = 2018, linetype = "dashed", color = "black", linewidth = 0.5, alpha = 0.5) +
-  # scale_shape_manual(labels = c("Commonwealth fished", "Commonwealth no-take",
-  #                               "State fished"), values = c(21, 21, 25)) +
   scale_fill_manual(values = c("Multiple Use Zone" = "#b9e6fb",
                                "Habitat Protection Zone" = "#fff8a3",
                                "National Park Zone" = "#7bbc63",
@@ -235,9 +242,8 @@ gg_lm <- ggplot(data = temporal_dat,
   geom_point(size = 3, position = position_dodge(width = 0.6),
              stroke = 0.2, color = "black", alpha = 0.8, shape = 21)+
   theme_classic() +
-  # scale_y_continuous(limits = c(0, 8)) +
   scale_x_continuous(limits = c(2013, 2024),
-                     breaks = c(2015, 2017, 2019, 2021, 2023)) +
+                     breaks = c(2013, 2015, 2017, 2019, 2021, 2023)) +
   geom_vline(xintercept = 2018, linetype = "dashed",color = "black",
              linewidth = 0.5,alpha = 0.5)+
   scale_fill_manual(values = c("Multiple Use Zone" = "#b9e6fb",
@@ -251,6 +257,9 @@ gg_lm
 # plot year by community thermal index - plus a line for MPA gazetting time ---
 
 gg_cti <- ggplot() +
+
+  # SST needs turning back on after it is added to temporal_dat
+
   # geom_line(data = temporal_dat, aes(group = 1, x = year, y = sst.mean))+
   # geom_ribbon(data = temporal_dat,aes(group = 1, x = year, y = sst.mean,
   #                                      ymin = sst.mean - sd, ymax = sst.mean + sd),
@@ -264,7 +273,7 @@ gg_cti <- ggplot() +
   theme_classic() +
   # scale_y_continuous(limits = c(0, 8)) +
   scale_x_continuous(limits = c(2013, 2024),
-                     breaks = c(2015, 2017, 2019, 2021, 2023)) +
+                     breaks = c(2013, 2015, 2017, 2019, 2021, 2023)) +
   geom_vline(xintercept = 2018, linetype = "dashed", color = "black",
              size = 0.5, alpha = 0.5) +
   scale_fill_manual(values = c("Multiple Use Zone" = "#b9e6fb",

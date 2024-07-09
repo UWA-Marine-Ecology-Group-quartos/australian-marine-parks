@@ -14,3 +14,7 @@ editor: visual
 Spatial patterns in the distribution of key fish metrics for the Geographe Marine Park highlight increased species richness along reef features that run through the National Park and Habitat Protection Zones (@fig-spatialpreds).
 
 ## Temporal predictions
+
+![Temporal predictions of key fish metrics for the Geographe Marine Park.](images/GeographeAMP_control-plots.png){#fig-temppreds}
+
+Temporal trends of key fish metrics for the Geographe Marine Park highlight increased abundance of mature large bodied carnivorous species in the National Park Zone (@fig-temppreds).

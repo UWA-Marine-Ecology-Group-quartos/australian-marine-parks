@@ -81,3 +81,5 @@ metadata.bathy.derivatives   <- cbind(metadata,
 
 # Save the metadata bathymetry derivatives
 saveRDS(metadata.bathy.derivatives, paste0("data/geographe/tidy/", name, "_metadata-bathymetry-derivatives.rds"))
+
+# Oceanography
