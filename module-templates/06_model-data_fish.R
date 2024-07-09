@@ -184,14 +184,13 @@ write.csv(all.mod.fits[ , -2], file = paste(savedir, paste(name_length, "all.mod
 write.csv(all.var.imp, file = paste(savedir, paste(name_length, "all.var.imp.csv", sep = "_"), sep = "/"))
 
 # read in
-
-fabund <- bind_rows(dat1,dat2) %>%
-  dplyr::mutate(year = as.factor(year))
-levels(fabund$year)
+fabund <- bind_rows(tidy_maxn, tidy_length) %>%
+  glimpse()
 
 # Load predictions in Spatraster format
-preds <- readRDS(paste(paste0('data/spatial/rasters/raw bathymetry/', name),    # This is ignored - too big!
-                       'spatial_covariates.rds', sep = "_"))
+preds <- readRDS(paste(paste0('data/geographe/spatial/rasters/', name),    # This is ignored - too big!
+                       'bathymetry-derivatives.rds', sep = "_"))
+plot(preds)
 
 # Predictors as a dataframe for modelling
 preddf <- preds %>%
@@ -199,7 +198,7 @@ preddf <- preds %>%
   glimpse()
 
 # Predicted reef
-pred_reef <- readRDS(paste0("output/habitat/",
+pred_reef <- readRDS(paste0("output/model-output/geographe/habitat/",
                             name, "_predicted-habitat.rds")) %>%
   dplyr::rename(reef = p_reef.fit) %>%
   dplyr::select(x, y, reef) %>%
@@ -211,135 +210,62 @@ presp <- vect(preddf, geom = c("x", "y"))
 preddf <- cbind(preddf, terra::extract(pred_reef, presp))
 names(preddf)
 
-# Extract status to predict onto
-wasanc <- st_read("data/spatial/shapefiles/WA_MPA_2020.shp", crs = 4283) %>%
-  dplyr::filter(str_detect(ZONE_TYPE, "Sanctuary")) %>%
-  dplyr::mutate(GAZ_YEAR = ifelse(NAME %in% "Ngari Capes",
-                                  as.numeric(str_extract(LATEST_GAZ, "^.{4}")),
-                                  as.numeric(str_extract(GAZ_DATE, "^.{4}")))) %>%
-  dplyr::mutate(YEARS_SINCE_GAZ = 2023 - GAZ_YEAR) %>%
-  dplyr::select(GAZ_YEAR, YEARS_SINCE_GAZ, geometry) %>%
-  dplyr::mutate(status = "No-take") %>%
-  st_transform(4326) %>%
-  glimpse()
-
-# Rottnest
-rottsanc <- st_read("data/spatial/shapefiles/Rottnest_Sanctuaries.shp") %>%
-  dplyr::mutate(GAZ_YEAR = 2007) %>%
-  dplyr::mutate(YEARS_SINCE_GAZ = 2023 - GAZ_YEAR) %>%
-  dplyr::select(GAZ_YEAR, YEARS_SINCE_GAZ, geometry) %>%
-  dplyr::mutate(status = "No-take") %>%
-  st_transform(4326) %>%
-  glimpse()
-
-# Australian Marine Parks
-aumpa <- st_read("data/spatial/shapefiles/AustraliaNetworkMarineParks.shp") %>%
-  dplyr::filter(ZoneName %in% "National Park Zone") %>%
-  dplyr::mutate(GAZ_YEAR = 2018) %>%
-  dplyr::mutate(YEARS_SINCE_GAZ = 2023 - GAZ_YEAR) %>%
-  dplyr::select(GAZ_YEAR, YEARS_SINCE_GAZ, geometry) %>%
-  dplyr::mutate(status = "No-take") %>%
-  st_transform(4326) %>%
-  glimpse()
-
-allsanc <- bind_rows(wasanc, rottsanc, aumpa)
-plot(allsanc)
-
-allsancv <- vect(allsanc)
-plot(allsancv)
-
-predv <- vect(preddf, geom = c("x", "y"), crs = "epsg:4326")
-
-preddf <- cbind(preddf, terra::extract(allsancv, predv)) %>%
-  dplyr::mutate(status = ifelse(is.na(status), "Fished", "No-take"))
-
+# Back to spatraster
 preds <- rast(preddf, crs = "epsg:4326")
 plot(preds)
 
 # use formula from top model from FSSGam model selection
-# Greater than size of maturity openness+recfish+reef+UCUR+VCUR
-unique(fabund$scientific)
+unique(fabund$response)
+# Use species richness, CTI, greater than Lm carnivores,
+# smaller than Lm carnivores, smaller than Lm snapper
 
 # Species richness
-m_richness <- gam(number ~ s(log.recfish, k = 3, bs = "cr") +
-                    s(PROD, k = 3, bs = "cr") +
-                    s(reef, k = 3, bs = "cr") +
-                    s(roughness, k = 3, bs = "cr") +
-                    s(SST, k = 3, bs = "cr") +
-                    s(year, bs = "re"),
-                  data = fabund %>% dplyr::filter(scientific %in% "species.richness"),
+m_richness <- gam(number ~ s(geoscience_aspect, k = 3, bs = "cc") +
+                    s(reef, k = 3, bs = "cr"),
+                  data = fabund %>% dplyr::filter(response %in% "species_richness"),
                   family = gaussian(link = "identity"))
 summary(m_richness)
 plot(m_richness)
 
 # CTI
-m_cti <- gam(number ~ s(log.gravity, k = 3, bs = "cr") +
-               s(PROD, k = 3, bs = "cr") +
-               s(reef, k = 3, bs = "cr") +
-               s(SST, k = 3, bs = "cr") +
-               s(year, bs = "re"),
-             data = fabund %>% dplyr::filter(scientific %in% "cti"),
+m_cti <- gam(number ~ s(reef, k = 3, bs = "cr") +
+               s(geoscience_detrended, k = 3, bs = "cr"),
+             data = fabund %>% dplyr::filter(response %in% "cti"),
              family = gaussian(link = "identity"))
 summary(m_cti)
-
+plot(m_cti)
 
 # Greater than Lm large bodied carnivores
-m_mature <- gam(number ~ s(reef, k = 3, bs = "cr") +
-                  s(roughness, k = 3, bs = "cr") +
-                  s(SLA, k = 3, bs = "cr") +
-                  s(SST, k = 3, bs = "cr") +
-                  status +
-                  s(year, bs = "re"),
-                data = fabund %>% dplyr::filter(scientific %in% "greater than Lm carinvores"),
+m_mature <- gam(number ~ s(geoscience_detrended, k = 3, bs = "cr") +
+                  s(geoscience_roughness, k = 3, bs = "cr"),
+                data = fabund %>% dplyr::filter(response %in% "greater than Lm carnivores"),
                 family = tw())
 summary(m_mature)
+plot(m_mature)
 
-# Smaller than Lm large bodied carnivores
-m_immature <- gam(number ~ s(reef, k = 3, bs = "cr") +
-                    s(roughness, k = 3, bs = "cr") +
-                    s(SLA, k = 3, bs = "cr") +
-                    s(SST, k = 3, bs = "cr") +
-                    s(year, bs = "re"),
-                  data = fabund %>% dplyr::filter(scientific %in% "smaller than Lm carnivores"),
-                  family = tw())
-summary(m_immature)
+# Smaller than Lm large bodied carnivores - NULL MODEL
+# m_immature <- gam(number ~ s(reef, k = 3, bs = "cr") +
+#                     s(roughness, k = 3, bs = "cr") +
+#                     s(SLA, k = 3, bs = "cr") +
+#                     s(SST, k = 3, bs = "cr") +
+#                     s(year, bs = "re"),
+#                   data = fabund %>% dplyr::filter(scientific %in% "smaller than Lm carnivores"),
+#                   family = tw())
+# summary(m_immature)
 
 # Smaller than Lm pinkies
-m_pinkies <- gam(number ~ s(reef, k = 3, bs = "cr") +
-                   s(roughness, k = 3, bs = "cr") +
-                   s(SLA, k = 3, bs = "cr") +
-                   s(SST, k = 3, bs = "cr") +
-                   s(year, bs = "re"),
-                 data = fabund %>% dplyr::filter(scientific %in% "smaller than Lm Pink snapper"),
+m_pinkies <- gam(number ~ s(geoscience_depth, k = 3, bs = "cr") +
+                   s(geoscience_aspect, k = 3, bs = "cc"),
+                 data = fabund %>% dplyr::filter(response %in% "smaller than Lm Pink snapper"),
                  family = tw())
 summary(m_pinkies)
-
-# predict, rasterise and plot
-
-# preddf <- cbind(preddf,
-#                 "p_mature" = nlraa::predict_gam(m_mature, preddf, type = "response",
-#                                          interval = "confidence", level = 0.9, exclude = "s(year, bs = 're')", newdata.guaranteed = T),
-#                 "p_immature" = nlraa::predict_gam(m_immature, preddf, type = "response",
-#                                        interval = "confidence", level = 0.9, exclude = "s(year, bs = 're')", newdata.guaranteed = T),
-#                 "p_cti" = nlraa::predict_gam(m_cti, preddf, type = "response",
-#                                   interval = "confidence", level = 0.9, exclude = "s(year, bs = 're')", newdata.guaranteed = T),
-#                 "p_richness" = nlraa::predict_gam(m_richness, preddf, type = "response",
-#                                        interval = "confidence", level = 0.9, exclude = "s(year, bs = 're')", newdata.guaranteed = T),
-#                 "p_pinkies" = nlraa::predict_gam(m_pinkies, preddf, type = "response",
-#                                                   interval = "confidence", level = 0.9, exclude = "s(year, bs = 're')", newdata.guaranteed = T))
-
-
-# Not entirely sure if this is the best way to do this - but it shouldn't affect result as random effect is excluded
-preddf$year <- "2022"
-preddf$year <- as.factor(preddf$year)
-levels(preddf$year) <- levels(fabund$year)
-levels(preddf$year)
+plot(m_pinkies)
 
 predicted_fish <- cbind(preddf,
                         "p_mature" = mgcv::predict.gam(m_mature, preddf, type = "response",
                                                        se.fit = T),
-                        "p_immature" = mgcv::predict.gam(m_immature, preddf, type = "response",
-                                                         se.fit = T),
+                        # "p_immature" = mgcv::predict.gam(m_immature, preddf, type = "response",
+                        #                                  se.fit = T),
                         "p_cti" = mgcv::predict.gam(m_cti, preddf, type = "response",
                                                     se.fit = T),
                         "p_richness" = mgcv::predict.gam(m_richness, preddf, type = "response",
@@ -348,123 +274,47 @@ predicted_fish <- cbind(preddf,
                                                         se.fit = T))
 
 prasts <- rast(predicted_fish %>% dplyr::select(x, y, starts_with("p_")),
-               crs = crs(preds))
+               crs = "epsg:4326")
 plot(prasts)
 
 # Calculate MESS and mask predictions
 xy <- fabund %>%
-  dplyr::select(longitude , latitude) %>%
+  dplyr::select(longitude_dd , latitude_dd) %>%
+  dplyr::rename(x = longitude_dd, y = latitude_dd) %>%
+  distinct(x, y) %>%
   glimpse()
 
-# CTI
-temppred <- subset(prasts, "p_cti.fit")
+# resp.vars <- names(preddf)[18:ncol(preddf)]
+resp.vars <- c("p_mature", "p_cti",
+               "p_richness", "p_pinkies")
 
-mod <- gam(number ~ s(log.gravity, k = 3, bs = "cr") +
-             s(PROD, k = 3, bs = "cr") +
-             s(reef, k = 3, bs = "cr") +
-             s(SST, k = 3, bs = "cr"),
-           data = fabund %>% dplyr::filter(scientific %in% "cti"),
-           family = gaussian(link = "identity"))
+for(i in 1:length(resp.vars)) {
+  print(resp.vars[i])
+  mod <- get(str_replace_all(resp.vars[i], "p_", "m_"))
 
-dat <- terra::extract(subset(preds, c("log.gravity", "PROD", "reef", "SST")), xy) %>%
-  dplyr::select(-ID)
-messrast <- predicts::mess(subset(preds, c("log.gravity", "PROD", "reef", "SST")), dat) %>%
-  terra::clamp(lower = -0.01, values = F) %>%
-  terra::crop(temppred)
-cti_mess <- terra::mask(temppred, messrast)
-cti_se <- subset(prasts, "p_cti.se.fit") %>%
-  terra::crop(cti_mess) %>%
-  terra::mask(cti_mess)
-cti_mess <- rast(list(c(cti_mess, cti_se)))
+  temppred <- predicted_fish %>%
+    dplyr::select(x, y, paste0(resp.vars[i], ".fit"),
+                  paste0(resp.vars[i], ".se.fit")) %>%
+    rast(crs = "epsg:4326")
 
-# Species richness
-temppred <- subset(prasts, "p_richness.fit")
+  dat <- terra::extract(subset(preds, names(mod$model)[2:length(names(mod$model))]), xy) %>%
+    dplyr::select(-ID)
+  messrast <- predicts::mess(subset(preds, names(mod$model)[2:length(names(mod$model))]), dat) %>%
+    terra::clamp(lower = -0.01, values = F)
+  messrast <- terra::crop(messrast, temppred)
+  temppred_m <- terra::mask(temppred, messrast)
 
-mod <- gam(number ~ s(log.recfish, k = 3, bs = "cr") +
-             s(PROD, k = 3, bs = "cr") +
-             s(reef, k = 3, bs = "cr") +
-             s(roughness, k = 3, bs = "cr") +
-             s(SST, k = 3, bs = "cr"),
-           data = fabund %>% dplyr::filter(scientific %in% "species.richness"),
-           family = gaussian(link = "identity"))
 
-dat <- terra::extract(subset(preds, c("log.recfish", "PROD", "reef", "roughness", "SST")), xy) %>%
-  dplyr::select(-ID)
-messrast <- predicts::mess(subset(preds, c("log.recfish", "PROD", "reef", "roughness", "SST")), dat) %>%
-  terra::clamp(lower = -0.01, values = F) %>%
-  terra::crop(temppred)
-richness_mess <- terra::mask(temppred, messrast)
-richness_se <- subset(prasts, "p_richness.se.fit") %>%
-  terra::crop(richness_mess) %>%
-  terra::mask(richness_mess)
-richness_mess <- rast(list(c(richness_mess, richness_se)))
+  if (i == 1) {
+    preddf_m <- as.data.frame(temppred_m, xy = T)
+  }
+  else {
+    preddf_m <- as.data.frame(temppred_m, xy = T) %>%
+      full_join(preddf_m)
+  }
+}
 
-# Greater than Lm
-temppred <- subset(prasts, "p_mature.fit")
+glimpse(preddf_m)
 
-mod <- gam(number ~ s(reef, k = 3, bs = "cr") +
-             s(roughness, k = 3, bs = "cr") +
-             s(SLA, k = 3, bs = "cr") +
-             s(SST, k = 3, bs = "cr"),
-           data = fabund %>% dplyr::filter(scientific %in% "greater than Lm carinvores"),
-           family = tw())
-
-dat <- terra::extract(subset(preds, c("reef", "roughness", "SLA", "SST")), xy) %>%
-  dplyr::select(-ID)
-messrast <- predicts::mess(subset(preds, c("reef", "roughness", "SLA", "SST")), dat) %>%
-  terra::clamp(lower = -0.01, values = F) %>%
-  terra::crop(temppred)
-mature_mess <- terra::mask(temppred, messrast)
-mature_se <- subset(prasts, "p_mature.se.fit") %>%
-  terra::crop(mature_mess) %>%
-  terra::mask(mature_mess)
-mature_mess <- rast(list(c(mature_mess, mature_se)))
-
-# Smaller than Lm
-temppred <- subset(prasts, "p_immature.fit")
-
-mod <- gam(number ~ s(reef, k = 3, bs = "cr") +
-             s(roughness, k = 3, bs = "cr") +
-             s(SLA, k = 3, bs = "cr") +
-             s(SST, k = 3, bs = "cr"),
-           data = fabund %>% dplyr::filter(scientific %in% "smaller than Lm carnivores"),
-           family = tw())
-
-dat <- terra::extract(subset(preds, c("reef", "roughness", "SLA", "SST")), xy) %>%
-  dplyr::select(-ID)
-messrast <- predicts::mess(subset(preds, c("reef", "roughness", "SLA", "SST")), dat) %>%
-  terra::clamp(lower = -0.01, values = F) %>%
-  terra::crop(temppred)
-immature_mess <- terra::mask(temppred, messrast)
-immature_se <- subset(prasts, "p_immature.se.fit") %>%
-  terra::crop(immature_mess) %>%
-  terra::mask(immature_mess)
-immature_mess <- rast(list(c(immature_mess, immature_se)))
-
-# Smaller than Lm Pink snapper
-temppred <- subset(prasts, "p_pinkies.fit")
-
-mod <- gam(number ~ s(reef, k = 3, bs = "cr") +
-             s(roughness, k = 3, bs = "cr") +
-             s(SLA, k = 3, bs = "cr") +
-             s(SST, k = 3, bs = "cr") +
-             s(year, bs = "re"),
-           data = fabund %>% dplyr::filter(scientific %in% "smaller than Lm Pink snapper"),
-           family = tw())
-
-dat <- terra::extract(subset(preds, c("reef", "roughness", "SLA", "SST")), xy) %>%
-  dplyr::select(-ID)
-messrast <- predicts::mess(subset(preds, c("reef", "roughness", "SLA", "SST")), dat) %>%
-  terra::clamp(lower = -0.01, values = F) %>%
-  terra::crop(temppred)
-pinkies_mess <- terra::mask(temppred, messrast)
-pinkies_se <- subset(prasts, "p_pinkies.se.fit") %>%
-  terra::crop(pinkies_mess) %>%
-  terra::mask(pinkies_mess)
-pinkies_mess <- rast(list(c(pinkies_mess, pinkies_se)))
-
-# Join all the predictions
-pred_fish_rast <- rast(list(c(cti_mess, richness_mess, mature_mess, immature_mess, pinkies_mess)))
-
-saveRDS(prasts, paste0("output/fish/", name, "_predicted-fish-unmasked.RDS"))
-saveRDS(pred_fish_rast, paste0("output/fish/", name, "_predicted-fish.RDS"))
+saveRDS(preddf_m, paste0("output/model-output/geographe/fish/", name,
+                         "_predicted-fish.RDS"))

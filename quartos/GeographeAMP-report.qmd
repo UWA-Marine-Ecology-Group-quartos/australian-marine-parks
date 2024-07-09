@@ -1,0 +1,16 @@
+---
+title: "GeographeAMP-report"
+author: "Claude Spencer, Brooke Gibbons, Tim Langlois"
+format: html
+editor: visual
+---
+
+# Fish modelling
+
+## Spatial predictions
+
+![Spatial predictions of key fish metrics for the Geographe Marine Park.](images/GeographeAMP_fish-individual_predictions.png){#fig-spatialpreds fig-align="center"}
+
+Spatial patterns in the distribution of key fish metrics for the Geographe Marine Park highlight increased species richness along reef features that run through the National Park and Habitat Protection Zones (@fig-spatialpreds).
+
+## Temporal predictions
