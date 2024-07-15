@@ -6,6 +6,13 @@
 # Date:    June 2024
 ###
 
+# Table of contents
+# 1. Overall location plot (including State and Commonwealth Marine Parks)
+# 2. Sampling location plot
+# 3. Key Ecological Features
+# 4. Historical Sea Levels
+# 5. Bathymetry cross section
+
 # Clear your environment
 rm(list = ls())
 
