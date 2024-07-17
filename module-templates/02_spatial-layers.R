@@ -20,6 +20,8 @@ library(starsExtra)
 library(tidyverse)
 library(tidyterra)
 library(patchwork)
+library(RNetCDF)
+library(ncdf4)
 
 # Set the extent of the study
 e <- ext(115.05, 115.558, -33.67, -33.349)
@@ -82,4 +84,35 @@ metadata.bathy.derivatives   <- cbind(metadata,
 # Save the metadata bathymetry derivatives
 saveRDS(metadata.bathy.derivatives, paste0("data/geographe/tidy/", name, "_metadata-bathymetry-derivatives.rds"))
 
-# Oceanography
+# Oceanography/Pressures
+# Sea surface temperature
+nc_sst <- open.nc("data/oceanography/SST.nc", write = TRUE)
+print.nc(nc_sst) # shows you all the file details
+time_nc <- var.get.nc(nc_sst, 'time')  # NC_CHAR time:units = "days since 1981-01-01 00:00:00" ;
+time_nc_sst <- utcal.nc("seconds since 1981-01-01 00:00:00", time_nc, type = "c")
+dates_sst <- as.Date(time_nc_sst)
+
+rast_sst <- rast("data/oceanography/SST.nc", subds = "sea_surface_temperature")
+names(rast_sst) <- dates_sst
+
+winter_sst_ts <- rast_sst[[names(rast_sst)[str_detect(names(rast_sst), "-06-|-07-|-08-")]]]
+winter_sst <- mean(winter_sst_ts, na.rm = T)
+plot(winter_sst)
+
+# Sea Level Anomaly
+# nc_sla <- open.nc(paste0("data/geographe/spatial/oceanography/", name, "-SLA.nc"),
+#                   write = TRUE)
+nc_sla <- open.nc("data/geographe/spatial/oceanography/IMOS_aggregation_20240716T035407Z.nc",
+                  write = TRUE)
+print.nc(nc_sla) # shows you all the file details
+time_nc <- var.get.nc(nc_sla, 'TIME')
+time_nc_sla <- utcal.nc("days since 1985-01-01 00:00:00 UTC", time_nc, type = "c")
+dates_sla <- as.Date(time_nc_sla)
+
+rast_sla <- terra::rast("data/IMOS_aggregation_20240716T035508Z.nc")
+plot(rast_sla)
+names(rast_sla) <- dates_sla
+
+winter_sst_ts <- rast_sst[[names(rast_sst)[str_detect(names(rast_sst), "-06-|-07-|-08-")]]]
+winter_sst <- mean(winter_sst_ts, na.rm = T)
+plot(winter_sst)

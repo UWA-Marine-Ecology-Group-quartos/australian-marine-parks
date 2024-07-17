@@ -22,7 +22,6 @@ name <- "GeographeAMP"
 # Load libraries
 library(tidyverse)
 library(sf)
-library(rgeos)
 library(rnaturalearth)
 library(metR)
 library(patchwork)
@@ -72,8 +71,7 @@ plot(terrnp["leg_catego"])
 
 terr_fills <- scale_fill_manual(values = c("National Park" = "#c4cea6",          # Set the colours for terrestrial parks
                                            "Nature Reserve" = "#e4d0bb"),
-                                name = "Terrestrial Parks",
-                                guide = guide_legend(order = 3))
+                                name = "Terrestrial Parks")
 
 # Key Ecological Features
 kef <- st_read("data/south-west network/spatial/shapefiles/AU_DOEE_KEF_2015.shp") %>%
@@ -125,12 +123,12 @@ state_cols_all <- c("Sanctuary Zone" = "#bfd054",
 amp_cols <- scale_colour_manual(values = amp_cols_all[unique(marine_parks_amp$zone)],
                                 name = "Australian Marine Parks")
 amp_fills <- scale_fill_manual(values = amp_cols_all[unique(marine_parks_amp$zone)],
-                               name = "Australian Marine Parks", guide = guide_legend(order = 1))
+                               name = "Australian Marine Parks")
 
 state_cols <- scale_colour_manual(values = state_cols_all[unique(marine_parks_state$zone)],
                                name = "State Marine Parks")
 state_fills <- scale_fill_manual(values = state_cols_all[unique(marine_parks_state$zone)],
-                                  name = "State Marine Parks", guide = guide_legend(order = 2))
+                                  name = "State Marine Parks")
 
 # 1. Location overview plot - includes parks zones and an aus inset
 p1 <- ggplot() +
@@ -286,7 +284,7 @@ p4 <- ggplot() +
   depth_fills +
   new_scale_fill() +
   geom_sf(data = ausc, fill = "seashell2", colour = "grey62", size = 0.2) +
-  new_scale_fill() +
+  # new_scale_fill() +
   geom_sf(data = terrnp, aes(fill = leg_catego), alpha = 4/5, colour = NA, show.legend = F) +
   terr_fills +
   new_scale_fill() +
