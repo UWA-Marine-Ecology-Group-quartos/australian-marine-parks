@@ -6,21 +6,111 @@ editor: visual
 doi: "test"
 toc: true
 number-sections: true
+bibliography: 'https://api.citedrive.com/bib/8877704d-414f-405b-a714-968a9192dbd4/references.bib?x=eyJpZCI6ICI4ODc3NzA0ZC00MTRmLTQwNWItYTcxNC05NjhhOTE5MmRiZDQiLCAidXNlciI6ICIxMjQ2MSIsICJzaWduYXR1cmUiOiAiZTczMzcyM2VlZTRlMTFhOTY1ZWI3ODE3OTBhZDQ5ZTllYzZhMzBlMGQ0MGRjYWFkNzdjOTU4MTM5ZTc4OGRmYyJ9'
+csl: chicago-author-date-de.csl
 ---
+
+```{r}
+#| echo: false
+marine_park <- "Geographe Marine Park"
+```
 
 # Existing knowledge
 
 ## Background
 
-## Features and values of the Geographe Marine Park
+@Letessier_2024
 
-![Study area of the Geographe Marine Park showing the State and Commonwealth (Australian Marine Park) managed marine park zones. The red line following the coast demarcates the border of state and commonwealth waters. Bathymetric contours shown are 30, 70, 200 & 700 m, which denote historical sea levels and ecosystem depth contours.](images/GeographeAMP-broad-site-plot.png){#fig-location alt="Study area of the Geographe Marine Park showing the State and Commonwealth (Australian Marine Park) managed marine park zones. The red line following the coast demarcates the border of state and commonwealth waters. Bathymetric contours shown are 30, 70, 200 & 700 m, which denote historical sea levels and ecosystem depth contours."}
+@fig-cross
 
-![Key Ecological Features at the scale of the Geographe Marine Park. Excerpt from Marine Key Ecological Features of the Australian Marine Parks. Legend for Australian Marine Parks, Terrestrial Managed Areas and State Marine Parks can be found in Figure 1. The red line delimits state and commonwealth waters. Geographe Bay = Commonwealth marine environment within and adjacent to Geographe Bay, Ancient coastline = Ancient coastline at 90-120m depth.](images/GeographeAMP-key-ecological-features.png){#fig-kef alt="Key Ecological Features at the scale of the Geographe Marine Park. Excerpt from Marine Key Ecological Features of the Australian Marine Parks. Legend for Australian Marine Parks, Terrestrial Managed Areas and State Marine Parks can be found in Figure 1. The red line delimits state and commonwealth waters. Geographe Bay = Commonwealth marine environment within and adjacent to Geographe Bay, Ancient coastline = Ancient coastline at 90-120m depth."}
+## Features and values of the `{r} marine_park`
 
-![Old coastline features of the Geographe Marine Park. The dashed line represents the location of Figure X](images/GeographeAMP-old-sea-levels.png){#fig-sealevels alt="Old coastline features of the Geographe Marine Park. The dashed line represents the location of Figure X"}
+![Study area of the `{r} marine_park` showing the State and Commonwealth (Australian Marine Park) managed marine park zones. The red line following the coast demarcates the border of state and commonwealth waters. Bathymetric contours shown are 30, 70, 200 & 700 m, which denote historical sea levels and ecosystem depth contours.](images/GeographeAMP-broad-site-plot.png){#fig-location}
+
+![Key Ecological Features at the scale of the `{r} marine_park`. Excerpt from Marine Key Ecological Features of the Australian Marine Parks. Legend for Australian Marine Parks, Terrestrial Managed Areas and State Marine Parks can be found in Figure 1. The red line delimits state and commonwealth waters. Geographe Bay = Commonwealth marine environment within and adjacent to Geographe Bay, Ancient coastline = Ancient coastline at 90-120m depth.](images/GeographeAMP-key-ecological-features.png){#fig-kef}
+
+![Old coastline features of the `{r} marine_park`. The dashed line represents the location of Figure X](images/GeographeAMP-old-sea-levels.png){#fig-sealevels}
+
+| Key Ecological Features | Description |
+|-------------------------|-------------|
+|                         |             |
+|                         |             |
+|                         |             |
+|                         |             |
+|                         |             |
+|                         |             |
+|                         |             |
+|                         |             |
+
+: Key Ecological Features of the `{r} marine_park`. Environmental features summarised from the South-west Marine Parks Network Management Plan (Director of National Parks 2018). {#tbl-kef}
+
+| Key natural values |
+|--------------------|
+|                    |
+|                    |
+|                    |
+|                    |
+|                    |
+
+: Draft\^ Key Natural Values of the `{r} marine_park`. Key natural values summarised from the South-west Marine Parks Network Management Plan (Director of National Parks 2018). \* Values characterised within the latest survey (Section 3 and 4). \^ These may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework. {#tbl-knv}
+
+| Cultural value | Description |
+|----------------|-------------|
+|                |             |
+|                |             |
+|                |             |
+|                |             |
+|                |             |
+|                |             |
+|                |             |
+|                |             |
+
+: Cultural values\* of the `{r} marine_park` for the Wadandi region. \*Reproduced from Davies et al. (2022) ‘The Cultural Seascape of Wadandi Boodja’. {#tbl-cultural}
+
+| Key social and economic values |
+|--------------------------------|
+|                                |
+|                                |
+|                                |
+|                                |
+|                                |
+|                                |
+|                                |
+
+: Draft\* social, economic and use values of the `{r} marine_park`. Key social and economic values summarised from the South-west Marine Parks Network Management Plan (Director of National Parks 2018). \* These values may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework. {#tbl-socio}
 
 ## Pressures
+
+| Key pressures |
+|---------------|
+|               |
+|               |
+|               |
+|               |
+|               |
+|               |
+|               |
+
+: Draft\* key pressures in the `{r} marine_park`. Key pressures likely to be acting on natural values and ecosystem components of the South-west Corner Marine Park. Key pressures are summarised from the South-west Marine Parks Network Management Plan (Director of National Parks 2018). \* These pressures may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework. {#tbl-pressures}
+
+Fig - Practice = National RUM of recreational fishing
+
+| Climatology, oceanography and climate change metrics | Description                                                                                                                                                                  | Reference or source |
+|-------------------|-----------------------------------|-------------------|
+| Ocean acidity                                        | Modelled product of ocean acidity, providing an indication of physiological stress for marine biota and for calcifying organisms in particular (Orr et al. 2005).            | AODN\*              |
+| Sea level anomaly                                    | Satellite derived observation providing a proxy of upwelling and potential indicating areas of increased nutrient exchange and productivity (Pearce et al. 2006).            | AODN\*              |
+| Sea surface temperature                              | Satellite derived observation providing a measurement of sea surface temperature and potential indicator of physiological stress for marine biota (Caputi et al. 2009).      | AODN\*              |
+| Degree Heating Weeks                                 | Designed to provide an indicator of potential bleaching in tropical coral reefs, this product can also be used to characterise marine heat waves globally (Liu et al. 2014). | NOAA                |
+
+: Potential metrics of climatology, oceanography and climate change. Examples included are indexes of ocean acidity, sea level anomaly, sea surface temperature and degree heating weeks (Figure 8 - 11). These metrics may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework. Where indicated, \*data was sourced from Australia’s Integrated Marine Observing System (IMOS) – IMOS is enabled by the National Collaborative Research Infrastructure strategy (NCRIS). {#tbl-climmetrics}
+
+Fig - Ocean Acidity/temporal patterns in SLA, SST & DHW
+
+Fig - Sea Level Anomaly spatial
+
+Fig - Sea Surface Temperature spatial
+
+Fig - Degree Heating Weeks spatial (2 timepoints referenced from temporal patterns)
 
 # Latest survey aims, design and methods
 
@@ -32,15 +122,35 @@ number-sections: true
 
 ## Survey stages
 
-![Sampling locations in the Geographe Marine Park. The red boundary following the coast demarcates State waters, and depth contours represent the 30 m ecosystem depth contour.](images/GeographeAMP-sampling-locations.png){#fig-sites}
+![Sampling locations in the `{r} marine_park`. The red boundary following the coast demarcates State waters, and depth contours represent the 30 m ecosystem depth contour.](images/GeographeAMP-sampling-locations.png){#fig-sites}
 
 # Latest results and discussion
+
+## Key socio-economic Values
+
+### Knowledge
+
+Fig - Awareness of the AMP
+
+### Attitudes
+
+Fig - support the AMP
+
+### Practice
+
+#### Extractive
+
+Figure - spatial fishing use of the Geographe Marine Park
+
+#### Non-extractive
+
+Figure - spatial non-fishing use of the Geographe Marine Park
 
 ## Bathymetry and relief
 
 ### Bathymetry and significant seafloor features
 
-![Transect across significant seafloor and submerged coastal features across the Ngari Capes Marine Park and GMP. Submerged coastlines from thousands of years before present (Ka BP) are indicated. The red line delimits State and Commonwealth waters. The green and pale blue line delimits the National Park Zone and GMP limit respectively. Distances from the coast are measured in km. The location of this transect is given in Figure X.](images/GeographeAMP-bathymetry-cross-section.png){#fig-cross alt="Transect across significant seafloor and submerged coastal features across the Ngari Capes Marine Park and GMP. Submerged coastlines from thousands of years before present (Ka BP) are indicated. The red line delimits State and Commonwealth waters. The green and pale blue line delimits the National Park Zone and GMP limit respectively. Distances from the coast are measured in km. The location of this transect is given in Figure X."}
+![Transect across significant seafloor and submerged coastal features across the Ngari Capes Marine Park and `{r} marine_park`. Submerged coastlines from thousands of years before present (Ka BP) are indicated. The red line delimits State and Commonwealth waters. The green and pale blue line delimits the National Park Zone and GMP limit respectively. Distances from the coast are measured in km. The location of this transect is given in Figure X.](images/GeographeAMP-bathymetry-cross-section.png){#fig-cross}
 
 ## Benthic biota and habitat extent
 
@@ -48,25 +158,31 @@ number-sections: true
 
 ![Predicted dominant habitat across the broader study area. State and Commonwealth marine park boundaries are shown.](images/GeographeAMP_predicted-dominant-habitat.png)
 
-### Broader study area - habitat extent
+### Distribution of individual habitat classes
 
 ![Predictions for individual habitat classes across the broader study area. State and Commonwealth marine park boundaries are shown.](images/GeographeAMP_predicted-individual-habitat.png)
 
-### Characterization of significant seafloor features
+### Distribution of sessile invertebrates by size class
 
-## Fish assemblage
+### Distribution of Submerged Aquatic Vegetation
 
-### Broader study area
+## Demersal fish assemblage
 
 ![Spatial predictions for whole assemblage and large-bodied carnivorous assemblage metrics across the broader study area. Individual heat maps represent species richness per deployment, Community Thermal Index (CTI) per deployment, the abundance of greater than size of maturity large bodied carnivorous species per deployment (\> Lm) and the abundance of smaller than size of maturity Pink snapper (*Chrysophrys auratus*) per deployment (\< Lm). State and Commonwealth marine park boundaries are shown.](images/GeographeAMP_fish-individual_predictions.png){#fig-spatialpreds fig-align="center"}
 
-Spatial patterns in the distribution of key fish metrics for the Geographe Marine Park highlight increased species richness along reef features that run through the National Park and Habitat Protection Zones (@fig-spatialpreds).
+Spatial patterns in the distribution of key fish metrics for the `{r} marine_park` highlight increased species richness along reef features that run through the National Park and Habitat Protection Zones (@fig-spatialpreds).
 
-![Temporal predictions of key fish metrics for the Geographe Marine Park.](images/GeographeAMP_control-plots.png){#fig-temppreds}
+![Temporal predictions of key fish metrics for the `{r} marine_park`.](images/GeographeAMP_control-plots.png){#fig-temppreds}
 
-Temporal trends of key fish metrics for the Geographe Marine Park highlight increased abundance of mature large bodied carnivorous species in the National Park Zone (@fig-temppreds).
+Temporal trends of key fish metrics for the `{r} marine_park` highlight increased abundance of mature large bodied carnivorous species in the National Park Zone (@fig-temppreds).
 
 ### Threatened species
+
+## Mobile macro-invertebrates
+
+ADD FIGURE - Spatial distribution by \> Lm and \< Lm - lobster and scallop?
+
+ADD FIGURE - Temporal change by \> Lm and \< Lm - lobster and scallop?
 
 # General conclusions and recommendations for future work
 
