@@ -8,8 +8,8 @@ editor: visual
 doi: "test"
 toc: true
 number-sections: true
-bibliography: test.bib
-csl: chicago-author-date-de.csl
+# bibliography: autotest.bib
+# csl: chicago-author-date-de.csl
 ---
 
 ```{r}
@@ -93,12 +93,12 @@ marine_park <- "Geographe Marine Park"
 
 Fig - Practice = National RUM of recreational fishing
 
-| Climatology, oceanography and climate change metrics | Description                                                                                                                                                            | Reference or source |
+| Climatology, oceanography and climate change metrics | Description                                                                                                                                                           | Reference or source |
 |-------------------|----------------------------------|-------------------|
-| Ocean acidity                                        | Modelled product of ocean acidity, providing an indication of physiological stress for marine biota and for calcifying organisms in particular @Orr2005-hh.            | AODN\*              |
-| Sea level anomaly                                    | Satellite derived observation providing a proxy of upwelling and potential indicating areas of increased nutrient exchange and productivity (Pearce et al. 2009) .     | AODN\*              |
-| Sea surface temperature                              | Satellite derived observation providing a measurement of sea surface temperature and potential indicator of physiological stress for marine biota @Caputi2009-qj.      | AODN\*              |
-| Degree Heating Weeks                                 | Designed to provide an indicator of potential bleaching in tropical coral reefs, this product can also be used to characterise marine heat waves globally @Liu2014-dt. | NOAA                |
+| Ocean acidity                                        | Modelled product of ocean acidity, providing an indication of physiological stress for marine biota and for calcifying organisms in particular Orr2005-hh.            | AODN\*              |
+| Sea level anomaly                                    | Satellite derived observation providing a proxy of upwelling and potential indicating areas of increased nutrient exchange and productivity (Pearce et al. 2009) .    | AODN\*              |
+| Sea surface temperature                              | Satellite derived observation providing a measurement of sea surface temperature and potential indicator of physiological stress for marine biota Caputi2009-qj.      | AODN\*              |
+| Degree Heating Weeks                                 | Designed to provide an indicator of potential bleaching in tropical coral reefs, this product can also be used to characterise marine heat waves globally Liu2014-dt. | NOAA                |
 
 : Potential metrics of climatology, oceanography and climate change. Examples included are indexes of ocean acidity, sea level anomaly, sea surface temperature and degree heating weeks (Figure 8 - 11). These metrics may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework. Where indicated, \*data was sourced from Australia’s Integrated Marine Observing System (IMOS) – IMOS is enabled by the National Collaborative Research Infrastructure strategy (NCRIS). {#tbl-climmetrics}
 
