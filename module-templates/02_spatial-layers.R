@@ -84,32 +84,60 @@ metadata.bathy.derivatives   <- cbind(metadata,
 # Save the metadata bathymetry derivatives
 saveRDS(metadata.bathy.derivatives, paste0("data/geographe/tidy/", name, "_metadata-bathymetry-derivatives.rds"))
 
+gmp <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
+  dplyr::filter(NAME %in% "Geographe") %>%
+  glimpse()
+plot(gmp)
+
 # Oceanography/Pressures
 # Sea surface temperature
-nc_sst <- open.nc("data/oceanography/SST.nc", write = TRUE)
+nc_sst <- open.nc("data/geographe/spatial/oceanography/SST.nc", write = TRUE)
 print.nc(nc_sst) # shows you all the file details
 time_nc <- var.get.nc(nc_sst, 'time')  # NC_CHAR time:units = "days since 1981-01-01 00:00:00" ;
 time_nc_sst <- utcal.nc("seconds since 1981-01-01 00:00:00", time_nc, type = "c")
 dates_sst <- as.Date(time_nc_sst)
+close.nc(nc_sst) # GDAL errors otherwise
 
-rast_sst <- rast("data/oceanography/SST.nc", subds = "sea_surface_temperature")
+rast_sst <- rast("data/geographe/spatial/oceanography/SST.nc",
+                 subds = "sea_surface_temperature")
+plot(rast_sst)
 names(rast_sst) <- dates_sst
 
+gmp_sst <- rast_sst %>%
+  mask(gmp)
+plot(gmp_sst)
+
 winter_sst_ts <- rast_sst[[names(rast_sst)[str_detect(names(rast_sst), "-06-|-07-|-08-")]]]
-winter_sst <- mean(winter_sst_ts, na.rm = T)
+winter_sst <- mean(winter_sst_ts, na.rm = T) %>%
+  app(fun = function(i) {i - 273.15}) %>% # Convert kelvin to celsius
+  mask(gmp) %>%
+  trim()
 plot(winter_sst)
+
+sst_tsdf <- terra::global(rast_sst, fun = "mean", na.rm = T) %>%
+  tibble::rownames_to_column() %>%
+  cbind(terra::global(rast_sst, fun = "sd", na.rm = T)) %>%
+  dplyr::mutate(temp = mean - 273.15,
+                date = date(rowname)) %>% # Convert kelvin to celsius
+  dplyr::mutate(season = case_when(month(date) %in% c(3, 4, 5) ~ "Autumn",
+                                   month(date) %in% c(6, 7, 8) ~ "Winter",
+                                   month(date) %in% c(9, 10, 11) ~ "Spring",
+                                   month(date) %in% c(12, 1, 2) ~ "Summer")) %>%
+  glimpse()
 
 # Sea Level Anomaly
 # nc_sla <- open.nc(paste0("data/geographe/spatial/oceanography/", name, "-SLA.nc"),
 #                   write = TRUE)
-nc_sla <- open.nc("data/geographe/spatial/oceanography/IMOS_aggregation_20240716T035407Z.nc",
+nc_sla <- open.nc("data/geographe/spatial/oceanography/SLA.nc",
                   write = TRUE)
 print.nc(nc_sla) # shows you all the file details
 time_nc <- var.get.nc(nc_sla, 'TIME')
 time_nc_sla <- utcal.nc("days since 1985-01-01 00:00:00 UTC", time_nc, type = "c")
 dates_sla <- as.Date(time_nc_sla)
+close.nc(nc_sla)
 
-rast_sla <- terra::rast("data/IMOS_aggregation_20240716T035508Z.nc")
+rast_sla <- terra::rast("data/geographe/spatial/oceanography/SLA.nc",
+                        subds = "GSLA")
 plot(rast_sla)
 names(rast_sla) <- dates_sla
 
