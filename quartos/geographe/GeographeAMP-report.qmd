@@ -94,7 +94,7 @@ marine_park <- "Geographe Marine Park"
 Fig - Practice = National RUM of recreational fishing
 
 | Climatology, oceanography and climate change metrics | Description                                                                                                                                                           | Reference or source |
-|-------------------|----------------------------------|-------------------|
+|------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------|
 | Ocean acidity                                        | Modelled product of ocean acidity, providing an indication of physiological stress for marine biota and for calcifying organisms in particular Orr2005-hh.            | AODN\*              |
 | Sea level anomaly                                    | Satellite derived observation providing a proxy of upwelling and potential indicating areas of increased nutrient exchange and productivity (Pearce et al. 2009) .    | AODN\*              |
 | Sea surface temperature                              | Satellite derived observation providing a measurement of sea surface temperature and potential indicator of physiological stress for marine biota Caputi2009-qj.      | AODN\*              |
