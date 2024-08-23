@@ -5,6 +5,7 @@
 # Author:  Claude Spencer
 # Date:    June 2024
 ###
+rm(list = ls())
 
 # Load libraries needed -----
 library(httr)
@@ -14,57 +15,30 @@ library(devtools)
 # devtools::install_github("GlobalArchiveManual/CheckEM") # If there has been any updates to the package then CheckEM will install
 library(CheckEM)
 
-username <- "public"
-password <- "sharedaccess"
+name <- "GeographeAMP"
 
-test <- ga_api_habitat(username, password, synthesis_id = 20)
-glimpse(test)
+load("secrets/token.rda")
 
-
-# First, API call to the GlobalArchive species list to join to the count and length data ----
-species_list <- CheckEM::ga_api_species_list(username, password) # this needs to be called "species_list" to work later in the following functions
+file.sources <- list.files(pattern = "*.R", path = "temp functions/", full.names = T)
+sapply(file.sources, source, .GlobalEnv)
 
 # API call for metadata ----
-metadata_2019 <- CheckEM::ga_api_metadata(username, password, synthesis_id = 18)
-metadata_2024 <- CheckEM::ga_api_metadata(username, password, synthesis_id = 19)
-
-# Combine metadata ----
-metadata <- bind_rows(metadata_2019, metadata_2024) %>% glimpse()
+metadata <- ga_api_metadata(token, synthesis_id = 14)
 
 # API call for count data ----
-count_2019 <- CheckEM::ga_api_count(username, password, synthesis_id = 18)
-count_2024 <- CheckEM::ga_api_count(username, password, synthesis_id = 19)
-
-# Combine count ----
-count <- bind_rows(count_2019, count_2024) %>%
-  dplyr::select(sample, family, genus, species, count) %>%
+count <- ga_api_count(token, synthesis_id = 14) %>%
+  dplyr::select(sample_url, family, genus, species, count) %>%
   glimpse()
 
 # API call for length data ----
-length_2019 <- CheckEM::ga_api_length(username, password, synthesis_id = 18)
-length_2024 <- CheckEM::ga_api_length(username, password, synthesis_id = 19)
-
-# Combine length ----
-length <- bind_rows(length_2019, length_2024)  %>%
-  dplyr::select(sample, family, genus, species, length, number) %>%
+length <- ga_api_length(token, synthesis_id = 14) %>%
+  dplyr::select(sample_url, family, genus, species, length_mm, number) %>%
   glimpse()
 
-# Save data ----
-# You can either save the data as a csv file or an RDS file
-# (RDS files are much faster to save/read in and preserve any column formatting)
-
-# Save as CSVs
-write.csv(metadata, "data/raw/australian-synthesis_metadata.csv", row.names = F)
-write.csv(count, "data/raw/australian-synthesis_count.csv", row.names = F)
-write.csv(length, "data/raw/australian-synthesis_length.csv", row.names = F)
-
-# Save as RDS
-saveRDS(metadata, "data/raw/australian-synthesis_metadata.RDS")
-saveRDS(count, "data/raw/australian-synthesis_count.RDS")
-saveRDS(length, "data/raw/australian-synthesis_length.RDS")
-
-# Remove files no longer needed from memory ----
-rm(metadata_2019, metadata_2024, count_2019, count_2024, length_2019, length_2024)
+# API call for benthos/habitat data ----
+length <- ga_api_habitat(token, synthesis_id = 14) %>%
+  # dplyr::select(sample_url, family, genus, species, length_mm, number) %>%
+  glimpse()
 
 # Add in zeros where species are not present in the count data ----
 # NOTE: this creates a very large file, it also takes quite a while to run
@@ -72,20 +46,20 @@ rm(metadata_2019, metadata_2024, count_2019, count_2024, length_2019, length_202
 count_metadata <- metadata %>%
   dplyr::filter(successful_count %in% TRUE)
 
-length(unique(count_metadata$sample)) # 27,706 successful samples
-length(unique(count$sample)) # 27,414 samples in the count, will need to add in the zeros where no fish were observed
+length(unique(count_metadata$sample)) # 297 successful samples
+length(unique(count$sample_url)) # 297 samples in the count
 
 count_wide <- count %>%
   dplyr::full_join(count_metadata) %>%
   dplyr::filter(successful_count %in% TRUE) %>% # now has correct number of samples
-  dplyr::select(campaign, sample, family, genus, species, count) %>%
-  tidyr::complete(nesting(campaign, sample), nesting(family, genus, species)) %>%
+  dplyr::select(campaignid, sample, family, genus, species, count) %>%
+  tidyr::complete(nesting(campaignid, sample), nesting(family, genus, species)) %>%
   tidyr::replace_na(list(count = 0)) %>%
-  dplyr::group_by(campaign, sample, family, genus, species) %>%
+  dplyr::group_by(campaignid, sample, family, genus, species) %>%
   dplyr::summarise(count = sum(count)) %>%
   dplyr::ungroup() %>%
   dplyr::mutate(scientific = paste(family, genus, species, sep = " "))%>%
-  dplyr::select(campaign, sample, scientific, count)%>%
+  dplyr::select(campaignid, sample, scientific, count)%>%
   spread(scientific, count, fill = 0)
 
 length(unique(count_wide$sample))
