@@ -16,7 +16,6 @@ library(tidyverse)
 library(terra)
 library(sf)
 library(predicts)
-library(nlraa)
 library(FSSgam)
 library(CheckEM)
 
@@ -70,7 +69,7 @@ for(i in 1:length(resp.vars)){
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
                                   pred.vars.fact = factor.vars,
-                                  cyclic.vars = "aspect",
+                                  cyclic.vars = "geoscience_aspect",
                                   k = 3,
                                   factor.smooth.interactions = F,
                                   max.predictors = 5
@@ -318,3 +317,9 @@ glimpse(preddf_m)
 
 saveRDS(preddf_m, paste0("output/model-output/geographe/fish/", name,
                          "_predicted-fish.RDS"))
+
+predfish <- rast(preddf_m, crs = "epsg:4326")
+plot(predfish)
+
+writeRaster(predfish, paste0("output/model-output/geographe/fish/", names(predfish), "_predicted.tif"),
+            overwrite = TRUE)

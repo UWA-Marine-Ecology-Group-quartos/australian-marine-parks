@@ -224,3 +224,9 @@ preddf_m$dom_tag <- apply(preddf_m %>% dplyr::select(p_macro.fit, p_sand.fit, p_
 unique(preddf_m$dom_tag)
 
 saveRDS(preddf_m, paste0("output/model-output/geographe/habitat/", name, "_predicted-habitat.rds"))      # Ignored
+
+predhab <- rast(preddf_m, crs = "epsg:4326")
+plot(predhab)
+
+writeRaster(predhab, paste0("output/model-output/geographe/habitat/", names(predhab), "_predicted.tif"),
+            overwrite = TRUE)

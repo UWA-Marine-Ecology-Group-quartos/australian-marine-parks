@@ -136,9 +136,39 @@ close.nc(nc_sla)
 
 rast_sla <- terra::rast("data/geographe/spatial/oceanography/SLA.nc",
                         subds = "GSLA")
-plot(rast_sla)
+time(rast_sla) <- dates_sla
 names(rast_sla) <- dates_sla
+plot(rast_sla)
 
-winter_sst_ts <- rast_sst[[names(rast_sst)[str_detect(names(rast_sst), "-06-|-07-|-08-")]]]
-winter_sst <- mean(winter_sst_ts, na.rm = T)
-plot(winter_sst)
+# sla <- mean(rast_sla, na.rm = T)
+# plot(sla)
+# saveRDS(sla, paste0("data/geographe/spatial/oceanography/", name, "_SLA_raster.rds"))
+
+for (month in unique(month(time(rast_sla)))) {
+  print(month)
+  monthly_rast <- subset(rast_sla, month(time(rast_sla)) == month) %>%
+    mean(na.rm = T)
+  names(monthly_rast) <- month.abb[month]
+  if (month == 1) {
+    sla <- monthly_rast
+  }
+  else {
+    sla <- rast(list(sla, monthly_rast))
+  }
+}
+
+sla_tsdf <- terra::global(rast_sla, fun = "mean", na.rm = T) %>%
+  tibble::rownames_to_column() %>%
+  cbind(terra::global(rast_sla, fun = "sd", na.rm = T)) %>%
+  tidyr::separate(rowname, into = c("year", "month", "day"), sep = "-") %>%
+  dplyr::group_by(year, month) %>%
+  summarise(sla = mean(mean),
+            sd = mean(sd)) %>%
+  ungroup() %>%
+  dplyr::mutate(season = case_when(month %in% c("03", "04", "05") ~ "Autumn",
+                                   month %in% c("06", "07", "08") ~ "Winter",
+                                   month %in% c("09", "10", "11") ~ "Spring",
+                                   month %in% c("12", "01", "02") ~ "Summer")) %>%
+  glimpse()
+
+saveRDS(sla_tsdf, paste0("data/geographe/spatial/oceanography/", name, "_SLA_time-series.rds"))

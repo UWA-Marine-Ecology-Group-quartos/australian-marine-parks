@@ -60,13 +60,6 @@ large_bodied_carnivores <- CheckEM::australia_life_history %>%
   dplyr::select(family, genus, species, l50) %>%
   glimpse()
 
-# tempdat <- read.csv("data/geographe/raw/temp/2007-2014-Geographe-stereo-BRUVs.complete.maxn.csv") %>%
-#   dplyr::select(campaignid, sample, family, genus, species, maxn) %>%
-#   dplyr::rename(count = maxn) %>%
-#   dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
-#   dplyr::filter(!campaignid %in% "2007-03_Capes.MF_stereoBRUVs") %>% # Remove 2007 data
-#   glimpse()
-
 count <- readRDS(paste0("data/geographe/raw/", name, "_complete_count.RDS")) %>%
   dplyr::select(campaignid, sample, family, genus, species, count) %>%
   dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
@@ -121,20 +114,11 @@ tidy_maxn <- bind_rows(ta.sr, cti) %>%
 
 saveRDS(tidy_maxn, file = paste0("data/geographe/tidy/", name, "_tidy-count.rds"))
 
-# templength <- read.csv("data/geographe/raw/temp/2007-2014-Geographe-stereo-BRUVs.expanded.length.csv") %>%
-#   dplyr::filter(successful.length %in% "Yes") %>%
-#   dplyr::select(campaignid, sample, family, genus, species, length)
-
 length <- readRDS(paste0("data/geographe/raw/", name, "_complete_length.RDS")) %>%
   dplyr::select(campaignid, sample, family, genus, species, length_mm, number) %>%
   left_join(large_bodied_carnivores) %>%
   dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
   glimpse()
-
-# lengths <- length %>%
-#   left_join(large_bodied_carnivores) %>%
-#   dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
-#   glimpse()
 
 all_species <- length %>%
   distinct(scientific_name) %>%
