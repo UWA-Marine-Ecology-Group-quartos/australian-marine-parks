@@ -21,7 +21,6 @@ library(tidyverse)
 library(tidyterra)
 library(patchwork)
 library(RNetCDF)
-library(ncdf4)
 
 # Set the extent of the study
 e <- ext(115.05, 115.558, -33.67, -33.349)
@@ -61,9 +60,8 @@ saveRDS(preds, file = paste0("data/geographe/spatial/rasters/",
 #                 latitude_dd = as.numeric(latitude_dd)) %>%
 #   glimpse()
 
-metadata <- read.csv("data/geographe/raw/temp/2007-2014-Geographe-stereo-BRUVs.checked.metadata.csv") %>%
-  dplyr::select(campaignid, sample, longitude, latitude, status) %>%
-  dplyr::rename(longitude_dd = longitude, latitude_dd = latitude) %>%
+metadata <- readRDS(paste0("data/geographe/raw/", name, "_metadata.RDS")) %>%
+  dplyr::select(campaignid, sample, longitude_dd, latitude_dd, status) %>%
   glimpse()
 
 # Convert metadata to a spatial file and check alignment with bathymetry
