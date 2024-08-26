@@ -119,6 +119,7 @@ length <- readRDS(paste0("data/geographe/raw/", name, "_complete_length.RDS")) %
   left_join(large_bodied_carnivores) %>%
   dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
   glimpse()
+length(unique(length$sample))
 
 all_species <- length %>%
   distinct(scientific_name) %>%
