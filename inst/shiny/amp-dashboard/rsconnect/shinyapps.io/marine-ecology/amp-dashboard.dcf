@@ -1,12 +1,12 @@
-name: geographe
-title: geographe
+name: amp-dashboard
+title:
 username: marine-ecology
 account: marine-ecology
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 12505372
-bundleId:
-url: https://marine-ecology.shinyapps.io/geographe/
+appId: 12519363
+bundleId: 9025196
+url: https://marine-ecology.shinyapps.io/amp-dashboard/
 version: 1
 asMultiple: FALSE
 asStatic: FALSE

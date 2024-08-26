@@ -1,19 +1,48 @@
 ui <- page_navbar(
   # thematic::thematic_shiny()
   title = div(
-    "Geographe Marine Park Dashboard", # NOTE An item that would get changed
+    "Australian Marine Parks Dashboard",
 
   ),
   sidebar = sidebar(
-    # bg = "white",
+
+    width = 300,
+
     accordion(
       accordion_panel(
-        "Primary controls",
-        "Primary controls go here"
-      ),
-      accordion_panel(
-        "Other controls",
-        "Extra controls go here"
+        "Filter Data",
+
+        # First radio button for selecting network
+        radioButtons("network", "Choose a Network:",
+
+                     choices = c(
+                       "Coral Sea",
+                       "North",
+                       "North-west",
+                       "South-east",
+                       "South-west",
+                       "Temperate East"
+                     ),
+
+                     selected = "South-west"),
+      # ),
+
+
+      # Second radio button for selecting filter type (Network or Marine Park)
+        radioButtons("filterpark",
+                     "Plot by Network or Marine Park:",
+                     choices = c("Network", "Marine Park"),
+                     selected = "Network"),
+
+      # Conditionally display the park input based on filterpark selection
+      conditionalPanel(
+        condition = "input.filterpark == 'Marine Park'",
+
+        # Radio button for selecting the park, initially set to 'south_west'
+        radioButtons("park",
+                     "Park:",
+                     choices = south_west)
+      )
       )
     )
   ),
@@ -62,6 +91,7 @@ ui <- page_navbar(
         ),
 
         card(
+          min_height = 400,
           # card_header("Map"),
           full_screen = TRUE,
           leafletOutput("demersal_fish_map"),
@@ -98,27 +128,62 @@ ui <- page_navbar(
         p("Content for Benthic ecosystem map tab.")
       ),
       nav_panel(
-        title = "Suberged Aquatic Vegetation*",
+        title = "Suberged Aquatic Vegetation",
         p("Content for Extent/% cover of vegetation map tab.")
       ),
     )
     # )
   ),
   nav_panel(
-    "Socio-economic values",
-    card(
-      title = "Socio-economic values",
-      p("Content for the Socio-economic values section.")
-      # Add more content here
+    "Socio-economic Values",
+    navset_card_pill(
+      nav_panel(
+        title = "Knowledge",
+        p("Content")
+      ),
+      nav_panel(
+        title = "Attitude",
+        p("Content")
+      ),
+      nav_panel(
+        title = "Practice",
+        p("Content")
+      ),
+      nav_panel(
+        title = "Use",
+        p("Content")
+      )
     )
   ),
   nav_panel(
     "Pressures",
-    card(
-      title = "Pressures",
-      p("Content for the Pressures section.")
-      # Add more content here
-    )
+
+    navset_card_pill(
+      nav_panel(
+        title = "Practice - Use and catch data",
+        p("Content")
+        ),
+      nav_panel(
+        title = "Ocean acidity",
+        p("Content")
+      ),
+      nav_panel(
+        title = "Sea level anomaly",
+        p("Content")
+      ),
+      nav_panel(
+        title = "Chlorophyll",
+        p("Content")
+      ),
+      nav_panel(
+        title = "Sea surface temperature",
+        p("Content")
+      ),
+      nav_panel(
+        title = "Degree heating weeks",
+        p("Content")
+      )
+)
   ),
   nav_item(input_dark_mode()),
   nav_item(tags$img(src = "https://marineecology.io/images/meg_logo_and_title.png", height = "30px", style = "float: right;"))
