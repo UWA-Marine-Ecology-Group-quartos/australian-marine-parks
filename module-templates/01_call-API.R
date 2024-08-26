@@ -25,6 +25,8 @@ sapply(file.sources, source, .GlobalEnv)
 # API call for metadata ----
 metadata <- ga_api_metadata(token, synthesis_id = 14)
 
+saveRDS(metadata, paste0("data/geographe/raw/", name, "_metadata.RDS"))
+
 # API call for count data ----
 count <- ga_api_count(token, synthesis_id = 14) %>%
   dplyr::select(sample_url, family, genus, species, count) %>%
@@ -36,8 +38,8 @@ length <- ga_api_length(token, synthesis_id = 14) %>%
   glimpse()
 
 # API call for benthos/habitat data ----
-length <- ga_api_habitat(token, synthesis_id = 14) %>%
-  # dplyr::select(sample_url, family, genus, species, length_mm, number) %>%
+habitat <- ga_api_habitat(token, synthesis_id = 14) %>%
+  dplyr::select(sample_url, count, starts_with("level"), family, genus, species) %>%
   glimpse()
 
 # Add in zeros where species are not present in the count data ----
@@ -78,7 +80,7 @@ complete_count <- count_wide %>%
   glimpse()
 
 # Save complete count (zeros added where a species is not present)
-saveRDS(complete_count, "data/raw/australian-synthesis_complete_count.RDS")
+saveRDS(complete_count, paste0("data/geographe/raw/", name, "_complete_count.RDS"))
 
 # Add in zeros where species are not present in the count data ----
 # NOTE: this creates a very large file, it also takes quite a while to run
@@ -86,9 +88,8 @@ saveRDS(complete_count, "data/raw/australian-synthesis_complete_count.RDS")
 length_metadata <- metadata %>%
   dplyr::filter(successful_length %in% TRUE)
 
-length(unique(length_metadata$sample)) # 19,698 successful samples
-length(unique(length$sample)) # 17,449 samples in the length, will need to add in the zeros where no fish were observed
-length(unique(length$scientific))
+length(unique(length_metadata$sample)) # 239 samples
+length(unique(length$sample_url)) # 154 samples in the length - check this as seems a bit wrong
 
 complete_length <- length %>%
   dplyr::mutate(number = as.numeric(number)) %>%
@@ -97,11 +98,11 @@ complete_length <- length %>%
   dplyr::mutate(number = 1) %>%
   dplyr::full_join(length_metadata) %>%
   dplyr::filter(successful_length %in% TRUE) %>%
-  dplyr::select(campaign, sample, family, genus, species, length, number) %>%
-  tidyr::complete(nesting(campaign, sample), nesting(family, genus, species)) %>%
+  dplyr::select(campaignid, sample, family, genus, species, length_mm, number) %>%
+  tidyr::complete(nesting(campaignid, sample), nesting(family, genus, species)) %>%
   replace_na(list(number = 0)) %>%
   ungroup() %>%
-  dplyr::mutate(length_mm = as.numeric(length)) %>%
+  dplyr::mutate(length_mm = as.numeric(length_mm)) %>%
   full_join(length_metadata) %>%
   dplyr::filter(!is.na(number)) %>%
   dplyr::filter(successful_length %in% TRUE) %>%
@@ -110,5 +111,12 @@ complete_length <- length %>%
 length(unique(complete_length$sample))
 
 # Save complete count (zeros added where a species is not present)
-saveRDS(complete_length, "data/raw/australian-synthesis_complete_length.RDS")
+saveRDS(complete_length, paste0("data/geographe/raw/", name, "_complete_length.RDS"))
 
+# Tidy and join habitat with metadata
+tidy_habitat <- habitat %>%
+  left_join(metadata) %>% # Successful habitat columns not filled for this synthesis/campaign
+  glimpse()
+unique(tidy_habitat$level_2)
+
+saveRDS(tidy_habitat, paste0("data/geographe/raw/", name, "_benthos.RDS"))
