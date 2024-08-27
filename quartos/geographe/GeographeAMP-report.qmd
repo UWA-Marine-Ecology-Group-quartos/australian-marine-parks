@@ -94,7 +94,7 @@ marine_park <- "Geographe Marine Park"
 Fig - Practice = National RUM of recreational fishing
 
 | Climatology, oceanography and climate change metrics | Description                                                                                                                                                           | Reference or source |
-|------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------|
+|----------------|----------------------------------------|----------------|
 | Ocean acidity                                        | Modelled product of ocean acidity, providing an indication of physiological stress for marine biota and for calcifying organisms in particular Orr2005-hh.            | AODN\*              |
 | Sea level anomaly                                    | Satellite derived observation providing a proxy of upwelling and potential indicating areas of increased nutrient exchange and productivity (Pearce et al. 2009) .    | AODN\*              |
 | Sea surface temperature                              | Satellite derived observation providing a measurement of sea surface temperature and potential indicator of physiological stress for marine biota Caputi2009-qj.      | AODN\*              |
@@ -102,13 +102,13 @@ Fig - Practice = National RUM of recreational fishing
 
 : Potential metrics of climatology, oceanography and climate change. Examples included are indexes of ocean acidity, sea level anomaly, sea surface temperature and degree heating weeks (Figure 8 - 11). These metrics may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework. Where indicated, \*data was sourced from Australia’s Integrated Marine Observing System (IMOS) – IMOS is enabled by the National Collaborative Research Infrastructure strategy (NCRIS). {#tbl-climmetrics}
 
-Fig - Ocean Acidity/temporal patterns in SLA, SST & DHW
+![Temporal patterns in pH, Sea Level Anomaly, Sea Surface Temperature and Degree Heating Weeks](images/GeographeAMP_oceanography_time-series.png)
 
-Fig - Sea Level Anomaly spatial
+![Spatial patterns in Sea Level Anomaly](images/GeographeAMP_SLA.png)
 
-Fig - Sea Surface Temperature spatial
+![Spatial patterns in Sea Surface Temperature](images/GeographeAMP_SST.png)
 
-Fig - Degree Heating Weeks spatial (2 timepoints referenced from temporal patterns)
+![Spatial patterns in Degree Heating Weeks for 2 maximal timepoints](images/GeographeAMP_DHW.png)
 
 # Latest survey aims, design and methods
 
@@ -160,6 +160,10 @@ Figure - spatial non-fishing use of the Geographe Marine Park
 
 ![Predictions for individual habitat classes across the broader study area. State and Commonwealth marine park boundaries are shown.](images/GeographeAMP_predicted-individual-habitat.png)
 
+ADD FIGURE - temporal patterns in habitats - shallow
+
+ADD FIGURE - temporal patterns in habitats - mesophotic
+
 ### Distribution of sessile invertebrates by size class
 
 ### Distribution of Submerged Aquatic Vegetation
@@ -170,7 +174,9 @@ Figure - spatial non-fishing use of the Geographe Marine Park
 
 Spatial patterns in the distribution of key fish metrics for the `{r} marine_park` highlight increased species richness along reef features that run through the National Park and Habitat Protection Zones (@fig-spatialpreds).
 
-![Temporal predictions of key fish metrics for the `{r} marine_park`.](images/GeographeAMP_control-plots.png){#fig-temppreds}
+![Temporal predictions for the shallow ecosystem depth contour (0 - 30 m) of key fish metrics for the `{r} marine_park`.](images/GeographeAMP_shallow_control-plots.png){#fig-temppreds}
+
+![Temporal predictions for the mesophotic ecosystem depth contour (30 - 70 m) of key fish metrics for the `{r} marine_park`.](images/GeographeAMP_mesophotic_control-plots.png)
 
 Temporal trends of key fish metrics for the `{r} marine_park` highlight increased abundance of mature large bodied carnivorous species in the National Park Zone (@fig-temppreds).
 
