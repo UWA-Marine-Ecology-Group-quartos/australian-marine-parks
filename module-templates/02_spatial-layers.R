@@ -97,31 +97,48 @@ dates_sst <- as.Date(time_nc_sst)
 close.nc(nc_sst) # GDAL errors otherwise
 
 rast_sst <- rast("data/geographe/spatial/oceanography/SST.nc",
-                 subds = "sea_surface_temperature")
+                 subds = "sea_surface_temperature") %>%
+  crop(e) %>%
+  trim()
 plot(rast_sst)
 names(rast_sst) <- dates_sst
-
-gmp_sst <- rast_sst %>%
-  mask(gmp)
-plot(gmp_sst)
+time(rast_sst) <- dates_sst
 
 winter_sst_ts <- rast_sst[[names(rast_sst)[str_detect(names(rast_sst), "-06-|-07-|-08-")]]]
-winter_sst <- mean(winter_sst_ts, na.rm = T) %>%
-  app(fun = function(i) {i - 273.15}) %>% # Convert kelvin to celsius
-  mask(gmp) %>%
-  trim()
-plot(winter_sst)
+
+for (month in unique(month(time(rast_sst)))) {
+  print(month)
+  monthly_rast <- subset(rast_sst, month(time(rast_sst)) == month) %>%
+    mean(na.rm = T) %>%
+    app(fun = function(i) {i - 273.15})
+  names(monthly_rast) <- month.abb[month]
+  if (month == 3) {
+    sst <- monthly_rast
+  }
+  else {
+    sst <- rast(list(sst, monthly_rast))
+  }
+}
+
+saveRDS(sst, paste0("data/geographe/spatial/oceanography/", name, "_SST_raster.rds"))
 
 sst_tsdf <- terra::global(rast_sst, fun = "mean", na.rm = T) %>%
   tibble::rownames_to_column() %>%
   cbind(terra::global(rast_sst, fun = "sd", na.rm = T)) %>%
-  dplyr::mutate(temp = mean - 273.15,
-                date = date(rowname)) %>% # Convert kelvin to celsius
-  dplyr::mutate(season = case_when(month(date) %in% c(3, 4, 5) ~ "Autumn",
-                                   month(date) %in% c(6, 7, 8) ~ "Winter",
-                                   month(date) %in% c(9, 10, 11) ~ "Spring",
-                                   month(date) %in% c(12, 1, 2) ~ "Summer")) %>%
+  # dplyr::mutate(temp = mean - 273.15, # Convert kelvin to celsius
+  #               date = date(rowname)) %>%
+  tidyr::separate(rowname, into = c("year", "month", "day"), sep = "-") %>%
+  dplyr::group_by(year, month) %>%
+  summarise(sst = mean(mean, na.rm = T) - 273.15, # Convert kelvin to celsius
+            sd = mean(sd, na.rm = T)) %>%
+  ungroup() %>%
+  dplyr::mutate(season = case_when(month %in% c("03", "04", "05") ~ "Autumn",
+                                   month %in% c("06", "07", "08") ~ "Winter",
+                                   month %in% c("09", "10", "11") ~ "Spring",
+                                   month %in% c("12", "01", "02") ~ "Summer")) %>%
   glimpse()
+
+saveRDS(sst_tsdf, paste0("data/geographe/spatial/oceanography/", name, "_SST_time-series.rds"))
 
 # Sea Level Anomaly
 # nc_sla <- open.nc(paste0("data/geographe/spatial/oceanography/", name, "-SLA.nc"),
@@ -157,13 +174,15 @@ for (month in unique(month(time(rast_sla)))) {
   }
 }
 
+saveRDS(sla, paste0("data/geographe/spatial/oceanography/", name, "_SLA_raster.rds"))
+
 sla_tsdf <- terra::global(rast_sla, fun = "mean", na.rm = T) %>%
   tibble::rownames_to_column() %>%
   cbind(terra::global(rast_sla, fun = "sd", na.rm = T)) %>%
   tidyr::separate(rowname, into = c("year", "month", "day"), sep = "-") %>%
   dplyr::group_by(year, month) %>%
-  summarise(sla = mean(mean),
-            sd = mean(sd)) %>%
+  summarise(sla = mean(mean, na.rm = T),
+            sd = mean(sd, na.rm = T)) %>%
   ungroup() %>%
   dplyr::mutate(season = case_when(month %in% c("03", "04", "05") ~ "Autumn",
                                    month %in% c("06", "07", "08") ~ "Winter",
@@ -172,3 +191,79 @@ sla_tsdf <- terra::global(rast_sla, fun = "mean", na.rm = T) %>%
   glimpse()
 
 saveRDS(sla_tsdf, paste0("data/geographe/spatial/oceanography/", name, "_SLA_time-series.rds"))
+
+# Degree Heating Weeks
+nc_dhw <- open.nc("data/geographe/spatial/oceanography/DHW.nc",
+                  write = TRUE)
+print.nc(nc_dhw) # shows you all the file details
+time_nc <- var.get.nc(nc_dhw, 'time')
+time_nc_dhw <- utcal.nc("seconds since 1970-01-01T00:00:00Z", time_nc, type = "c")
+dates_dhw <- as.Date(time_nc_dhw)
+close.nc(nc_dhw)
+
+rast_dhw <- terra::rast("data/geographe/spatial/oceanography/DHW.nc",
+                        subds = "CRW_DHW")
+time(rast_dhw) <- dates_dhw
+names(rast_dhw) <- dates_dhw
+plot(rast_dhw)
+
+dhw.2011 <- subset(rast_dhw, year(time(rast_dhw)) == 2011 & month(time(rast_dhw)) == 5) %>%
+  mean(na.rm = T)
+names(dhw.2011) <- "May 2011"
+plot(dhw.2011)
+dhw.2012 <- subset(rast_dhw, year(time(rast_dhw)) == 2012 & month(time(rast_dhw)) == 4) %>%
+  mean(na.rm = T)
+names(dhw.2012) <- "April 2012"
+plot(dhw.2012)
+
+dhw <- rast(list(dhw.2011, dhw.2012))
+plot(dhw)
+
+saveRDS(dhw, paste0("data/geographe/spatial/oceanography/", name, "_DHW_raster.rds"))
+
+dhw_tsdf <- terra::global(rast_dhw, fun = "mean", na.rm = T) %>%
+  tibble::rownames_to_column() %>%
+  cbind(terra::global(rast_dhw, fun = "sd", na.rm = T)) %>%
+  tidyr::separate(rowname, into = c("year", "month", "day"), sep = "-") %>%
+  dplyr::group_by(year, month) %>%
+  summarise(dhw = mean(mean, na.rm = T),
+            sd = mean(sd, na.rm = T)) %>%
+  ungroup() %>%
+  dplyr::mutate(season = case_when(month %in% c("03", "04", "05") ~ "Autumn",
+                                   month %in% c("06", "07", "08") ~ "Winter",
+                                   month %in% c("09", "10", "11") ~ "Spring",
+                                   month %in% c("12", "01", "02") ~ "Summer")) %>%
+  glimpse()
+
+saveRDS(dhw_tsdf, paste0("data/geographe/spatial/oceanography/", name, "_DHW_time-series.rds"))
+
+# Acifidication
+nc_acid <- open.nc("data/geographe/spatial/oceanography/Acidification.nc",
+                  write = TRUE)
+print.nc(nc_acid) # shows you all the file details
+time_nc <- var.get.nc(nc_acid, 'TIME')
+time_nc_acid <- utcal.nc("months since 1800-01-01 00:00:00", time_nc, type = "c")
+dates_acid <- as.Date(time_nc_acid)
+close.nc(nc_acid)
+
+rast_acid <- terra::rast("data/geographe/spatial/oceanography/Acidification.nc",
+                         subds = "pH_T")
+time(rast_acid) <- dates_acid
+names(rast_acid) <- dates_acid
+plot(rast_acid)
+
+acid_tsdf <- terra::global(rast_acid, fun = "mean", na.rm = T) %>%
+  tibble::rownames_to_column() %>%
+  cbind(terra::global(rast_acid, fun = "sd", na.rm = T)) %>%
+  tidyr::separate(rowname, into = c("year", "month", "day"), sep = "-") %>%
+  dplyr::group_by(year, month) %>%
+  summarise(acidification = mean(mean, na.rm = T),
+            sd = mean(sd, na.rm = T)) %>%
+  ungroup() %>%
+  dplyr::mutate(season = case_when(month %in% c("03", "04", "05") ~ "Autumn",
+                                   month %in% c("06", "07", "08") ~ "Winter",
+                                   month %in% c("09", "10", "11") ~ "Spring",
+                                   month %in% c("12", "01", "02") ~ "Summer")) %>%
+  glimpse()
+
+saveRDS(acid_tsdf, paste0("data/geographe/spatial/oceanography/", name, "_Acidification_time-series.rds"))

@@ -41,6 +41,7 @@ length(unique(length$sample_url))
 test <- read.csv("data/geographe/raw/temp/2007-2014-Geographe-stereo-BRUVs.expanded.length.csv") %>%
   glimpse()
 length(unique(test$sample))
+summary(test$length)
 
 # API call for benthos/habitat data ----
 habitat <- ga_api_habitat(token, synthesis_id = 14) %>%
