@@ -90,12 +90,25 @@ length <- length_raw %>%
   dplyr::select(-c(family_correct, genus_correct, species_correct)) %>%
   dplyr::mutate(number = 1) %>%
   left_join(caab_codes) %>%
+
+  dplyr::filter(!(sample %in% "492" & species %in% "vittiger")) %>%
+
   glimpse()
 
 names(length)
+
+# Read in habitat ----
+habitat <- read_csv("data/geographe/raw/temp/2014-12_Geographe.Bay_stereoBRUVs_habitat.csv") %>%
+  semi_join(metadata)
+
+
+
+# Find length that doesn't have count ----
+
 
 
 # write data to be uploaded ----
 write.csv(metadata, "data/geographe/uploads/2014-12_Geographe.Bay_stereoBRUVs_metadata.csv", row.names = F)
 write.csv(length, "data/geographe/uploads/2014-12_Geographe.Bay_stereoBRUVs_length.csv", row.names = F)
 write.csv(count, "data/geographe/uploads/2014-12_Geographe.Bay_stereoBRUVs_count.csv", row.names = F)
+write.csv(habitat, "data/geographe/uploads/2014-12_Geographe.Bay_stereoBRUVs_habitat.csv", row.names = F)
