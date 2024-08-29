@@ -107,75 +107,201 @@ plot(bathy)
 
 bathdf <- as.data.frame(bathy, xy = T)
 
-amp_cols_all <- c("National Park Zone" = "#7bbc63",
-                  "Habitat Protection Zone" = "#fff8a3",
-                  "Multiple Use Zone" = "#b9e6fb",
-                  "Recreational Use Zone" = "#ffb36b",
-                  "Sanctuary Zone" = "#f7c0d8",
-                  "Special Purpose Zone" = "#6daff4") # Will I need to add back in Mining exclusion?
+amp_marine_park_fills <- function(data) {
+  amp_cols_all <- c("National Park Zone" = "#7bbc63",
+                    "Habitat Protection Zone" = "#fff8a3",
+                    "Multiple Use Zone" = "#b9e6fb",
+                    "Recreational Use Zone" = "#ffb36b",
+                    "Sanctuary Zone" = "#f7c0d8",
+                    "Special Purpose Zone" = "#6daff4")
 
-state_cols_all <- c("Sanctuary Zone" = "#bfd054",
-                    "Habitat Protection Zone" = "#fffbcc",
-                    "General Use Zone" = "#bddde1",
-                    "Recreational Use Zone" = "#f4e952",
-                    "Special Purpose Zone" = "#c5bcc9")
+  scale_fill_manual(values = amp_cols_all[unique(data$zone)],
+                                 name = "Australian Marine Parks")
+}
 
-amp_cols <- scale_colour_manual(values = amp_cols_all[unique(marine_parks_amp$zone)],
-                                name = "Australian Marine Parks")
-amp_fills <- scale_fill_manual(values = amp_cols_all[unique(marine_parks_amp$zone)],
-                               name = "Australian Marine Parks")
+amp_fills <- amp_marine_park_fills(marine_parks)
 
-state_cols <- scale_colour_manual(values = state_cols_all[unique(marine_parks_state$zone)],
-                               name = "State Marine Parks")
-state_fills <- scale_fill_manual(values = state_cols_all[unique(marine_parks_state$zone)],
-                                  name = "State Marine Parks")
+state_marine_park_fills <- function(data) {
+  state_cols_all <- c("Sanctuary Zone" = "#bfd054",
+                      "Habitat Protection Zone" = "#fffbcc",
+                      "General Use Zone" = "#bddde1",
+                      "Recreational Use Zone" = "#f4e952",
+                      "Special Purpose Zone" = "#c5bcc9")
+
+  scale_fill_manual(values = state_cols_all[unique(data$zone)],
+                                   name = "State Marine Parks")
+}
+
+state_fills <- state_marine_park_fills(marine_parks)
+
+amp_marine_park_cols <- function(data) {
+  amp_cols_all <- c("National Park Zone" = "#7bbc63",
+                    "Habitat Protection Zone" = "#fff8a3",
+                    "Multiple Use Zone" = "#b9e6fb",
+                    "Recreational Use Zone" = "#ffb36b",
+                    "Sanctuary Zone" = "#f7c0d8",
+                    "Special Purpose Zone" = "#6daff4")
+
+  scale_colour_manual(values = amp_cols_all[unique(data$zone)],
+                    name = "Australian Marine Parks")
+}
+
+amp_cols <- amp_marine_park_cols(marine_parks)
+
+state_marine_park_cols <- function(data) {
+  state_cols_all <- c("Sanctuary Zone" = "#bfd054",
+                      "Habitat Protection Zone" = "#fffbcc",
+                      "General Use Zone" = "#bddde1",
+                      "Recreational Use Zone" = "#f4e952",
+                      "Special Purpose Zone" = "#c5bcc9")
+
+  scale_colour_manual(values = state_cols_all[unique(data$zone)],
+                    name = "State Marine Parks")
+}
+
+state_cols <- state_marine_park_fills(marine_parks)
+
+# amp_cols_all <- c("National Park Zone" = "#7bbc63",
+#                   "Habitat Protection Zone" = "#fff8a3",
+#                   "Multiple Use Zone" = "#b9e6fb",
+#                   "Recreational Use Zone" = "#ffb36b",
+#                   "Sanctuary Zone" = "#f7c0d8",
+#                   "Special Purpose Zone" = "#6daff4") # Will I need to add back in Mining exclusion?
+#
+# state_cols_all <- c("Sanctuary Zone" = "#bfd054",
+#                     "Habitat Protection Zone" = "#fffbcc",
+#                     "General Use Zone" = "#bddde1",
+#                     "Recreational Use Zone" = "#f4e952",
+#                     "Special Purpose Zone" = "#c5bcc9")
+#
+# amp_cols <- scale_colour_manual(values = amp_cols_all[unique(marine_parks_amp$zone)],
+#                                 name = "Australian Marine Parks")
+# amp_fills <- scale_fill_manual(values = amp_cols_all[unique(marine_parks_amp$zone)],
+#                                name = "Australian Marine Parks")
+#
+# state_cols <- scale_colour_manual(values = state_cols_all[unique(marine_parks_state$zone)],
+#                                name = "State Marine Parks")
+# state_fills <- scale_fill_manual(values = state_cols_all[unique(marine_parks_state$zone)],
+#                                   name = "State Marine Parks")
 
 # 1. Location overview plot - includes parks zones and an aus inset
-p1 <- ggplot() +
-  geom_spatraster_contour_filled(data = bathy,
-                      breaks = c(0, -30, -70, -200, - 700, -2000 , -4000, -6000), colour = NA, show.legend = F) +
-  scale_fill_grey(start = 1, end = 0.5, guide = "none") +
-  new_scale_fill() +
-  geom_spatraster_contour(data = bathy,
-               breaks = c(-30, -70, -200, - 700, -2000 , -4000, -6000), colour = "white",
-               alpha = 3/5, linewidth = 0.1, show.legend = F) +
-  geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
-  geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
-  terr_fills +
-  new_scale_fill() +
-  geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.4) +
-  state_fills +
-  new_scale_fill() +
-  geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
-  amp_fills +
-  new_scale_fill() +
-  geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.4, lineend = "round") +
-  labs(x = NULL, y = NULL) +
-  annotate("point", x = c(115.6409, 115.3473, 115.1074, 115.0630, 115.1573),
-           y = c(-33.3270,-33.6516, -33.6177, -33.9535, -34.3110), size = 1, shape = 4) +
-  annotate("text", x = c(115.6409 - 0.08, 115.3473 + 0.09, 115.1074 - 0.11, 115.0630 + 0.13, 115.1573 - 0.07),
-           y = c(-33.3270,-33.65, -33.6177, -33.9535, -34.3110),
-           label = c("Bunbury", "Busselton", "Dunsborough", "Margaret River", "Augusta"), size = 1.65,
-           fontface = "italic") +
-  annotate("rect", xmin = 114.88, xmax = 115.67, ymin = -33.67, ymax = -33.3,
-           fill = "white", colour = "goldenrod2", alpha = 0, size = 0.4) +
-  coord_sf(xlim = c(114.4, 115.67), ylim = c(-33.3, -34.6), crs = 4326) +
-  theme_minimal()
 
-# inset map
-p1.1 <- ggplot(data = aus) +
-  geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
-  geom_sf(data = aus_marine_parks, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
-  coord_sf(xlim = c(110, 125), ylim = c(-37, -13)) + # This is constant for all plots - its just a map of WA
-  annotate("rect", xmin = 115.0, xmax = 115.67, ymin = -33.3, ymax = -33.65,   # Change here
-           colour = "grey25", fill = "white", alpha = 1/5, size = 0.2) +
-  theme_bw() +
-  theme(axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.border = element_rect(colour = "grey70"))
+# p1 <- ggplot() +
+#   geom_spatraster_contour_filled(data = bathy,
+#                       breaks = c(0, -30, -70, -200, - 700, -2000 , -4000, -6000), colour = NA, show.legend = F) +
+#   scale_fill_grey(start = 1, end = 0.5, guide = "none") +
+#   new_scale_fill() +
+#   geom_spatraster_contour(data = bathy,
+#                breaks = c(-30, -70, -200, - 700, -2000 , -4000, -6000), colour = "white",
+#                alpha = 3/5, linewidth = 0.1, show.legend = F) +
+#   geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
+#   geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
+#   terr_fills +
+#   new_scale_fill() +
+#   geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.4) +
+#   state_fills +
+#   new_scale_fill() +
+#   geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
+#   amp_fills +
+#   new_scale_fill() +
+#   geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.4, lineend = "round") +
+#   labs(x = NULL, y = NULL) +
+#   annotate("point", x = c(115.6409, 115.3473, 115.1074, 115.0630, 115.1573),
+#            y = c(-33.3270,-33.6516, -33.6177, -33.9535, -34.3110), size = 1, shape = 4) +
+#   annotate("text", x = c(115.6409 - 0.08, 115.3473 + 0.09, 115.1074 - 0.11, 115.0630 + 0.13, 115.1573 - 0.07),
+#            y = c(-33.3270,-33.65, -33.6177, -33.9535, -34.3110),
+#            label = c("Bunbury", "Busselton", "Dunsborough", "Margaret River", "Augusta"), size = 1.65,
+#            fontface = "italic") +
+#   annotate("rect", xmin = 114.88, xmax = 115.67, ymin = -33.67, ymax = -33.3,
+#            fill = "white", colour = "goldenrod2", alpha = 0, size = 0.4) +
+#   coord_sf(xlim = c(114.4, 115.67), ylim = c(-33.3, -34.6), crs = 4326) +
+#   theme_minimal()
+#
+# # inset map
+# p1.1 <- ggplot(data = aus) +
+#   geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
+#   geom_sf(data = aus_marine_parks, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
+#   coord_sf(xlim = c(110, 125), ylim = c(-37, -13)) + # This is constant for all plots - its just a map of WA
+#   annotate("rect", xmin = 115.0, xmax = 115.67, ymin = -33.3, ymax = -33.65,   # Change here
+#            colour = "grey25", fill = "white", alpha = 1/5, size = 0.2) +
+#   theme_bw() +
+#   theme(axis.text = element_blank(),
+#         axis.ticks = element_blank(),
+#         panel.grid.major = element_blank(),
+#         panel.border = element_rect(colour = "grey70"))
+#
+# p1.1 + p1
 
-p1.1 + p1
+location_plot <- function(plot_limits, study_limits, annotation_labels) {
+  # 1. Location overview plot - includes parks zones and an aus inset
+  require(tidyverse)
+  require(tidyterra)
+  require(patchwork)
+
+  p1 <- ggplot() +
+    geom_spatraster_contour_filled(data = bathy,
+                                   breaks = c(0, -30, -70, -200, - 700, -2000 , -4000, -6000),
+                                   colour = NA, show.legend = F) +
+    scale_fill_grey(start = 1, end = 0.5, guide = "none") +
+    new_scale_fill() +
+    geom_spatraster_contour(data = bathy,
+                            breaks = c(-30, -70, -200, - 700, -2000 , -4000, -6000), colour = "white",
+                            alpha = 3/5, linewidth = 0.1, show.legend = F) +
+    geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
+    geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
+    terr_fills +
+    new_scale_fill() +
+    geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.4) +
+    state_fills +
+    new_scale_fill() +
+    geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
+    amp_fills +
+    new_scale_fill() +
+    geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.4, lineend = "round") +
+    labs(x = NULL, y = NULL) +
+    annotate("point", x = annotation_points$x,
+             y = annotation_points$y, size = 1, shape = 4) +
+    annotate("text", x = annotation_labels$x,
+             y = annotation_labels$y,
+             label = annotation_labels$label, size = 1.65,
+             fontface = "italic") +
+    annotate("rect", xmin = study_limits[1], xmax = study_limits[2], ymin = study_limits[3], ymax = study_limits[4],
+             fill = NA, colour = "goldenrod2", size = 0.4) +
+    coord_sf(xlim = c(plot_limits[1], plot_limits[2]), ylim = c(plot_limits[3], plot_limits[4]), crs = 4326) +
+    theme_minimal()
+
+  # inset map
+  p1.1 <- ggplot(data = aus) +
+    geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
+    geom_sf(data = aus_marine_parks, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
+    coord_sf(xlim = c(110, 125), ylim = c(-37, -13)) + # This is constant for all plots - its just a map of WA
+    annotate("rect", xmin = plot_limits[1], xmax = plot_limits[2], ymin = plot_limits[3], ymax = plot_limits[4],   # Change here
+             colour = "grey25", fill = "white", alpha = 1/5, size = 0.2) +
+    theme_bw() +
+    theme(axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.border = element_rect(colour = "grey70"))
+
+  p1.1 + p1
+}
+
+# t <- list(x = c(114), y = c(-36), label = c("Geographe"))
+# t$x
+
+library(googlesheets4)
+testdat <- read_sheet("https://docs.google.com/spreadsheets/d/1wycMSb8ykriU458sqx5FIKkDlkWIK7Uv58ySSapi8Kc/edit?usp=sharing",
+                      sheet = "spatial_variables")
+
+plot_limits = c(114.4, 115.67, -33.3, -34.6)
+study_limits = c(114.88, 115.67,-33.3, -33.67)
+annotation_labels = data.frame(x = c(115.6409, 115.3473, 115.1074, 115.0630, 115.1573),
+                               y = c(-33.3270,-33.65, -33.6177, -33.9535, -34.3110),
+                               label = c("Bunbury", "Busselton", "Dunsborough", "Margaret River", "Augusta"))
+
+location_plot(plot_limits,
+              study_limits,
+              annotation_labels)
 
 ggsave(paste(paste0('plots/geographe/spatial/', name) , 'broad-site-plot.png',
              sep = "-"), dpi = 600, width = 8, height = 5, bg = "white")
@@ -183,40 +309,70 @@ ggsave(paste(paste0('plots/geographe/spatial/', name) , 'broad-site-plot.png',
 # 2. Site zoom plot - including sampling points
 metadata <- readRDS(paste0("data/geographe/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
   st_as_sf(coords = c("longitude_dd", "latitude_dd"), crs = 4326) %>%
-  # dplyr::mutate(method = case_when(str_detect(campaignid, "BRUV") ~ "BRUV",
-  #                                  str_detect(campaignid, "BOSS") ~ "BOSS")) %>%
-  # dplyr::mutate(longitude = as.numeric(longitude),
-  #               latitude = as.numeric(latitude)) %>%
   glimpse()
 
-p2 <- ggplot() +
-  geom_spatraster_contour_filled(data = bathy,
-                      breaks = c(0, -30, -70, -200, -700, -2000, -4000, -10000), alpha = 4/5) +
-  scale_fill_grey(start = 1, end = 0.5 , guide = "none") +
-  geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
-  new_scale_fill() +
-  geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
-  terr_fills +
-  new_scale_fill() +
-  geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.4) +
-  state_fills +
-  new_scale_fill() +
-  geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
-  amp_fills +
-  new_scale_fill() +
-  labs(x = NULL, y = NULL) +
-  new_scale_fill() +
-  geom_sf(data = cwatr, colour = "firebrick", alpha = 1, size = 0.2, lineend = "round") +
-  geom_sf(data = metadata, alpha = 1, shape = 10, size = 0.8, colour = "indianred4") +
-  annotate("point", x = c(115.6409, 115.3473, 115.1074, 115.0630, 115.1573),
-           y = c(-33.3270,-33.6516, -33.6177, -33.9535, -34.3110), size = 1, shape = 4) +
-  annotate("text", x = c(115.6409 - 0.025, 115.3473 + 0.03, 115.1074 - 0.035),
-           y = c(-33.3270,-33.65, -33.6177),
-           label = c("Bunbury", "Busselton", "Dunsborough"), size = 1.65,
-           fontface = "italic") +
-  coord_sf(xlim = c(115.0, 115.67), ylim = c(-33.3, -33.65), crs = 4326) +
-  theme_minimal() +
-  theme(panel.grid = element_blank())
+site_limits = c(115.0, 115.67, -33.3, -33.65)
+
+site_plot <- function(site_limits, # Tighter zoom for this plot
+                      annotation_labels) {
+  ggplot() +
+    geom_spatraster_contour_filled(data = bathy,
+                                   breaks = c(0, -30, -70, -200, -700, -2000, -4000, -10000), alpha = 4/5) +
+    scale_fill_grey(start = 1, end = 0.5 , guide = "none") +
+    geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
+    new_scale_fill() +
+    geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
+    terr_fills +
+    new_scale_fill() +
+    geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.4) +
+    state_fills +
+    new_scale_fill() +
+    geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
+    amp_fills +
+    new_scale_fill() +
+    labs(x = NULL, y = NULL) +
+    new_scale_fill() +
+    geom_sf(data = cwatr, colour = "firebrick", alpha = 1, size = 0.2, lineend = "round") +
+    geom_sf(data = metadata, alpha = 1, shape = 10, size = 0.8, colour = "indianred4") +
+    annotate("text", x = annotation_labels$x,
+             y = annotation_labels$y,
+             label = annotation_labels$label, size = 1.65,
+             fontface = "italic") +
+    coord_sf(xlim = c(site_limits[1], site_limits[2]), ylim = c(site_limits[3], site_limits[4]), crs = 4326) +
+    theme_minimal() +
+    theme(panel.grid = element_blank())
+}
+
+site_plot(site_limits, annotation_labels)
+
+# p2 <- ggplot() +
+#   geom_spatraster_contour_filled(data = bathy,
+#                       breaks = c(0, -30, -70, -200, -700, -2000, -4000, -10000), alpha = 4/5) +
+#   scale_fill_grey(start = 1, end = 0.5 , guide = "none") +
+#   geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
+#   new_scale_fill() +
+#   geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
+#   terr_fills +
+#   new_scale_fill() +
+#   geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.4) +
+#   state_fills +
+#   new_scale_fill() +
+#   geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
+#   amp_fills +
+#   new_scale_fill() +
+#   labs(x = NULL, y = NULL) +
+#   new_scale_fill() +
+#   geom_sf(data = cwatr, colour = "firebrick", alpha = 1, size = 0.2, lineend = "round") +
+#   geom_sf(data = metadata, alpha = 1, shape = 10, size = 0.8, colour = "indianred4") +
+#   annotate("point", x = c(115.6409, 115.3473, 115.1074, 115.0630, 115.1573),
+#            y = c(-33.3270,-33.6516, -33.6177, -33.9535, -34.3110), size = 1, shape = 4) +
+#   annotate("text", x = c(115.6409 - 0.025, 115.3473 + 0.03, 115.1074 - 0.035),
+#            y = c(-33.3270,-33.65, -33.6177),
+#            label = c("Bunbury", "Busselton", "Dunsborough"), size = 1.65,
+#            fontface = "italic") +
+#   coord_sf(xlim = c(115.0, 115.67), ylim = c(-33.3, -33.65), crs = 4326) +
+#   theme_minimal() +
+#   theme(panel.grid = element_blank())
 
 ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'sampling-locations.png',
                         sep = "-"), plot = p2, units = "in", dpi = 600,
@@ -232,35 +388,65 @@ kef_fills <- scale_fill_manual(values = c("Geographe Bay" = "#004949",
                                           "Western rock lobster" = "#6DB6FF"),
                                name = "Key Ecological Features")
 
-p3 <- ggplot() +
-  geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
-  geom_sf(data = terrnp, aes(fill = leg_catego), alpha = 4/5, colour = NA, show.legend = F) +
-  labs(fill = "Terrestrial Managed Areas") +
-  terr_fills +
-  new_scale_fill() +
-  geom_sf(data = kef, aes(fill = name), alpha = 0.7, color = NA) +
-  kef_fills +
-  new_scale_fill() +
-  geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8, show.legend = F) +
-  terr_fills +
-  new_scale_fill() +
-  geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA) +
-  state_fills +
-  new_scale_colour() +
-  geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, linewidth = 0.4, alpha = 0.3) +
-  amp_cols +
-  new_scale_colour() +
-  geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.4, lineend = "round") +
-  labs(x = NULL, y = NULL,  fill = "Key Ecological Features") +
-  annotate("point", x = c(115.6409, 115.3473, 115.1074, 115.0630, 115.1573),
-           y = c(-33.3270,-33.6516, -33.6177, -33.9535, -34.3110), size = 1, shape = 4) +
-  annotate("text", x = c(115.6409 - 0.06, 115.3473 + 0.07, 115.1074 - 0.09, 115.0630 + 0.09, 115.1573 - 0.06),
-           y = c(-33.3270,-33.65, -33.6177, -33.9535, -34.3110),
-           label = c("Bunbury", "Busselton", "Dunsborough", "Margaret River", "Augusta"), size = 2,
-           fontface = "italic") +
-  coord_sf(xlim = c(114.4, 115.67), ylim = c(-33.3, -34.6), crs = 4326) +
-  theme_minimal()+
-  theme(panel.grid = element_blank())
+kef_plot <- function(plot_limits, annotation_labels) {
+  ggplot() +
+    geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
+    geom_sf(data = terrnp, aes(fill = leg_catego), alpha = 4/5, colour = NA, show.legend = F) +
+    labs(fill = "Terrestrial Managed Areas") +
+    terr_fills +
+    new_scale_fill() +
+    geom_sf(data = kef, aes(fill = name), alpha = 0.7, color = NA) +
+    kef_fills +
+    new_scale_fill() +
+    geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8, show.legend = F) +
+    terr_fills +
+    new_scale_fill() +
+    geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA) +
+    state_fills +
+    new_scale_colour() +
+    geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, linewidth = 0.4, alpha = 0.3) +
+    amp_cols +
+    new_scale_colour() +
+    geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.4, lineend = "round") +
+    labs(x = NULL, y = NULL,  fill = "Key Ecological Features") +
+    annotate("text", x = annotation_labels$x,
+             y = annotation_labels$y,
+             label = annotation_labels$label, size = 1.65,
+             fontface = "italic") +
+    coord_sf(xlim = c(plot_limits[1], plot_limits[2]), ylim = c(plot_limits[3], plot_limits[4]), crs = 4326) +
+    theme_minimal() +
+    theme(panel.grid = element_blank())
+}
+
+# p3 <- ggplot() +
+#   geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
+#   geom_sf(data = terrnp, aes(fill = leg_catego), alpha = 4/5, colour = NA, show.legend = F) +
+#   labs(fill = "Terrestrial Managed Areas") +
+#   terr_fills +
+#   new_scale_fill() +
+#   geom_sf(data = kef, aes(fill = name), alpha = 0.7, color = NA) +
+#   kef_fills +
+#   new_scale_fill() +
+#   geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8, show.legend = F) +
+#   terr_fills +
+#   new_scale_fill() +
+#   geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA) +
+#   state_fills +
+#   new_scale_colour() +
+#   geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, linewidth = 0.4, alpha = 0.3) +
+#   amp_cols +
+#   new_scale_colour() +
+#   geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.4, lineend = "round") +
+#   labs(x = NULL, y = NULL,  fill = "Key Ecological Features") +
+#   annotate("point", x = c(115.6409, 115.3473, 115.1074, 115.0630, 115.1573),
+#            y = c(-33.3270,-33.6516, -33.6177, -33.9535, -34.3110), size = 1, shape = 4) +
+#   annotate("text", x = c(115.6409 - 0.06, 115.3473 + 0.07, 115.1074 - 0.09, 115.0630 + 0.09, 115.1573 - 0.06),
+#            y = c(-33.3270,-33.65, -33.6177, -33.9535, -34.3110),
+#            label = c("Bunbury", "Busselton", "Dunsborough", "Margaret River", "Augusta"), size = 2,
+#            fontface = "italic") +
+#   coord_sf(xlim = c(114.4, 115.67), ylim = c(-33.3, -34.6), crs = 4326) +
+#   theme_minimal()+
+#   theme(panel.grid = element_blank())
 
 ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'key-ecological-features.png',
                         sep = "-"), plot = p3, units = "in", dpi = 600,
