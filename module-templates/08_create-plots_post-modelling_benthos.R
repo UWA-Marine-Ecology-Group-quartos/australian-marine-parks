@@ -183,6 +183,10 @@ p2 <- ggplot() +
 ggsave(filename = paste0("plots/geographe/habitat/", name, "_predicted-individual-habitat.png"),
          plot = p2, height = 5.5, width = 8, dpi = 900, units = "in", bg = "white")
 
+# Make temporal plots for habitat types, by ecosystem depth contour
+# Shallow (0 - 30 m)
+# Mesophotic (30 - 70 m)
+
 shallow <- preds[[1]] %>%
   clamp(upper = 0, lower = -30, values = F)
 meso <- preds[[1]] %>%

@@ -32,7 +32,7 @@ benthos <- readRDS(paste0("data/geographe/raw/", name, "_benthos.RDS")) %>%
                                     level_3 %in% "Corals" ~ "sessile_invertebrates")) %>%
   dplyr::select(campaignid, sample, habitat, count) %>%
   pivot_wider(names_from = habitat, values_from = count, values_fill = 0) %>%
-  dplyr::mutate(total_pts = rowSums(.[3:7]),
+  dplyr::mutate(total_pts = rowSums(.[3:ncol(.)], na.rm = T),
                 reef = macroalgae + rock + sessile_invertebrates) %>%
   glimpse()
 

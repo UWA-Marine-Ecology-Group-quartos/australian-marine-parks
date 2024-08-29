@@ -82,11 +82,6 @@ metadata.bathy.derivatives   <- cbind(metadata,
 # Save the metadata bathymetry derivatives
 saveRDS(metadata.bathy.derivatives, paste0("data/geographe/tidy/", name, "_metadata-bathymetry-derivatives.rds"))
 
-gmp <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
-  dplyr::filter(NAME %in% "Geographe") %>%
-  glimpse()
-plot(gmp)
-
 # Oceanography/Pressures
 # Sea surface temperature
 nc_sst <- open.nc("data/geographe/spatial/oceanography/SST.nc", write = TRUE)

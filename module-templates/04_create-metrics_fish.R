@@ -32,7 +32,7 @@ metadata <- readRDS(paste0("data/geographe/raw/", name, "_metadata.RDS"))
 benthos <- readRDS(paste0("data/geographe/tidy/", name, "_benthos-count.RDS")) %>%
   CheckEM::clean_names() %>%
   dplyr::select(campaignid, sample, reef, total_pts) %>%
-  dplyr::mutate(reef = reef/total_pts) %>%
+  dplyr::mutate(reef = reef/total_pts) %>% # Model reef as proportion for fish prediction
   glimpse()
 
 # Maturity data from WA sheet - should this just get included in the life history?
@@ -62,46 +62,82 @@ large_bodied_carnivores <- CheckEM::australia_life_history %>%
 
 count <- readRDS(paste0("data/geographe/raw/", name, "_complete_count.RDS")) %>%
   dplyr::select(campaignid, sample, family, genus, species, count) %>%
-  dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
+  dplyr::mutate(scientific_name = paste(family, genus, species, sep = " ")) %>%
   glimpse()
 
 ta.sr <- count %>%
   dplyr::select(-c(family, genus, species)) %>%
   dplyr::group_by(campaignid, sample, scientific_name) %>%
-  pivot_wider(names_from = "scientific_name", values_from = count, values_fill = 0) %>%
+  pivot_wider(names_from = "scientific_name", values_from = count) %>%
   dplyr::ungroup() %>%
-  dplyr::mutate(total_abundance = rowSums(.[, 3:(ncol(.))], na.rm = TRUE),
+  dplyr::mutate(total_abundance = rowSums(.[, 3:(ncol(.))], na.rm = T),
                 species_richness = rowSums(.[, 3:(ncol(.))] > 0)) %>%
   dplyr::select(campaignid, sample, total_abundance, species_richness) %>%
   pivot_longer(cols = c("total_abundance", "species_richness"), names_to = "response", values_to = "number") %>%
   glimpse() # Should be nsamps * 2 = 594
 
 # The RLS thermal niche is going to already be in the data
-master <- CheckEM::australia_life_history %>%
-  clean_names() %>%
-  dplyr::filter(grepl('Australia', global_region),
-                grepl('SW', marine_region)) %>% # Change country here
-  dplyr::select(family, genus, species, rls_thermal_niche) %>%
-  dplyr::distinct() %>%
-  dplyr::glimpse()
+# master <- CheckEM::australia_life_history %>%
+#   clean_names() %>%
+#   dplyr::filter(grepl('Australia', global_region),
+#                 grepl('SW', marine_region)) %>% # Change country here
+#   dplyr::select(family, genus, species, rls_thermal_niche) %>%
+#   dplyr::distinct() %>%
+#   dplyr::glimpse()
 
-cti <- count %>%
-  dplyr::ungroup() %>%
-  dplyr::filter(count > 0) %>%
-  left_join(master) %>%
-  uncount(count) %>%
-  dplyr::mutate(count = 1) %>%
-  dplyr::filter(!is.na(rls_thermal_niche)) %>%
-  dplyr::mutate(log_count = log10(count + 1),
-                weightedsti = log_count*rls_thermal_niche) %>%
-  dplyr::group_by(campaignid, sample) %>%
-  dplyr::summarise(log_count = sum(log_count, na.rm = T),
-                   w_sti = sum(weightedsti, na.rm = T),
-                   CTI = w_sti/log_count,
-                   number = mean(rls_thermal_niche, na.rm = T)) %>%
-  dplyr::ungroup() %>%
+# create_cti <- function(data, country, region) {
+#   # Transform 'count' dataframe into new dataframe for Community Temperature Index
+#   # 'count' dataframe must have campaignid, sample, and count columns
+#   require(CheckEM)
+#   require(tidyverse)
+#
+#   master <- CheckEM::australia_life_history %>%
+#     clean_names() %>%
+#     dplyr::filter(grepl(country, global_region),
+#                   grepl(region, marine_region)) %>% # Change country here
+#     dplyr::select(family, genus, species, rls_thermal_niche) %>%
+#     dplyr::distinct()
+#
+#   data %>%
+#     dplyr::ungroup() %>%
+#     dplyr::filter(count > 0) %>%
+#     left_join(master) %>%
+#     uncount(count) %>%
+#     dplyr::mutate(count = 1) %>%
+#     dplyr::filter(!is.na(rls_thermal_niche)) %>%
+#     dplyr::mutate(log_count = log10(count + 1),
+#                   weightedsti = log_count*rls_thermal_niche) %>%
+#     dplyr::group_by(campaignid, sample) %>%
+#     dplyr::summarise(log_count = sum(log_count, na.rm = T),
+#                      w_sti = sum(weightedsti, na.rm = T),
+#                      CTI = w_sti/log_count,
+#                      number = mean(rls_thermal_niche, na.rm = T)) %>%
+#     dplyr::ungroup() %>%
+#     dplyr::mutate(response = "cti")
+# }
+
+cti <- CheckEM::create_cti(data = count) %>%
+  dplyr::rename(number = cti) %>%
   dplyr::mutate(response = "cti") %>%
-  glimpse() # Can have less samples than in metadata, if there are samples with no fish or no fish with valid thermal niches
+  glimpse()
+
+# cti <- count %>%
+#   dplyr::ungroup() %>%
+#   dplyr::filter(count > 0) %>%
+#   left_join(master) %>%
+#   uncount(count) %>%
+#   dplyr::mutate(count = 1) %>%
+#   dplyr::filter(!is.na(rls_thermal_niche)) %>%
+#   dplyr::mutate(log_count = log10(count + 1),
+#                 weightedsti = log_count*rls_thermal_niche) %>%
+#   dplyr::group_by(campaignid, sample) %>%
+#   dplyr::summarise(log_count = sum(log_count, na.rm = T),
+#                    w_sti = sum(weightedsti, na.rm = T),
+#                    CTI = w_sti/log_count,
+#                    number = mean(rls_thermal_niche, na.rm = T)) %>%
+#   dplyr::ungroup() %>%
+#   dplyr::mutate(response = "cti") %>%
+#   glimpse() # Can have less samples than in metadata, if there are samples with no fish or no fish with valid thermal niches
 
 tidy_maxn <- bind_rows(ta.sr, cti) %>%
   dplyr::select(-c(log_count, w_sti, CTI)) %>%

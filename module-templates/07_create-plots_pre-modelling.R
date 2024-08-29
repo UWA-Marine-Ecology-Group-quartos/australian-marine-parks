@@ -166,7 +166,7 @@ p1 <- ggplot() +
 p1.1 <- ggplot(data = aus) +
   geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
   geom_sf(data = aus_marine_parks, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
-  coord_sf(xlim = c(110, 125), ylim = c(-37, -13)) +
+  coord_sf(xlim = c(110, 125), ylim = c(-37, -13)) + # This is constant for all plots - its just a map of WA
   annotate("rect", xmin = 115.0, xmax = 115.67, ymin = -33.3, ymax = -33.65,   # Change here
            colour = "grey25", fill = "white", alpha = 1/5, size = 0.2) +
   theme_bw() +

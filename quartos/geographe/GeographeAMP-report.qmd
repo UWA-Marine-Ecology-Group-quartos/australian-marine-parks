@@ -94,7 +94,7 @@ marine_park <- "Geographe Marine Park"
 Fig - Practice = National RUM of recreational fishing
 
 | Climatology, oceanography and climate change metrics | Description                                                                                                                                                           | Reference or source |
-|----------------|----------------------------------------|----------------|
+|------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------|
 | Ocean acidity                                        | Modelled product of ocean acidity, providing an indication of physiological stress for marine biota and for calcifying organisms in particular Orr2005-hh.            | AODN\*              |
 | Sea level anomaly                                    | Satellite derived observation providing a proxy of upwelling and potential indicating areas of increased nutrient exchange and productivity (Pearce et al. 2009) .    | AODN\*              |
 | Sea surface temperature                              | Satellite derived observation providing a measurement of sea surface temperature and potential indicator of physiological stress for marine biota Caputi2009-qj.      | AODN\*              |
@@ -102,13 +102,13 @@ Fig - Practice = National RUM of recreational fishing
 
 : Potential metrics of climatology, oceanography and climate change. Examples included are indexes of ocean acidity, sea level anomaly, sea surface temperature and degree heating weeks (Figure 8 - 11). These metrics may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework. Where indicated, \*data was sourced from Australia’s Integrated Marine Observing System (IMOS) – IMOS is enabled by the National Collaborative Research Infrastructure strategy (NCRIS). {#tbl-climmetrics}
 
-![Temporal patterns in pH, Sea Level Anomaly, Sea Surface Temperature and Degree Heating Weeks](images/GeographeAMP_oceanography_time-series.png)
+![Temporal patterns in pH, Sea Level Anomaly, Sea Surface Temperature and Degree Heating Weeks](images/GeographeAMP_oceanography_time-series.png){#fig-temporalpressures}
 
-![Spatial patterns in Sea Level Anomaly](images/GeographeAMP_SLA.png)
+![Sea level anomaly, as an index of upwelling, at the scale of the `{r} marine_park`. Heatmap values represent high (yellow) and low (blue) bimonthly sea level anomaly (SLA). Grey polygons represent State spatial management and Australian Marine Park boundaries. ](images/GeographeAMP_SLA.png){#fig-spatialsla}
 
-![Spatial patterns in Sea Surface Temperature](images/GeographeAMP_SST.png)
+![Spatial patterns in Sea Surface Temperature](images/GeographeAMP_SST.png){#fig-spatialsst}
 
-![Spatial patterns in Degree Heating Weeks for 2 maximal timepoints](images/GeographeAMP_DHW.png)
+![Spatial patterns in Degree Heating Weeks for 2 maximal timepoints](images/GeographeAMP_DHW.png){#fig-spatialdhw}
 
 # Latest survey aims, design and methods
 
