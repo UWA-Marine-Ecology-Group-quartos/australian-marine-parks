@@ -567,51 +567,77 @@ aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-inves
   st_union()
 ausout <- st_cast(aus, "MULTILINESTRING")
 plot(ausout)
+# st_write(ausout, "data/south-west network/spatial/shapefiles/australian-outline.shp")
 
-calculate_bearing <- function(alat, alon, blat, blon) {
+ausmask <- vect(aus) %>%
+  project("EPSG:9473")
+negdists <- rast("data/south-west network/spatial/rasters/distance-raster.tif") %>%
+  mask(ausmask, inverse = T)
+negdists <- negdists * -1
+plot(negdists)
+posdists <- rast("data/south-west network/spatial/rasters/distance-raster.tif") %>%
+  mask(ausmask)
+distance_from_coast <- merge(posdists, negdists) %>%
+  project("epsg:4326")
+plot(distance_from_coast)
 
-  # Utility functions
-  degrees_to_radians <- function(degrees) {
-    return(degrees * pi / 180)
-  }
-  radians_to_degrees <- function(radians) {
-    return(radians * 180 / pi)
-  }
-
-  delta_lon <- blon - alon
-  delta_lat <- blat - alat
-
-  lat1_rad <- degrees_to_radians(alat)
-  lat2_rad <- degrees_to_radians(blat)
-
-  bearing <- atan2(sin(delta_lon) * cos(lat2_rad),
-                   cos(lat1_rad) * sin(lat2_rad) - sin(lat1_rad) * cos(lat2_rad) * cos(delta_lon))
-  bearing <- radians_to_degrees(bearing)
-
-  bearing <- (bearing + 360) %% 360
-  return(bearing)
-}
-
-bath_sf <- bath_cross %>%
-  dplyr::mutate("distance.from.coast" = st_distance(bath_cross, bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]),
-                land = lengths(st_intersects(bath_cross, aus)) > 0,
-                coast = bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]) %>%
-  bind_cols(st_coordinates(.)) %>%
-  dplyr::rename(from_longitude = X, from_latitude = Y) %>%
-  bind_cols(st_coordinates(.$coast)) %>%
-  dplyr::rename(to_longitude = X, to_latitude = Y) %>%
-  dplyr::mutate(bearing = calculate_bearing(alon = .$from_longitude,
-                                            alat = .$from_latitude,
-                                            blon = .$to_longitude,
-                                            blat = .$to_latitude)) %>%
-  dplyr::mutate(distance.from.coast = ifelse(between(bearing, 50, 150), distance.from.coast * -1, distance.from.coast)) %>%
-  glimpse()
-
-bath_df1 <- as.data.frame(bath_sf) %>%
+bath_df1 <- cbind(bath_cross, terra::extract(distance_from_coast, bath_cross, ID = F)) %>%
+  dplyr::mutate(distance.from.coast = distance.raster / 1000) %>%
+  as.data.frame() %>%
   dplyr::select(-geometry) %>%
-  dplyr::mutate(distance.from.coast = as.numeric(distance.from.coast/1000)) %>%
-  dplyr::filter(distance.from.coast < 10) %>%
-  glimpse()
+    dplyr::filter(distance.from.coast < 10) %>%
+    glimpse()
+
+# calculate_bearing <- function(alat, alon, blat, blon) {
+#
+#   # Utility functions
+#   degrees_to_radians <- function(degrees) {
+#     return(degrees * pi / 180)
+#   }
+#   radians_to_degrees <- function(radians) {
+#     return(radians * 180 / pi)
+#   }
+#
+#   delta_lon <- blon - alon
+#   delta_lat <- blat - alat
+#
+#   lat1_rad <- degrees_to_radians(alat)
+#   lat2_rad <- degrees_to_radians(blat)
+#
+#   bearing <- atan2(sin(delta_lon) * cos(lat2_rad),
+#                    cos(lat1_rad) * sin(lat2_rad) - sin(lat1_rad) * cos(lat2_rad) * cos(delta_lon))
+#   bearing <- radians_to_degrees(bearing)
+#
+#   bearing <- (bearing + 360) %% 360
+#   return(bearing)
+# }
+#
+# bath_sf <- bath_cross %>%
+#   dplyr::mutate("distance.from.coast" = st_distance(bath_cross, bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]),
+#                 land = lengths(st_intersects(bath_cross, aus)) > 0,
+#                 coast = bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]) %>%
+#   bind_cols(st_coordinates(.)) %>%
+#   dplyr::rename(from_longitude = X, from_latitude = Y) %>%
+#   bind_cols(st_coordinates(.$coast)) %>%
+#   dplyr::rename(to_longitude = X, to_latitude = Y) %>%
+#   dplyr::mutate(bearing = calculate_bearing(alon = .$from_longitude,
+#                                             alat = .$from_latitude,
+#                                             blon = .$to_longitude,
+#                                             blat = .$to_latitude)) %>%
+#   dplyr::mutate(distance.from.coast = ifelse(between(bearing, 50, 150), distance.from.coast * -1, distance.from.coast)) %>%
+#   glimpse()
+
+# bath_df1 <- as.data.frame(bath_sf) %>%
+#   dplyr::select(-geometry) %>%
+#   dplyr::mutate(distance.from.coast = as.numeric(distance.from.coast/1000)) %>%
+#   dplyr::filter(distance.from.coast < 10) %>%
+#   glimpse()
+
+# bath_df1 <- as.data.frame(test) %>%
+#   dplyr::select(-geometry) %>%
+#   dplyr::rename(distance.from.coast = distance.raster) %>%
+#   dplyr::filter(distance.from.coast < 10) %>%
+#   glimpse()
 
 paleo <- data.frame(depth = c(-118, -94, -63, -41),
                     label = c("20-30 Ka", "15-17 Ka", "12-13 Ka", "9-10 Ka"))
@@ -636,7 +662,7 @@ min_dist1 <- min(bath_df1$distance.from.coast)
 
 p5 <- ggplot() +
   geom_rect(aes(xmin = min_dist1, xmax = 9, ymin =-Inf, ymax = 0), fill = "#12a5db", alpha = 0.5) +
-  annotate("segment", x = -5.556, xend = - 5.556, y = 0, yend = -40, colour = "red") +
+  annotate("segment", x = -5.556, xend = - 5.556, y = 0, yend = -42, colour = "red") +
   geom_line(data = bath_df1, aes(y = depth, x = distance.from.coast)) +
   geom_ribbon(data = bath_df1, aes(ymin = -Inf, ymax = depth, x = distance.from.coast), fill = "tan") +
   theme_classic() +
@@ -648,7 +674,11 @@ p5 <- ggplot() +
   geom_text(data = paleo, aes(x = distance.from.coast + 7, y = depth, label = label), size = 3) +
   annotate(geom = "text", x = c(x = -35, 3), y = c(-10, 143), label = c("Naturaliste Reefs", "Cape Naturaliste"))
 
-ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'bathymetry-cross-section.png',
+# ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'bathymetry-cross-section.png',
+#                         sep = "-"), plot = p5, units = "in", dpi = 600,
+#        bg = "white",
+#        width = 8, height = 4)
+ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'testbathymetry-cross-section.png',
                         sep = "-"), plot = p5, units = "in", dpi = 600,
        bg = "white",
        width = 8, height = 4)
