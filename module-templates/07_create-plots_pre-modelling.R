@@ -43,12 +43,19 @@ ausc <- st_crop(aus, e)
 
 # Load marine parks
 # aus_marine_parks <- st_read("data/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp")
+
+# All australian marine parks - for inset plotting
 aus_marine_parks <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp")
+
+# Commonwealth and State marine parks at the scale of the location
+crop <- st_read("data/south-west network/spatial/shapefiles/temp_crop-marine-parks.shp") %>%
+  st_make_valid()
 
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
   CheckEM::clean_names() %>%
-  dplyr::filter(name %in% c("South-west Corner", "Geographe", "Ngari Capes")) %>% # Filter to speed up plotting
-  # dplyr::mutate(zone_type = str_replace_all(zone_type, " \\s*\\([^\\)]+\\)", "")) %>%
+  st_make_valid() %>%
+  st_crop(crop) %>%
+  # dplyr::filter(name %in% c("South-west Corner", "Geographe", "Ngari Capes")) %>% # Filter to speed up plotting
   dplyr::mutate(zone = case_when(
     str_detect(pattern = "Sanctuary", string = zone_type) ~ "Sanctuary Zone",
     str_detect(pattern = "IUCN II", string = zone_type) ~ "National Park Zone",
@@ -57,10 +64,47 @@ marine_parks <- st_read("data/south-west network/spatial/shapefiles/Collaborativ
     str_detect(pattern = "Habitat Protection", string = zone_type) ~ "Habitat Protection Zone",
     str_detect(pattern = "Special Purpose", string = zone_type) ~ "Special Purpose Zone",
     str_detect(pattern = "Multiple Use", string = zone_type) ~ "Multiple Use Zone",
-    str_detect(pattern = "General", string = zone_type) ~ "General Use Zone")) %>%
+    str_detect(pattern = "General", string = zone_type) ~ "General Use Zone",
+    str_detect(pattern = "Fish Habitat Protection Zone", string = type) ~ "General Use Zone",
+    str_detect(pattern = "Marine Management Area", string = type) &
+      str_detect(pattern = "Ia", string = iucn) ~ "Sanctuary Zone",
+    .default = "Other State Marine Park Zone")) %>%
+  dplyr::mutate(colour = case_when(zone %in% "Sanctuary Zone" & epbc %in% "State"~ "#bfd054",
+                                   zone %in% "Sanctuary Zone" & epbc %in% "Commonwealth"~ "#f7c0d8",
+                                   zone %in% "National Park Zone" ~ "#7bbc63",
+                                   zone %in% "Recreational Use Zone" & epbc %in% "State" ~ "#f4e952",
+                                   zone %in% "Recreational Use Zone" & epbc %in% "Commonwealth" ~ "#ffb36b",
+                                   zone %in% "Habitat Protection Zone"& epbc %in% "State" ~ "#fffbcc",
+                                   zone %in% "Habitat Protection Zone"& epbc %in% "Commonwealth" ~ "#fff8a3",
+                                   zone %in% "Special Purpose Zone"& epbc %in% "State" ~ "#c5bcc9",
+                                   zone %in% "Special Purpose Zone"& epbc %in% "Commonwealth" ~ "#6daff4",
+                                   zone %in% "Multiple Use Zone" ~ "#b9e6fb",
+                                   zone %in% "General Use Zone" ~ "#bddde1",
+                                   zone %in% "Other State Marine Park Zone" ~ "gray80")) %>%
   glimpse()
+
+test <- marine_parks %>%
+  dplyr::filter(zone_type %in% c("Unassigned (IUCN VI)",
+                                 "Unassigned (IUCN IV,VI)",
+                                 "Restricted Access Zone - RAZ-2 (IUCN IA)",
+                                 "Restricted Access Zone - RAZ-1 (IUCN IA)",
+                                 "Unassigned (IUCN IA)",
+                                 'Conservation Area (IUCN IA)',
+                                 "Unassigned (IUCN IV)",
+                                 "MP (Unclassified) (IUCN VI)",
+                                 "MMA (Unclassified) (IUCN VI)"))
+
+rottnest <- st_read("data/south-west network/spatial/shapefiles/Rottnest_Sanctuaries.shp") %>%
+  st_transform(4326)
+
+test <- distinct(marine_parks, zone_type, zone, colour) %>%
+  dplyr::filter(is.na(colour))
+
+# Australian Marine Parks only (for separate ggplot legends)
 marine_parks_amp <- marine_parks %>%
   dplyr::filter(type %in% "Australian Marine Park")
+
+# State Marine Parks only (for separate ggplot legends)
 marine_parks_state <- marine_parks %>%
   dplyr::filter(type %in% "Marine Park")
 
@@ -536,7 +580,7 @@ ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'old-sea-leve
 # bath_cross <- st_as_sf(x = batht, coords = c("x", "y"), crs = 4326)
 # plot(bath_cross)
 
-dem_cross_section <- function(xstart, xend, ystart, yend) {
+dem_cross_section <- function(xstart, xend, ystart, yend, maxdist) {
   require(sf)
   require(terra)
   require(tidyverse)
@@ -555,38 +599,56 @@ dem_cross_section <- function(xstart, xend, ystart, yend) {
   names(topo) <- "depth"
   batht <- terra::extract(topo, tranv, xy = T, ID = F)
 
-  st_as_sf(x = batht, coords = c("x", "y"), crs = 4326)
+  bath_cross <- st_as_sf(x = batht, coords = c("x", "y"), crs = 4326)
+
+  aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp") %>%
+    dplyr::filter(FEAT_CODE %in% "mainland") %>%
+    st_transform(4326) %>%
+    st_union()
+  ausout <- st_cast(aus, "MULTILINESTRING")
+
+  bath_cross %>%
+    dplyr::mutate("distance.from.coast" = st_distance(bath_cross, bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]),
+                  land = lengths(st_intersects(bath_cross, aus)) > 0,
+                  coast = bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]) %>%
+    bind_cols(st_coordinates(.)) %>%
+    dplyr::rename(from_longitude = X, from_latitude = Y) %>%
+    bind_cols(st_coordinates(.$coast)) %>%
+    dplyr::rename(to_longitude = X, to_latitude = Y) %>%
+    # dplyr::mutate(bearing = calculate_bearing(alon = .$from_longitude,
+    #                                           alat = .$from_latitude,
+    #                                           blon = .$to_longitude,
+    #                                           blat = .$to_latitude)) %>%
+    dplyr::mutate(distance.from.coast = ifelse(land == F, distance.from.coast * -1, distance.from.coast)) %>%
+    as.data.frame() %>%
+    dplyr::select(-geometry) %>%
+    dplyr::mutate(distance.from.coast = as.numeric(distance.from.coast/1000)) %>%
+    dplyr::filter(distance.from.coast < maxdist) %>%
+    glimpse()
+
 }
 
-bath_cross <- dem_cross_section(115.096, 115.000, -33.804, -33.105)
-plot(bath_cross)
+bath_df1 <- dem_cross_section(115.096, 115.000, -33.804, -33.105, maxdist = 10)
 
-aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp") %>%
-  dplyr::filter(FEAT_CODE %in% "mainland") %>%
-  st_transform(4326) %>%
-  st_union()
-ausout <- st_cast(aus, "MULTILINESTRING")
-plot(ausout)
+# aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp") %>%
+#   dplyr::filter(FEAT_CODE %in% "mainland") %>%
+#   st_transform(4326) %>%
+#   st_union()
+# ausout <- st_cast(aus, "MULTILINESTRING")
+# plot(ausout)
 # st_write(ausout, "data/south-west network/spatial/shapefiles/australian-outline.shp")
 
-ausmask <- vect(aus) %>%
-  project("EPSG:9473")
-negdists <- rast("data/south-west network/spatial/rasters/distance-raster.tif") %>%
-  mask(ausmask, inverse = T)
-negdists <- negdists * -1
-plot(negdists)
-posdists <- rast("data/south-west network/spatial/rasters/distance-raster.tif") %>%
-  mask(ausmask)
-distance_from_coast <- merge(posdists, negdists) %>%
-  project("epsg:4326")
-plot(distance_from_coast)
-
-bath_df1 <- cbind(bath_cross, terra::extract(distance_from_coast, bath_cross, ID = F)) %>%
-  dplyr::mutate(distance.from.coast = distance.raster / 1000) %>%
-  as.data.frame() %>%
-  dplyr::select(-geometry) %>%
-    dplyr::filter(distance.from.coast < 10) %>%
-    glimpse()
+# ausmask <- vect(aus) %>%
+#   project("EPSG:9473")
+# negdists <- rast("data/south-west network/spatial/rasters/distance-raster.tif") %>%
+#   mask(ausmask, inverse = T)
+# negdists <- negdists * -1
+# plot(negdists)
+# posdists <- rast("data/south-west network/spatial/rasters/distance-raster.tif") %>%
+#   mask(ausmask)
+# distance_from_coast <- merge(posdists, negdists) %>%
+#   project("epsg:4326")
+# plot(distance_from_coast)
 
 # calculate_bearing <- function(alat, alon, blat, blon) {
 #
@@ -612,73 +674,109 @@ bath_df1 <- cbind(bath_cross, terra::extract(distance_from_coast, bath_cross, ID
 #   return(bearing)
 # }
 #
-# bath_sf <- bath_cross %>%
-#   dplyr::mutate("distance.from.coast" = st_distance(bath_cross, bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]),
-#                 land = lengths(st_intersects(bath_cross, aus)) > 0,
-#                 coast = bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]) %>%
-#   bind_cols(st_coordinates(.)) %>%
-#   dplyr::rename(from_longitude = X, from_latitude = Y) %>%
-#   bind_cols(st_coordinates(.$coast)) %>%
-#   dplyr::rename(to_longitude = X, to_latitude = Y) %>%
-#   dplyr::mutate(bearing = calculate_bearing(alon = .$from_longitude,
-#                                             alat = .$from_latitude,
-#                                             blon = .$to_longitude,
-#                                             blat = .$to_latitude)) %>%
-#   dplyr::mutate(distance.from.coast = ifelse(between(bearing, 50, 150), distance.from.coast * -1, distance.from.coast)) %>%
-#   glimpse()
+bath_sf <- bath_cross %>%
+  dplyr::mutate("distance.from.coast" = st_distance(bath_cross, bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]),
+                land = lengths(st_intersects(bath_cross, aus)) > 0,
+                coast = bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]) %>%
+  bind_cols(st_coordinates(.)) %>%
+  dplyr::rename(from_longitude = X, from_latitude = Y) %>%
+  bind_cols(st_coordinates(.$coast)) %>%
+  dplyr::rename(to_longitude = X, to_latitude = Y) %>%
+  # dplyr::mutate(bearing = calculate_bearing(alon = .$from_longitude,
+  #                                           alat = .$from_latitude,
+  #                                           blon = .$to_longitude,
+  #                                           blat = .$to_latitude)) %>%
+  dplyr::mutate(distance.from.coast = ifelse(land == F, distance.from.coast * -1, distance.from.coast)) %>%
+  glimpse()
 
-# bath_df1 <- as.data.frame(bath_sf) %>%
-#   dplyr::select(-geometry) %>%
-#   dplyr::mutate(distance.from.coast = as.numeric(distance.from.coast/1000)) %>%
-#   dplyr::filter(distance.from.coast < 10) %>%
-#   glimpse()
+bath_df1 <- as.data.frame(bath_sf) %>%
+  dplyr::select(-geometry) %>%
+  dplyr::mutate(distance.from.coast = as.numeric(distance.from.coast/1000)) %>%
+  dplyr::filter(distance.from.coast < 10) %>%
+  glimpse()
 
-# bath_df1 <- as.data.frame(test) %>%
-#   dplyr::select(-geometry) %>%
-#   dplyr::rename(distance.from.coast = distance.raster) %>%
-#   dplyr::filter(distance.from.coast < 10) %>%
-#   glimpse()
+# paleo <- data.frame(depth = c(-118, -94, -63, -41),
+#                     label = c("20-30 Ka", "15-17 Ka", "12-13 Ka", "9-10 Ka"))
+#
+# for (i in 1:nrow(paleo)) {
+#   temp <- bath_df1 %>%
+#     dplyr::filter(abs(bath_df1$depth - paleo$depth[i]) == min(abs(bath_df1$depth - paleo$depth[i]))) %>%
+#     dplyr::select(depth, distance.from.coast) %>%
+#     slice(1)
+#
+#   if (i == 1) {
+#     dat <- temp
+#   }
+#   else {
+#     dat <- bind_rows(dat, temp)
+#   }
+# }
+#
+# paleo$distance.from.coast <- dat$distance.from.coast
+#
+# min_dist1 <- min(bath_df1$distance.from.coast)
+#
+# p5 <- ggplot() +
+#   geom_rect(aes(xmin = min_dist1, xmax = 9, ymin =-Inf, ymax = 0), fill = "#12a5db", alpha = 0.5) +
+#   annotate("segment", x = -5.556, xend = - 5.556, y = 0, yend = -42, colour = "red") +
+#   geom_line(data = bath_df1, aes(y = depth, x = distance.from.coast)) +
+#   geom_ribbon(data = bath_df1, aes(ymin = -Inf, ymax = depth, x = distance.from.coast), fill = "tan") +
+#   theme_classic() +
+#   scale_x_continuous(expand = c(0,0), limits = c(min_dist1, max(bath_df1$distance.from.coast))) +
+#   ylim(min(bath_df1$depth), 150) +
+#   labs(x = "Distance from coast (km)", y = "Elevation (m)") +
+#   geom_segment(data = paleo, aes(x = distance.from.coast, xend = distance.from.coast + 5,
+#                                  y = depth, yend = depth), linetype = 2, alpha = 0.5) +
+#   geom_text(data = paleo, aes(x = distance.from.coast + 7, y = depth, label = label), size = 3) +
+#   annotate(geom = "text", x = c(x = -33, 3), y = c(-10, 150), label = c("Naturaliste Reefs", "Cape Naturaliste"))
 
-paleo <- data.frame(depth = c(-118, -94, -63, -41),
-                    label = c("20-30 Ka", "15-17 Ka", "12-13 Ka", "9-10 Ka"))
+crosssection_plot <- function(crosssection_labels, label_offset, segment_offset) {
+  paleo <- data.frame(depth = c(-118, -94, -63, -41),
+                      label = c("20-30 Ka", "15-17 Ka", "12-13 Ka", "9-10 Ka"))
 
-for (i in 1:nrow(paleo)) {
-  temp <- bath_df1 %>%
-    dplyr::filter(abs(bath_df1$depth - paleo$depth[i]) == min(abs(bath_df1$depth - paleo$depth[i]))) %>%
-    dplyr::select(depth, distance.from.coast) %>%
-    slice(1)
+  for (i in 1:nrow(paleo)) {
+    temp <- bath_df1 %>%
+      dplyr::filter(abs(bath_df1$depth - paleo$depth[i]) == min(abs(bath_df1$depth - paleo$depth[i]))) %>%
+      dplyr::select(depth, distance.from.coast) %>%
+      slice(1)
 
-  if (i == 1) {
-    dat <- temp
+    if (i == 1) {
+      dat <- temp
+    }
+    else {
+      dat <- bind_rows(dat, temp)
+    }
   }
-  else {
-    dat <- bind_rows(dat, temp)
-  }
+
+  paleo$distance.from.coast <- dat$distance.from.coast
+
+  ggplot() +
+    geom_rect(aes(xmin = min_dist1, xmax = 9, ymin =-Inf, ymax = 0), fill = "#12a5db", alpha = 0.5) +
+    annotate("segment", x = -5.556, xend = -5.556, y = 0, yend = min(bath_df1$depth), colour = "red") +
+    geom_line(data = bath_df1, aes(y = depth, x = distance.from.coast)) +
+    geom_ribbon(data = bath_df1, aes(ymin = -Inf, ymax = depth, x = distance.from.coast), fill = "tan") +
+    theme_classic() +
+    scale_x_continuous(expand = c(0,0), limits = c(min(bath_df1$distance.from.coast),
+                                                   max(bath_df1$distance.from.coast))) +
+    # ylim(min(bath_df1$depth), 150) +
+    ylim(min(bath_df1$depth), max(bath_df1$depth) + 10) +
+    labs(x = "Distance from coast (km)", y = "Elevation (m)") +
+    geom_segment(data = paleo, aes(x = distance.from.coast, xend = distance.from.coast + segment_offset,
+                                   y = depth, yend = depth), linetype = 2, alpha = 0.5) +
+    geom_text(data = paleo, aes(x = distance.from.coast + label_offset, y = depth, label = label), size = 3) +
+    annotate(geom = "text", x = crosssection_labels$x, y = crosssection_labels$y,
+             label = crosssection_labels$label)
 }
 
-paleo$distance.from.coast <- dat$distance.from.coast
+crosssection_labels = data.frame(x = c(-33, 3),
+                               y = c(-10, 145),
+                               label = c("Naturaliste Reefs", "Cape Naturaliste"))
+label_offset <- 7
+segment_offset <- 5
 
-min_dist1 <- min(bath_df1$distance.from.coast)
+crosssection_plot(crosssection_labels, label_offset, segment_offset)
 
-p5 <- ggplot() +
-  geom_rect(aes(xmin = min_dist1, xmax = 9, ymin =-Inf, ymax = 0), fill = "#12a5db", alpha = 0.5) +
-  annotate("segment", x = -5.556, xend = - 5.556, y = 0, yend = -42, colour = "red") +
-  geom_line(data = bath_df1, aes(y = depth, x = distance.from.coast)) +
-  geom_ribbon(data = bath_df1, aes(ymin = -Inf, ymax = depth, x = distance.from.coast), fill = "tan") +
-  theme_classic() +
-  scale_x_continuous(expand = c(0,0), limits = c(min_dist1, max(bath_df1$distance.from.coast))) +
-  ylim(min(bath_df1$depth), 150) +
-  labs(x = "Distance from coast (km)", y = "Elevation (m)") +
-  geom_segment(data = paleo, aes(x = distance.from.coast, xend = distance.from.coast + 5,
-                                 y = depth, yend = depth), linetype = 2, alpha = 0.5) +
-  geom_text(data = paleo, aes(x = distance.from.coast + 7, y = depth, label = label), size = 3) +
-  annotate(geom = "text", x = c(x = -35, 3), y = c(-10, 143), label = c("Naturaliste Reefs", "Cape Naturaliste"))
-
-# ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'bathymetry-cross-section.png',
-#                         sep = "-"), plot = p5, units = "in", dpi = 600,
-#        bg = "white",
-#        width = 8, height = 4)
-ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'testbathymetry-cross-section.png',
-                        sep = "-"), plot = p5, units = "in", dpi = 600,
+ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'bathymetry-cross-section.png',
+                        sep = "-"), units = "in", dpi = 600,
        bg = "white",
        width = 8, height = 4)
