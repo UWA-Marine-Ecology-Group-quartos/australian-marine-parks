@@ -64,6 +64,7 @@ ausc <- st_crop(aus, e)
 # Australian outline and state and commonwealth marine parks
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
   CheckEM::clean_names() %>%
+  st_make_valid() %>%
   dplyr::mutate(zone = case_when(
     str_detect(pattern = "Sanctuary", string = zone_type) ~ "Sanctuary Zone",
     str_detect(pattern = "IUCN II", string = zone_type) ~ "National Park Zone",
@@ -106,53 +107,102 @@ pred_plot <- pred_class %>%
   glimpse()
 summary(pred_plot)
 
-p1 <- ggplot() +
-  geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_inverts.alpha, alpha = p_inverts.fit)) +
-  scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Sessile invertebrates") +
-  scale_fill_gradient(low = "white", high = "deeppink3", name = "Sessile invertebrates", na.value = "transparent") +
-  new_scale_fill() +
-  new_scale("alpha") +
-  geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_sand.alpha, alpha = p_sand.fit)) +
-  scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Sand") +
-  scale_fill_gradient(low = "white", high = "wheat", name = "Sand", na.value = "transparent") +
-  new_scale_fill() +
-  new_scale("alpha") +
-  # geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_rock.alpha, alpha = p_rock.fit)) +
-  # scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Rock") +
-  # scale_fill_gradient(low = "white", high = "grey40", name = "Rock", na.value = "transparent") +
-  # new_scale_fill() +
-  # new_scale("alpha") +
-  geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_macro.alpha, alpha = p_macro.fit)) +
-  scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Macroalgae") +
-  scale_fill_gradient(low = "white", high = "darkorange4", name = "Macroalgae", na.value = "transparent") +
-  new_scale_fill() +
-  new_scale("alpha") +
-  geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_seagrass.alpha, alpha = p_seagrass.fit)) +
-  scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Seagrass") +
-  scale_fill_gradient(low = "white", high = "forestgreen", name = "Seagrass", na.value = "transparent") +
-  new_scale_fill() +
-  new_scale("alpha") +
-  geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
-  labs(x = "", y = "") +
-  geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, show.legend = F,
-          linewidth = 0.75) +
-  amp_cols +
-  # geom_sf(data = marine.parks, fill = NA, aes(colour = ZONE_TYPE), show.legend = F) +
-  # scale_colour_manual(values = c("National Park Zone" = "#7bbc63")) +
-  theme_minimal() +
-  theme(legend.position = "bottom",
-        legend.direction = "horizontal",
-        legend.box = "horizontal",
-        legend.box.just = "left",
-        legend.text = element_text(size = 5),
-        legend.title = element_text(size = 7),
-        legend.key.size = unit(0.5, "cm"),
-        legend.margin = margin(t = -0.1, unit = "cm")
-        # text = element_text(size = 6),
-        # legend.box.margin = margin(l = -35)
-        ) +
-  coord_sf(xlim = c(min(pred_class$x), max(pred_class$x)),
-           ylim = c(min(pred_class$y), max(pred_class$y)), crs = 4326)
+prediction_limits = c(115.0539, 115.5539, -33.64861, -33.35361)
+
+dominantbenthos_plot <- function(prediction_limits) {
+  ggplot() +
+    geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_inverts.alpha, alpha = p_inverts.fit)) +
+    scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Sessile invertebrates") +
+    scale_fill_gradient(low = "white", high = "deeppink3", name = "Sessile invertebrates", na.value = "transparent") +
+    new_scale_fill() +
+    new_scale("alpha") +
+    geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_sand.alpha, alpha = p_sand.fit)) +
+    scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Sand") +
+    scale_fill_gradient(low = "white", high = "wheat", name = "Sand", na.value = "transparent") +
+    new_scale_fill() +
+    new_scale("alpha") +
+    # geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_rock.alpha, alpha = p_rock.fit)) +
+    # scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Rock") +
+    # scale_fill_gradient(low = "white", high = "grey40", name = "Rock", na.value = "transparent") +
+    # new_scale_fill() +
+    # new_scale("alpha") +
+    geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_macro.alpha, alpha = p_macro.fit)) +
+    scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Macroalgae") +
+    scale_fill_gradient(low = "white", high = "darkorange4", name = "Macroalgae", na.value = "transparent") +
+    new_scale_fill() +
+    new_scale("alpha") +
+    geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_seagrass.alpha, alpha = p_seagrass.fit)) +
+    scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Seagrass") +
+    scale_fill_gradient(low = "white", high = "forestgreen", name = "Seagrass", na.value = "transparent") +
+    new_scale_fill() +
+    new_scale("alpha") +
+    geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
+    labs(x = "", y = "") +
+    geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, show.legend = F,
+            linewidth = 0.75) +
+    amp_cols +
+    theme_minimal() +
+    theme(legend.position = "bottom",
+          legend.direction = "horizontal",
+          legend.box = "horizontal",
+          legend.box.just = "left",
+          legend.text = element_text(size = 5),
+          legend.title = element_text(size = 7),
+          legend.key.size = unit(0.5, "cm"),
+          legend.margin = margin(t = -0.1, unit = "cm")
+    ) +
+    coord_sf(xlim = c(prediction_limits[1], prediction_limits[2]), ylim = c(prediction_limits[3], prediction_limits[4]), crs = 4326)
+}
+
+dominantbenthos_plot(prediction_limits)
+
+# p1 <- ggplot() +
+#   geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_inverts.alpha, alpha = p_inverts.fit)) +
+#   scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Sessile invertebrates") +
+#   scale_fill_gradient(low = "white", high = "deeppink3", name = "Sessile invertebrates", na.value = "transparent") +
+#   new_scale_fill() +
+#   new_scale("alpha") +
+#   geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_sand.alpha, alpha = p_sand.fit)) +
+#   scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Sand") +
+#   scale_fill_gradient(low = "white", high = "wheat", name = "Sand", na.value = "transparent") +
+#   new_scale_fill() +
+#   new_scale("alpha") +
+#   # geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_rock.alpha, alpha = p_rock.fit)) +
+#   # scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Rock") +
+#   # scale_fill_gradient(low = "white", high = "grey40", name = "Rock", na.value = "transparent") +
+#   # new_scale_fill() +
+#   # new_scale("alpha") +
+#   geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_macro.alpha, alpha = p_macro.fit)) +
+#   scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Macroalgae") +
+#   scale_fill_gradient(low = "white", high = "darkorange4", name = "Macroalgae", na.value = "transparent") +
+#   new_scale_fill() +
+#   new_scale("alpha") +
+#   geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_seagrass.alpha, alpha = p_seagrass.fit)) +
+#   scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Seagrass") +
+#   scale_fill_gradient(low = "white", high = "forestgreen", name = "Seagrass", na.value = "transparent") +
+#   new_scale_fill() +
+#   new_scale("alpha") +
+#   geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
+#   labs(x = "", y = "") +
+#   geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, show.legend = F,
+#           linewidth = 0.75) +
+#   amp_cols +
+#   # geom_sf(data = marine.parks, fill = NA, aes(colour = ZONE_TYPE), show.legend = F) +
+#   # scale_colour_manual(values = c("National Park Zone" = "#7bbc63")) +
+#   theme_minimal() +
+#   theme(legend.position = "bottom",
+#         legend.direction = "horizontal",
+#         legend.box = "horizontal",
+#         legend.box.just = "left",
+#         legend.text = element_text(size = 5),
+#         legend.title = element_text(size = 7),
+#         legend.key.size = unit(0.5, "cm"),
+#         legend.margin = margin(t = -0.1, unit = "cm")
+#         # text = element_text(size = 6),
+#         # legend.box.margin = margin(l = -35)
+#         ) +
+#   coord_sf(xlim = c(min(pred_class$x), max(pred_class$x)),
+#            ylim = c(min(pred_class$y), max(pred_class$y)), crs = 4326)
 ggsave(filename = paste0("plots/geographe/habitat/", name, "_predicted-dominant-habitat.png"),
        plot = p1, height = 6, width = 8, dpi = 600, units = "in", bg = "white")
 
@@ -162,6 +212,25 @@ pred_rast <- rast(pred_class %>% dplyr::select(x, y, p_inverts.fit, p_seagrass.f
              crs = "epsg:4326")
 names(pred_rast) <- c("Sessile invertebrates", "Seagrass", "Macroalgae", "Sand")
 plot(pred_rast)
+
+individualbenthic_plot <- function(prediction_limits) {ggplot() +
+    # geom_raster(data = dplyr::filter(ind_class, !habitat %in% "Reef"),
+    #           aes(x, y, fill = Probability)) +
+    geom_spatraster(data = pred_rast) +
+    scale_fill_gradientn(colours = c("#fde725", "#21918c", "#440154"),
+                         na.value = "transparent", name = "Probability") +
+    new_scale_fill() +
+    geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
+    geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, show.legend = F,
+            linewidth = 0.75) +
+    amp_cols +
+    coord_sf(xlim = c(prediction_limits[1], prediction_limits[2]), ylim = c(prediction_limits[3], prediction_limits[4]), crs = 4326) +
+    labs(x = NULL, y = NULL, fill = "Probability",                                    # Labels
+         colour = NULL) +
+    theme_minimal() +
+    facet_wrap(~lyr)
+}
+individualbenthic_plot(prediction_limits)
 
 p2 <- ggplot() +
   # geom_raster(data = dplyr::filter(ind_class, !habitat %in% "Reef"),

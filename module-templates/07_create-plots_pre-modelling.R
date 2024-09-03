@@ -31,6 +31,10 @@ library(ggnewscale)
 library(CheckEM)
 library(geosphere)
 
+# Load functions
+file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
+sapply(file.sources, source, .GlobalEnv)
+
 # Set cropping extent - larger than most zoomed out plot
 e <- ext(114.2, 115.8,-34.7, -33.1)
 
@@ -148,59 +152,135 @@ plot(bathy)
 
 bathdf <- as.data.frame(bathy, xy = T)
 
-amp_marine_park_fills <- function(data) {
-  amp_cols_all <- c("National Park Zone" = "#7bbc63",
-                    "Habitat Protection Zone" = "#fff8a3",
-                    "Multiple Use Zone" = "#b9e6fb",
-                    "Recreational Use Zone" = "#ffb36b",
-                    "Sanctuary Zone" = "#f7c0d8",
-                    "Special Purpose Zone" = "#6daff4")
-
-  scale_fill_manual(values = amp_cols_all[unique(data$zone)],
-                                 name = "Australian Marine Parks")
-}
-
+# Create marine park colours and fills (scale_fill_manual)
 amp_fills <- amp_marine_park_fills(marine_parks)
-
-state_marine_park_fills <- function(data) {
-  state_cols_all <- c("Sanctuary Zone" = "#bfd054",
-                      "Habitat Protection Zone" = "#fffbcc",
-                      "General Use Zone" = "#bddde1",
-                      "Recreational Use Zone" = "#f4e952",
-                      "Special Purpose Zone" = "#c5bcc9")
-
-  scale_fill_manual(values = state_cols_all[unique(data$zone)],
-                                   name = "State Marine Parks")
-}
-
 state_fills <- state_marine_park_fills(marine_parks)
-
-amp_marine_park_cols <- function(data) {
-  amp_cols_all <- c("National Park Zone" = "#7bbc63",
-                    "Habitat Protection Zone" = "#fff8a3",
-                    "Multiple Use Zone" = "#b9e6fb",
-                    "Recreational Use Zone" = "#ffb36b",
-                    "Sanctuary Zone" = "#f7c0d8",
-                    "Special Purpose Zone" = "#6daff4")
-
-  scale_colour_manual(values = amp_cols_all[unique(data$zone)],
-                    name = "Australian Marine Parks")
-}
-
 amp_cols <- amp_marine_park_cols(marine_parks)
-
-state_marine_park_cols <- function(data) {
-  state_cols_all <- c("Sanctuary Zone" = "#bfd054",
-                      "Habitat Protection Zone" = "#fffbcc",
-                      "General Use Zone" = "#bddde1",
-                      "Recreational Use Zone" = "#f4e952",
-                      "Special Purpose Zone" = "#c5bcc9")
-
-  scale_colour_manual(values = state_cols_all[unique(data$zone)],
-                    name = "State Marine Parks")
-}
-
 state_cols <- state_marine_park_fills(marine_parks)
+
+# 1. Location overview plot
+# Set plot inputs
+plot_limits = c(114.4, 115.67, -33.3, -34.6) # Extent of the main plot
+study_limits = c(114.88, 115.67,-33.3, -33.67) # Extent of sampling
+annotation_labels = data.frame(x = c(115.6409, 115.3473, 115.1074, 115.0630, 115.1573), # Labels for annotation e.g. nearby towns
+                               y = c(-33.3270,-33.65, -33.6177, -33.9535, -34.3110),
+                               label = c("Bunbury", "Busselton", "Dunsborough", "Margaret River", "Augusta"))
+# Create plot
+location_plot(plot_limits,
+              study_limits,
+              annotation_labels)
+# Save plot
+ggsave(paste(paste0('plots/geographe/spatial/', name) , 'broad-site-plot.png',
+             sep = "-"), dpi = 600, width = 8, height = 5, bg = "white")
+
+# 2. Site level overview - with sampling point locations
+metadata <- readRDS(paste0("data/geographe/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
+  st_as_sf(coords = c("longitude_dd", "latitude_dd"), crs = 4326) %>%
+  glimpse()
+# Set plot inputs
+site_limits = c(115.0, 115.67, -33.3, -33.65) # Plot limits for subsequent plots - tighter zoom
+# Create plot
+site_plot(site_limits, annotation_labels)
+# Save plot
+ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'sampling-locations.png',
+                        sep = "-"), plot = p2, units = "in", dpi = 600,
+       bg = "white",
+       width = 8, height = 4)
+
+# 3. Key Ecological Features
+# Create plot
+kef_plot(plot_limits, annotation_labels)
+# Save plot
+ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'key-ecological-features.png',
+                        sep = "-"), units = "in", dpi = 600,
+       bg = "white",
+       width = 8, height = 6)
+
+# 4. Historical sea levels
+# Set coastline fills
+depth_fills <- scale_fill_manual(values = c("#f9ddb1","#ee9f27", "#dc6601"),
+                                 labels = c("9-10 Ka", "15-17 Ka", "20-30 Ka"),
+                                 name = "Coastline age")
+# Create plot
+sealevel_plot(plot_limits, annotation_labels)
+# Save plot
+ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'old-sea-levels.png',
+                        sep = "-"), units = "in", dpi = 600,
+       bg = "white",
+       width = 8, height = 6)
+
+# 5. Bathymetry cross sections
+# Create data
+bath_df1 <- dem_cross_section(115.096, 115.000, -33.804, -33.105, maxdist = 10)
+# Set plot inputs
+crosssection_labels = data.frame(x = c(-33, 3), # Labels for annotation
+                                 y = c(-10, 145),
+                                 label = c("Naturaliste Reefs", "Cape Naturaliste"))
+label_offset <- 7 # Distance from end of segment to label
+segment_offset <- 5 # Length of the segment
+# Create plot
+crosssection_plot(crosssection_labels, label_offset, segment_offset)
+# Save plot
+ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'bathymetry-cross-section.png',
+                        sep = "-"), units = "in", dpi = 600,
+       bg = "white",
+       width = 8, height = 4)
+
+
+
+
+
+
+
+
+
+# Old script to create plots
+
+# amp_marine_park_fills <- function(data) {
+#   amp_cols_all <- c("National Park Zone" = "#7bbc63",
+#                     "Habitat Protection Zone" = "#fff8a3",
+#                     "Multiple Use Zone" = "#b9e6fb",
+#                     "Recreational Use Zone" = "#ffb36b",
+#                     "Sanctuary Zone" = "#f7c0d8",
+#                     "Special Purpose Zone" = "#6daff4")
+#
+#   scale_fill_manual(values = amp_cols_all[unique(data$zone)],
+#                                  name = "Australian Marine Parks")
+# }
+
+# state_marine_park_fills <- function(data) {
+#   state_cols_all <- c("Sanctuary Zone" = "#bfd054",
+#                       "Habitat Protection Zone" = "#fffbcc",
+#                       "General Use Zone" = "#bddde1",
+#                       "Recreational Use Zone" = "#f4e952",
+#                       "Special Purpose Zone" = "#c5bcc9")
+#
+#   scale_fill_manual(values = state_cols_all[unique(data$zone)],
+#                                    name = "State Marine Parks")
+# }
+
+# amp_marine_park_cols <- function(data) {
+#   amp_cols_all <- c("National Park Zone" = "#7bbc63",
+#                     "Habitat Protection Zone" = "#fff8a3",
+#                     "Multiple Use Zone" = "#b9e6fb",
+#                     "Recreational Use Zone" = "#ffb36b",
+#                     "Sanctuary Zone" = "#f7c0d8",
+#                     "Special Purpose Zone" = "#6daff4")
+#
+#   scale_colour_manual(values = amp_cols_all[unique(data$zone)],
+#                     name = "Australian Marine Parks")
+# }
+
+# state_marine_park_cols <- function(data) {
+#   state_cols_all <- c("Sanctuary Zone" = "#bfd054",
+#                       "Habitat Protection Zone" = "#fffbcc",
+#                       "General Use Zone" = "#bddde1",
+#                       "Recreational Use Zone" = "#f4e952",
+#                       "Special Purpose Zone" = "#c5bcc9")
+#
+#   scale_colour_manual(values = state_cols_all[unique(data$zone)],
+#                     name = "State Marine Parks")
+# }
 
 # amp_cols_all <- c("National Park Zone" = "#7bbc63",
 #                   "Habitat Protection Zone" = "#fff8a3",
@@ -273,118 +353,91 @@ state_cols <- state_marine_park_fills(marine_parks)
 #
 # p1.1 + p1
 
-location_plot <- function(plot_limits, study_limits, annotation_labels) {
-  # 1. Location overview plot - includes parks zones and an aus inset
-  require(tidyverse)
-  require(tidyterra)
-  require(patchwork)
-
-  p1 <- ggplot() +
-    geom_spatraster_contour_filled(data = bathy,
-                                   breaks = c(0, -30, -70, -200, - 700, -2000 , -4000, -6000),
-                                   colour = NA, show.legend = F) +
-    scale_fill_grey(start = 1, end = 0.5, guide = "none") +
-    new_scale_fill() +
-    geom_spatraster_contour(data = bathy,
-                            breaks = c(-30, -70, -200, - 700, -2000 , -4000, -6000), colour = "white",
-                            alpha = 3/5, linewidth = 0.1, show.legend = F) +
-    geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
-    geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
-    terr_fills +
-    new_scale_fill() +
-    geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.4) +
-    state_fills +
-    new_scale_fill() +
-    geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
-    amp_fills +
-    new_scale_fill() +
-    geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.4, lineend = "round") +
-    labs(x = NULL, y = NULL) +
-    annotate("point", x = annotation_points$x,
-             y = annotation_points$y, size = 1, shape = 4) +
-    annotate("text", x = annotation_labels$x,
-             y = annotation_labels$y,
-             label = annotation_labels$label, size = 1.65,
-             fontface = "italic") +
-    annotate("rect", xmin = study_limits[1], xmax = study_limits[2], ymin = study_limits[3], ymax = study_limits[4],
-             fill = NA, colour = "goldenrod2", size = 0.4) +
-    coord_sf(xlim = c(plot_limits[1], plot_limits[2]), ylim = c(plot_limits[3], plot_limits[4]), crs = 4326) +
-    theme_minimal()
-
-  # inset map
-  p1.1 <- ggplot(data = aus) +
-    geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
-    geom_sf(data = aus_marine_parks, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
-    coord_sf(xlim = c(110, 125), ylim = c(-37, -13)) + # This is constant for all plots - its just a map of WA
-    annotate("rect", xmin = plot_limits[1], xmax = plot_limits[2], ymin = plot_limits[3], ymax = plot_limits[4],   # Change here
-             colour = "grey25", fill = "white", alpha = 1/5, size = 0.2) +
-    theme_bw() +
-    theme(axis.text = element_blank(),
-          axis.ticks = element_blank(),
-          panel.grid.major = element_blank(),
-          panel.border = element_rect(colour = "grey70"))
-
-  p1.1 + p1
-}
-
-# t <- list(x = c(114), y = c(-36), label = c("Geographe"))
-# t$x
-
-library(googlesheets4)
-testdat <- read_sheet("https://docs.google.com/spreadsheets/d/1wycMSb8ykriU458sqx5FIKkDlkWIK7Uv58ySSapi8Kc/edit?usp=sharing",
-                      sheet = "spatial_variables")
-
-plot_limits = c(114.4, 115.67, -33.3, -34.6)
-study_limits = c(114.88, 115.67,-33.3, -33.67)
-annotation_labels = data.frame(x = c(115.6409, 115.3473, 115.1074, 115.0630, 115.1573),
-                               y = c(-33.3270,-33.65, -33.6177, -33.9535, -34.3110),
-                               label = c("Bunbury", "Busselton", "Dunsborough", "Margaret River", "Augusta"))
-
-location_plot(plot_limits,
-              study_limits,
-              annotation_labels)
-
-ggsave(paste(paste0('plots/geographe/spatial/', name) , 'broad-site-plot.png',
-             sep = "-"), dpi = 600, width = 8, height = 5, bg = "white")
+# location_plot <- function(plot_limits, study_limits, annotation_labels) {
+#   # 1. Location overview plot - includes parks zones and an aus inset
+#   require(tidyverse)
+#   require(tidyterra)
+#   require(patchwork)
+#
+#   p1 <- ggplot() +
+#     geom_spatraster_contour_filled(data = bathy,
+#                                    breaks = c(0, -30, -70, -200, - 700, -2000 , -4000, -6000),
+#                                    colour = NA, show.legend = F) +
+#     scale_fill_grey(start = 1, end = 0.5, guide = "none") +
+#     new_scale_fill() +
+#     geom_spatraster_contour(data = bathy,
+#                             breaks = c(-30, -70, -200, - 700, -2000 , -4000, -6000), colour = "white",
+#                             alpha = 3/5, linewidth = 0.1, show.legend = F) +
+#     geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
+#     geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
+#     terr_fills +
+#     new_scale_fill() +
+#     geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.4) +
+#     state_fills +
+#     new_scale_fill() +
+#     geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
+#     amp_fills +
+#     new_scale_fill() +
+#     geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.4, lineend = "round") +
+#     labs(x = NULL, y = NULL) +
+#     annotate("point", x = annotation_points$x,
+#              y = annotation_points$y, size = 1, shape = 4) +
+#     annotate("text", x = annotation_labels$x,
+#              y = annotation_labels$y,
+#              label = annotation_labels$label, size = 1.65,
+#              fontface = "italic") +
+#     annotate("rect", xmin = study_limits[1], xmax = study_limits[2], ymin = study_limits[3], ymax = study_limits[4],
+#              fill = NA, colour = "goldenrod2", size = 0.4) +
+#     coord_sf(xlim = c(plot_limits[1], plot_limits[2]), ylim = c(plot_limits[3], plot_limits[4]), crs = 4326) +
+#     theme_minimal()
+#
+#   # inset map
+#   p1.1 <- ggplot(data = aus) +
+#     geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
+#     geom_sf(data = aus_marine_parks, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
+#     coord_sf(xlim = c(110, 125), ylim = c(-37, -13)) + # This is constant for all plots - its just a map of WA
+#     annotate("rect", xmin = plot_limits[1], xmax = plot_limits[2], ymin = plot_limits[3], ymax = plot_limits[4],   # Change here
+#              colour = "grey25", fill = "white", alpha = 1/5, size = 0.2) +
+#     theme_bw() +
+#     theme(axis.text = element_blank(),
+#           axis.ticks = element_blank(),
+#           panel.grid.major = element_blank(),
+#           panel.border = element_rect(colour = "grey70"))
+#
+#   p1.1 + p1
+# }
 
 # 2. Site zoom plot - including sampling points
-metadata <- readRDS(paste0("data/geographe/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
-  st_as_sf(coords = c("longitude_dd", "latitude_dd"), crs = 4326) %>%
-  glimpse()
 
-site_limits = c(115.0, 115.67, -33.3, -33.65)
-
-site_plot <- function(site_limits, # Tighter zoom for this plot
-                      annotation_labels) {
-  ggplot() +
-    geom_spatraster_contour_filled(data = bathy,
-                                   breaks = c(0, -30, -70, -200, -700, -2000, -4000, -10000), alpha = 4/5) +
-    scale_fill_grey(start = 1, end = 0.5 , guide = "none") +
-    geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
-    new_scale_fill() +
-    geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
-    terr_fills +
-    new_scale_fill() +
-    geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.4) +
-    state_fills +
-    new_scale_fill() +
-    geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
-    amp_fills +
-    new_scale_fill() +
-    labs(x = NULL, y = NULL) +
-    new_scale_fill() +
-    geom_sf(data = cwatr, colour = "firebrick", alpha = 1, size = 0.2, lineend = "round") +
-    geom_sf(data = metadata, alpha = 1, shape = 10, size = 0.8, colour = "indianred4") +
-    annotate("text", x = annotation_labels$x,
-             y = annotation_labels$y,
-             label = annotation_labels$label, size = 1.65,
-             fontface = "italic") +
-    coord_sf(xlim = c(site_limits[1], site_limits[2]), ylim = c(site_limits[3], site_limits[4]), crs = 4326) +
-    theme_minimal() +
-    theme(panel.grid = element_blank())
-}
-
-site_plot(site_limits, annotation_labels)
+# site_plot <- function(site_limits, # Tighter zoom for this plot
+#                       annotation_labels) {
+#   ggplot() +
+#     geom_spatraster_contour_filled(data = bathy,
+#                                    breaks = c(0, -30, -70, -200, -700, -2000, -4000, -10000), alpha = 4/5) +
+#     scale_fill_grey(start = 1, end = 0.5 , guide = "none") +
+#     geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
+#     new_scale_fill() +
+#     geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
+#     terr_fills +
+#     new_scale_fill() +
+#     geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.4) +
+#     state_fills +
+#     new_scale_fill() +
+#     geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
+#     amp_fills +
+#     new_scale_fill() +
+#     labs(x = NULL, y = NULL) +
+#     new_scale_fill() +
+#     geom_sf(data = cwatr, colour = "firebrick", alpha = 1, size = 0.2, lineend = "round") +
+#     geom_sf(data = metadata, alpha = 1, shape = 10, size = 0.8, colour = "indianred4") +
+#     annotate("text", x = annotation_labels$x,
+#              y = annotation_labels$y,
+#              label = annotation_labels$label, size = 1.65,
+#              fontface = "italic") +
+#     coord_sf(xlim = c(site_limits[1], site_limits[2]), ylim = c(site_limits[3], site_limits[4]), crs = 4326) +
+#     theme_minimal() +
+#     theme(panel.grid = element_blank())
+# }
 
 # p2 <- ggplot() +
 #   geom_spatraster_contour_filled(data = bathy,
@@ -415,53 +468,46 @@ site_plot(site_limits, annotation_labels)
 #   theme_minimal() +
 #   theme(panel.grid = element_blank())
 
-ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'sampling-locations.png',
-                        sep = "-"), plot = p2, units = "in", dpi = 600,
-       bg = "white",
-       width = 8, height = 4)
-
 # 3. Key Ecological Features
-unique(kef$name)
-levels(kef$name)
+# unique(kef$name)
+# levels(kef$name)
 # kef_fills <- scale_fill_manual(values = c("Geographe Bay" = "#004949",
 #                                           "Cape Mentelle upwelling" = "#920000",
 #                                           "Ancient coastline" = "#FF6DB6",
 #                                           "Western rock lobster" = "#6DB6FF"),
 #                                name = "Key Ecological Features")
 
-kef_plot <- function(plot_limits, annotation_labels) {
-  ggplot() +
-    geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
-    geom_sf(data = terrnp, aes(fill = leg_catego), alpha = 4/5, colour = NA, show.legend = F) +
-    labs(fill = "Terrestrial Managed Areas") +
-    terr_fills +
-    new_scale_fill() +
-    geom_sf(data = kef, aes(fill = abbrv), alpha = 0.7, color = NA) +
-    scale_fill_manual(name = "Key Ecological Features", guide = "legend",
-                      values = kef$colour) +
-    # kef_fills +
-    new_scale_fill() +
-    geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8, show.legend = F) +
-    terr_fills +
-    new_scale_fill() +
-    geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA) +
-    state_fills +
-    new_scale_colour() +
-    geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, linewidth = 0.4, alpha = 0.3) +
-    amp_cols +
-    new_scale_colour() +
-    geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.4, lineend = "round") +
-    labs(x = NULL, y = NULL,  fill = "Key Ecological Features") +
-    annotate("text", x = annotation_labels$x,
-             y = annotation_labels$y,
-             label = annotation_labels$label, size = 1.65,
-             fontface = "italic") +
-    coord_sf(xlim = c(plot_limits[1], plot_limits[2]), ylim = c(plot_limits[3], plot_limits[4]), crs = 4326) +
-    theme_minimal() +
-    theme(panel.grid = element_blank())
-}
-
-kef_plot(plot_limits, annotation_labels)
+# kef_plot <- function(plot_limits, annotation_labels) {
+#   ggplot() +
+#     geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
+#     geom_sf(data = terrnp, aes(fill = leg_catego), alpha = 4/5, colour = NA, show.legend = F) +
+#     labs(fill = "Terrestrial Managed Areas") +
+#     terr_fills +
+#     new_scale_fill() +
+#     geom_sf(data = kef, aes(fill = abbrv), alpha = 0.7, color = NA) +
+#     scale_fill_manual(name = "Key Ecological Features", guide = "legend",
+#                       values = kef$colour) +
+#     # kef_fills +
+#     new_scale_fill() +
+#     geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8, show.legend = F) +
+#     terr_fills +
+#     new_scale_fill() +
+#     geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA) +
+#     state_fills +
+#     new_scale_colour() +
+#     geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, linewidth = 0.4, alpha = 0.3) +
+#     amp_cols +
+#     new_scale_colour() +
+#     geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.4, lineend = "round") +
+#     labs(x = NULL, y = NULL,  fill = "Key Ecological Features") +
+#     annotate("text", x = annotation_labels$x,
+#              y = annotation_labels$y,
+#              label = annotation_labels$label, size = 1.65,
+#              fontface = "italic") +
+#     coord_sf(xlim = c(plot_limits[1], plot_limits[2]), ylim = c(plot_limits[3], plot_limits[4]), crs = 4326) +
+#     theme_minimal() +
+#     theme(panel.grid = element_blank())
+# }
 
 # p3 <- ggplot() +
 #   geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
@@ -493,41 +539,31 @@ kef_plot(plot_limits, annotation_labels)
 #   theme_minimal()+
 #   theme(panel.grid = element_blank())
 
-ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'key-ecological-features.png',
-                        sep = "-"), units = "in", dpi = 600,
-       bg = "white",
-       width = 8, height = 6)
-
 # 4. Old sea level map (p4)
-depth_fills <- scale_fill_manual(values = c("#f9ddb1","#ee9f27", "#dc6601"),
-                                 labels = c("9-10 Ka", "15-17 Ka", "20-30 Ka"),
-                                 name = "Coastline age")
 
 # build basic plot elements
-sealevel_plot <- function(plot_limits, annotation_labels) {
-  ggplot() +
-    geom_spatraster(data = clamp(bathy, upper = -50, values = F)) +
-    scale_fill_gradient2(low = "royalblue4", mid = "lightskyblue1", high = "white", name = "Depth (m)",
-                         na.value = "#f9ddb1") +
-    new_scale_fill() +
-    geom_spatraster_contour_filled(data = bathy,
-                                   breaks = c(0, -40, -70, -125)) +
-    depth_fills +
-    new_scale_fill() +
-    geom_sf(data = ausc, fill = "seashell2", colour = "grey62", size = 0.2) +
-    geom_sf(data = terrnp, aes(fill = leg_catego), alpha = 4/5, colour = NA, show.legend = F) +
-    terr_fills +
-    new_scale_fill() +
-    annotate("text", x = annotation_labels$x,
-             y = annotation_labels$y,
-             label = annotation_labels$label, size = 1.65,
-             fontface = "italic") +
-    coord_sf(xlim = c(plot_limits[1], plot_limits[2]), ylim = c(plot_limits[3], plot_limits[4]), crs = 4326) +
-    labs(x = "Longitude", y = "Latitude") +
-    theme_minimal()
-}
-
-sealevel_plot(plot_limits, annotation_labels)
+# sealevel_plot <- function(plot_limits, annotation_labels) {
+#   ggplot() +
+#     geom_spatraster(data = clamp(bathy, upper = -50, values = F)) +
+#     scale_fill_gradient2(low = "royalblue4", mid = "lightskyblue1", high = "white", name = "Depth (m)",
+#                          na.value = "#f9ddb1") +
+#     new_scale_fill() +
+#     geom_spatraster_contour_filled(data = bathy,
+#                                    breaks = c(0, -40, -70, -125)) +
+#     depth_fills +
+#     new_scale_fill() +
+#     geom_sf(data = ausc, fill = "seashell2", colour = "grey62", size = 0.2) +
+#     geom_sf(data = terrnp, aes(fill = leg_catego), alpha = 4/5, colour = NA, show.legend = F) +
+#     terr_fills +
+#     new_scale_fill() +
+#     annotate("text", x = annotation_labels$x,
+#              y = annotation_labels$y,
+#              label = annotation_labels$label, size = 1.65,
+#              fontface = "italic") +
+#     coord_sf(xlim = c(plot_limits[1], plot_limits[2]), ylim = c(plot_limits[3], plot_limits[4]), crs = 4326) +
+#     labs(x = "Longitude", y = "Latitude") +
+#     theme_minimal()
+# }
 
 # p4 <- ggplot() +
 #   geom_spatraster(data = clamp(bathy, upper = -50, values = F)) +
@@ -555,10 +591,6 @@ sealevel_plot(plot_limits, annotation_labels)
 #   coord_sf(xlim = c(114.4, 115.67), ylim = c(-33.3, -34.6), crs = 4326) +
 #   labs(x = "Longitude", y = "Latitude") +
 #   theme_minimal()
-ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'old-sea-levels.png',
-                        sep = "-"), units = "in", dpi = 600,
-       bg = "white",
-       width = 8, height = 6)
 
 # 5. Bathymetry cross section
 
@@ -580,55 +612,53 @@ ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'old-sea-leve
 # bath_cross <- st_as_sf(x = batht, coords = c("x", "y"), crs = 4326)
 # plot(bath_cross)
 
-dem_cross_section <- function(xstart, xend, ystart, yend, maxdist) {
-  require(sf)
-  require(terra)
-  require(tidyverse)
-  sf_use_s2(T)
-  points <- data.frame(x = c(xstart, xend),
-                       y = c(ystart, yend), id = 1)
-
-  tran <- sfheaders::sf_linestring(obj = points,
-                                   x = "x",
-                                   y = "y",
-                                   linestring_id = "id")
-  st_crs(tran) <- 4326
-  tranv <- vect(tran)
-
-  topo <- rast("data/south-west network/spatial/rasters/Australian_Bathymetry_and_Topography_2023_250m_MSL_cog.tif")
-  names(topo) <- "depth"
-  batht <- terra::extract(topo, tranv, xy = T, ID = F)
-
-  bath_cross <- st_as_sf(x = batht, coords = c("x", "y"), crs = 4326)
-
-  aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp") %>%
-    dplyr::filter(FEAT_CODE %in% "mainland") %>%
-    st_transform(4326) %>%
-    st_union()
-  ausout <- st_cast(aus, "MULTILINESTRING")
-
-  bath_cross %>%
-    dplyr::mutate("distance.from.coast" = st_distance(bath_cross, bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]),
-                  land = lengths(st_intersects(bath_cross, aus)) > 0,
-                  coast = bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]) %>%
-    bind_cols(st_coordinates(.)) %>%
-    dplyr::rename(from_longitude = X, from_latitude = Y) %>%
-    bind_cols(st_coordinates(.$coast)) %>%
-    dplyr::rename(to_longitude = X, to_latitude = Y) %>%
-    # dplyr::mutate(bearing = calculate_bearing(alon = .$from_longitude,
-    #                                           alat = .$from_latitude,
-    #                                           blon = .$to_longitude,
-    #                                           blat = .$to_latitude)) %>%
-    dplyr::mutate(distance.from.coast = ifelse(land == F, distance.from.coast * -1, distance.from.coast)) %>%
-    as.data.frame() %>%
-    dplyr::select(-geometry) %>%
-    dplyr::mutate(distance.from.coast = as.numeric(distance.from.coast/1000)) %>%
-    dplyr::filter(distance.from.coast < maxdist) %>%
-    glimpse()
-
-}
-
-bath_df1 <- dem_cross_section(115.096, 115.000, -33.804, -33.105, maxdist = 10)
+# dem_cross_section <- function(xstart, xend, ystart, yend, maxdist) {
+#   require(sf)
+#   require(terra)
+#   require(tidyverse)
+#   sf_use_s2(T)
+#   points <- data.frame(x = c(xstart, xend),
+#                        y = c(ystart, yend), id = 1)
+#
+#   tran <- sfheaders::sf_linestring(obj = points,
+#                                    x = "x",
+#                                    y = "y",
+#                                    linestring_id = "id")
+#   st_crs(tran) <- 4326
+#   tranv <- vect(tran)
+#
+#   topo <- rast("data/south-west network/spatial/rasters/Australian_Bathymetry_and_Topography_2023_250m_MSL_cog.tif")
+#   names(topo) <- "depth"
+#   batht <- terra::extract(topo, tranv, xy = T, ID = F)
+#
+#   bath_cross <- st_as_sf(x = batht, coords = c("x", "y"), crs = 4326)
+#
+#   aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp") %>%
+#     dplyr::filter(FEAT_CODE %in% "mainland") %>%
+#     st_transform(4326) %>%
+#     st_union()
+#   ausout <- st_cast(aus, "MULTILINESTRING")
+#
+#   bath_cross %>%
+#     dplyr::mutate("distance.from.coast" = st_distance(bath_cross, bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]),
+#                   land = lengths(st_intersects(bath_cross, aus)) > 0,
+#                   coast = bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]) %>%
+#     bind_cols(st_coordinates(.)) %>%
+#     dplyr::rename(from_longitude = X, from_latitude = Y) %>%
+#     bind_cols(st_coordinates(.$coast)) %>%
+#     dplyr::rename(to_longitude = X, to_latitude = Y) %>%
+#     # dplyr::mutate(bearing = calculate_bearing(alon = .$from_longitude,
+#     #                                           alat = .$from_latitude,
+#     #                                           blon = .$to_longitude,
+#     #                                           blat = .$to_latitude)) %>%
+#     dplyr::mutate(distance.from.coast = ifelse(land == F, distance.from.coast * -1, distance.from.coast)) %>%
+#     as.data.frame() %>%
+#     dplyr::select(-geometry) %>%
+#     dplyr::mutate(distance.from.coast = as.numeric(distance.from.coast/1000)) %>%
+#     dplyr::filter(distance.from.coast < maxdist) %>%
+#     glimpse()
+#
+# }
 
 # aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp") %>%
 #   dplyr::filter(FEAT_CODE %in% "mainland") %>%
@@ -674,26 +704,26 @@ bath_df1 <- dem_cross_section(115.096, 115.000, -33.804, -33.105, maxdist = 10)
 #   return(bearing)
 # }
 #
-bath_sf <- bath_cross %>%
-  dplyr::mutate("distance.from.coast" = st_distance(bath_cross, bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]),
-                land = lengths(st_intersects(bath_cross, aus)) > 0,
-                coast = bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]) %>%
-  bind_cols(st_coordinates(.)) %>%
-  dplyr::rename(from_longitude = X, from_latitude = Y) %>%
-  bind_cols(st_coordinates(.$coast)) %>%
-  dplyr::rename(to_longitude = X, to_latitude = Y) %>%
-  # dplyr::mutate(bearing = calculate_bearing(alon = .$from_longitude,
-  #                                           alat = .$from_latitude,
-  #                                           blon = .$to_longitude,
-  #                                           blat = .$to_latitude)) %>%
-  dplyr::mutate(distance.from.coast = ifelse(land == F, distance.from.coast * -1, distance.from.coast)) %>%
-  glimpse()
-
-bath_df1 <- as.data.frame(bath_sf) %>%
-  dplyr::select(-geometry) %>%
-  dplyr::mutate(distance.from.coast = as.numeric(distance.from.coast/1000)) %>%
-  dplyr::filter(distance.from.coast < 10) %>%
-  glimpse()
+# bath_sf <- bath_cross %>%
+#   dplyr::mutate("distance.from.coast" = st_distance(bath_cross, bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]),
+#                 land = lengths(st_intersects(bath_cross, aus)) > 0,
+#                 coast = bath_cross$geometry[which.min(st_distance(bath_cross, ausout))]) %>%
+#   bind_cols(st_coordinates(.)) %>%
+#   dplyr::rename(from_longitude = X, from_latitude = Y) %>%
+#   bind_cols(st_coordinates(.$coast)) %>%
+#   dplyr::rename(to_longitude = X, to_latitude = Y) %>%
+#   # dplyr::mutate(bearing = calculate_bearing(alon = .$from_longitude,
+#   #                                           alat = .$from_latitude,
+#   #                                           blon = .$to_longitude,
+#   #                                           blat = .$to_latitude)) %>%
+#   dplyr::mutate(distance.from.coast = ifelse(land == F, distance.from.coast * -1, distance.from.coast)) %>%
+#   glimpse()
+#
+# bath_df1 <- as.data.frame(bath_sf) %>%
+#   dplyr::select(-geometry) %>%
+#   dplyr::mutate(distance.from.coast = as.numeric(distance.from.coast/1000)) %>%
+#   dplyr::filter(distance.from.coast < 10) %>%
+#   glimpse()
 
 # paleo <- data.frame(depth = c(-118, -94, -63, -41),
 #                     label = c("20-30 Ka", "15-17 Ka", "12-13 Ka", "9-10 Ka"))
@@ -730,53 +760,40 @@ bath_df1 <- as.data.frame(bath_sf) %>%
 #   geom_text(data = paleo, aes(x = distance.from.coast + 7, y = depth, label = label), size = 3) +
 #   annotate(geom = "text", x = c(x = -33, 3), y = c(-10, 150), label = c("Naturaliste Reefs", "Cape Naturaliste"))
 
-crosssection_plot <- function(crosssection_labels, label_offset, segment_offset) {
-  paleo <- data.frame(depth = c(-118, -94, -63, -41),
-                      label = c("20-30 Ka", "15-17 Ka", "12-13 Ka", "9-10 Ka"))
-
-  for (i in 1:nrow(paleo)) {
-    temp <- bath_df1 %>%
-      dplyr::filter(abs(bath_df1$depth - paleo$depth[i]) == min(abs(bath_df1$depth - paleo$depth[i]))) %>%
-      dplyr::select(depth, distance.from.coast) %>%
-      slice(1)
-
-    if (i == 1) {
-      dat <- temp
-    }
-    else {
-      dat <- bind_rows(dat, temp)
-    }
-  }
-
-  paleo$distance.from.coast <- dat$distance.from.coast
-
-  ggplot() +
-    geom_rect(aes(xmin = min_dist1, xmax = 9, ymin =-Inf, ymax = 0), fill = "#12a5db", alpha = 0.5) +
-    annotate("segment", x = -5.556, xend = -5.556, y = 0, yend = min(bath_df1$depth), colour = "red") +
-    geom_line(data = bath_df1, aes(y = depth, x = distance.from.coast)) +
-    geom_ribbon(data = bath_df1, aes(ymin = -Inf, ymax = depth, x = distance.from.coast), fill = "tan") +
-    theme_classic() +
-    scale_x_continuous(expand = c(0,0), limits = c(min(bath_df1$distance.from.coast),
-                                                   max(bath_df1$distance.from.coast))) +
-    # ylim(min(bath_df1$depth), 150) +
-    ylim(min(bath_df1$depth), max(bath_df1$depth) + 10) +
-    labs(x = "Distance from coast (km)", y = "Elevation (m)") +
-    geom_segment(data = paleo, aes(x = distance.from.coast, xend = distance.from.coast + segment_offset,
-                                   y = depth, yend = depth), linetype = 2, alpha = 0.5) +
-    geom_text(data = paleo, aes(x = distance.from.coast + label_offset, y = depth, label = label), size = 3) +
-    annotate(geom = "text", x = crosssection_labels$x, y = crosssection_labels$y,
-             label = crosssection_labels$label)
-}
-
-crosssection_labels = data.frame(x = c(-33, 3),
-                               y = c(-10, 145),
-                               label = c("Naturaliste Reefs", "Cape Naturaliste"))
-label_offset <- 7
-segment_offset <- 5
-
-crosssection_plot(crosssection_labels, label_offset, segment_offset)
-
-ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'bathymetry-cross-section.png',
-                        sep = "-"), units = "in", dpi = 600,
-       bg = "white",
-       width = 8, height = 4)
+# crosssection_plot <- function(crosssection_labels, label_offset, segment_offset) {
+#   paleo <- data.frame(depth = c(-118, -94, -63, -41),
+#                       label = c("20-30 Ka", "15-17 Ka", "12-13 Ka", "9-10 Ka"))
+#
+#   for (i in 1:nrow(paleo)) {
+#     temp <- bath_df1 %>%
+#       dplyr::filter(abs(bath_df1$depth - paleo$depth[i]) == min(abs(bath_df1$depth - paleo$depth[i]))) %>%
+#       dplyr::select(depth, distance.from.coast) %>%
+#       slice(1)
+#
+#     if (i == 1) {
+#       dat <- temp
+#     }
+#     else {
+#       dat <- bind_rows(dat, temp)
+#     }
+#   }
+#
+#   paleo$distance.from.coast <- dat$distance.from.coast
+#
+#   ggplot() +
+#     geom_rect(aes(xmin = min_dist1, xmax = 9, ymin =-Inf, ymax = 0), fill = "#12a5db", alpha = 0.5) +
+#     annotate("segment", x = -5.556, xend = -5.556, y = 0, yend = min(bath_df1$depth), colour = "red") +
+#     geom_line(data = bath_df1, aes(y = depth, x = distance.from.coast)) +
+#     geom_ribbon(data = bath_df1, aes(ymin = -Inf, ymax = depth, x = distance.from.coast), fill = "tan") +
+#     theme_classic() +
+#     scale_x_continuous(expand = c(0,0), limits = c(min(bath_df1$distance.from.coast),
+#                                                    max(bath_df1$distance.from.coast))) +
+#     # ylim(min(bath_df1$depth), 150) +
+#     ylim(min(bath_df1$depth), max(bath_df1$depth) + 10) +
+#     labs(x = "Distance from coast (km)", y = "Elevation (m)") +
+#     geom_segment(data = paleo, aes(x = distance.from.coast, xend = distance.from.coast + segment_offset,
+#                                    y = depth, yend = depth), linetype = 2, alpha = 0.5) +
+#     geom_text(data = paleo, aes(x = distance.from.coast + label_offset, y = depth, label = label), size = 3) +
+#     annotate(geom = "text", x = crosssection_labels$x, y = crosssection_labels$y,
+#              label = crosssection_labels$label)
+# }
