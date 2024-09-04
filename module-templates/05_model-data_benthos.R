@@ -208,25 +208,14 @@ for(i in 1:length(resp.vars)) {
 
 
   if (i == 1) {
-    preddf_m <- as.data.frame(temppred_m, xy = T)
+    preddf_m <- temppred_m
   }
   else {
-    preddf_m <- as.data.frame(temppred_m, xy = T) %>%
-      full_join(preddf_m)
+    preddf_m <- rast(list(preddf_m, temppred_m))
   }
 }
 
-glimpse(preddf_m)
-
-# Categorise by dominant tag
-preddf_m$dom_tag <- apply(preddf_m %>% dplyr::select(p_macro.fit, p_sand.fit, p_seagrass.fit, p_inverts.fit), 1,
-                          FUN = function(x){names(which.max(x))})
-unique(preddf_m$dom_tag)
-
 saveRDS(preddf_m, paste0("output/model-output/geographe/habitat/", name, "_predicted-habitat.rds"))      # Ignored
-
-predhab <- rast(preddf_m, crs = "epsg:4326")
-plot(predhab)
 
 writeRaster(predhab, paste0("output/model-output/geographe/habitat/", names(predhab), "_predicted.tif"),
             overwrite = TRUE)

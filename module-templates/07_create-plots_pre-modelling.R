@@ -49,68 +49,19 @@ ausc <- st_crop(aus, e)
 # aus_marine_parks <- st_read("data/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp")
 
 # All australian marine parks - for inset plotting
-aus_marine_parks <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp")
+aus_marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp")
 
-# Commonwealth and State marine parks at the scale of the location
-crop <- st_read("data/south-west network/spatial/shapefiles/temp_crop-marine-parks.shp") %>%
-  st_make_valid()
-
-marine_parks <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
-  CheckEM::clean_names() %>%
-  st_make_valid() %>%
-  st_crop(crop) %>%
-  # dplyr::filter(name %in% c("South-west Corner", "Geographe", "Ngari Capes")) %>% # Filter to speed up plotting
-  dplyr::mutate(zone = case_when(
-    str_detect(pattern = "Sanctuary", string = zone_type) ~ "Sanctuary Zone",
-    str_detect(pattern = "IUCN II", string = zone_type) ~ "National Park Zone",
-    str_detect(pattern = "National Park", string = zone_type) ~ "National Park Zone",
-    str_detect(pattern = "Recreational|Recreation", string = zone_type) ~ "Recreational Use Zone",
-    str_detect(pattern = "Habitat Protection", string = zone_type) ~ "Habitat Protection Zone",
-    str_detect(pattern = "Special Purpose", string = zone_type) ~ "Special Purpose Zone",
-    str_detect(pattern = "Multiple Use", string = zone_type) ~ "Multiple Use Zone",
-    str_detect(pattern = "General", string = zone_type) ~ "General Use Zone",
-    str_detect(pattern = "Fish Habitat Protection Zone", string = type) ~ "General Use Zone",
-    str_detect(pattern = "Marine Management Area", string = type) &
-      str_detect(pattern = "Ia", string = iucn) ~ "Sanctuary Zone",
-    .default = "Other State Marine Park Zone")) %>%
-  dplyr::mutate(colour = case_when(zone %in% "Sanctuary Zone" & epbc %in% "State"~ "#bfd054",
-                                   zone %in% "Sanctuary Zone" & epbc %in% "Commonwealth"~ "#f7c0d8",
-                                   zone %in% "National Park Zone" ~ "#7bbc63",
-                                   zone %in% "Recreational Use Zone" & epbc %in% "State" ~ "#f4e952",
-                                   zone %in% "Recreational Use Zone" & epbc %in% "Commonwealth" ~ "#ffb36b",
-                                   zone %in% "Habitat Protection Zone"& epbc %in% "State" ~ "#fffbcc",
-                                   zone %in% "Habitat Protection Zone"& epbc %in% "Commonwealth" ~ "#fff8a3",
-                                   zone %in% "Special Purpose Zone"& epbc %in% "State" ~ "#c5bcc9",
-                                   zone %in% "Special Purpose Zone"& epbc %in% "Commonwealth" ~ "#6daff4",
-                                   zone %in% "Multiple Use Zone" ~ "#b9e6fb",
-                                   zone %in% "General Use Zone" ~ "#bddde1",
-                                   zone %in% "Other State Marine Park Zone" ~ "gray80")) %>%
+marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
   glimpse()
-
-test <- marine_parks %>%
-  dplyr::filter(zone_type %in% c("Unassigned (IUCN VI)",
-                                 "Unassigned (IUCN IV,VI)",
-                                 "Restricted Access Zone - RAZ-2 (IUCN IA)",
-                                 "Restricted Access Zone - RAZ-1 (IUCN IA)",
-                                 "Unassigned (IUCN IA)",
-                                 'Conservation Area (IUCN IA)',
-                                 "Unassigned (IUCN IV)",
-                                 "MP (Unclassified) (IUCN VI)",
-                                 "MMA (Unclassified) (IUCN VI)"))
-
-rottnest <- st_read("data/south-west network/spatial/shapefiles/Rottnest_Sanctuaries.shp") %>%
-  st_transform(4326)
-
-test <- distinct(marine_parks, zone_type, zone, colour) %>%
-  dplyr::filter(is.na(colour))
 
 # Australian Marine Parks only (for separate ggplot legends)
 marine_parks_amp <- marine_parks %>%
-  dplyr::filter(type %in% "Australian Marine Park")
+  dplyr::filter(epbc %in% "Commonwealth")
 
 # State Marine Parks only (for separate ggplot legends)
 marine_parks_state <- marine_parks %>%
-  dplyr::filter(type %in% "Marine Park")
+  dplyr::filter(epbc %in% "State")
 
 # Terrestrial parks
 terrnp <- st_read("data/south-west network/spatial/shapefiles/Legislated_Lands_and_Waters_DBCA_011.shp") %>%  # Terrestrial reserves
@@ -122,19 +73,12 @@ terr_fills <- scale_fill_manual(values = c("National Park" = "#c4cea6",         
                                 name = "Terrestrial Parks")
 
 # Key Ecological Features
+# This shapefile has added columns in QGIS for hex colour code and abbreviated names
 kef <- st_read("data/south-west network/spatial/shapefiles/AU_DOEE_KEF_2015.shp") %>%
   CheckEM::clean_names() %>%
   st_make_valid() %>%
   st_crop(e) %>%
-  # dplyr::mutate(name = factor(name, levels = c("Western rock lobster",
-  #                                              "Geographe Bay",
-  #                                              "Cape Mentelle upwelling",
-  #                                              "Ancient coastline")),
-  #               order = case_when(name %in% "Western rock lobster" ~ 1,
-  #                                 name %in% "Geographe Bay" ~ 2,
-  #                                 name %in% "Cape Mentelle upwelling" ~ 3,
-  #                                 name %in% "Ancient coastline" ~ 4)) %>%
-  # arrange(order) %>%
+  arrange(desc(area_km2)) %>%
   glimpse()
 unique(kef$abbrv)
 
@@ -153,10 +97,10 @@ plot(bathy)
 bathdf <- as.data.frame(bathy, xy = T)
 
 # Create marine park colours and fills (scale_fill_manual)
-amp_fills <- amp_marine_park_fills(marine_parks)
-state_fills <- state_marine_park_fills(marine_parks)
-amp_cols <- amp_marine_park_cols(marine_parks)
-state_cols <- state_marine_park_fills(marine_parks)
+# amp_fills <- amp_marine_park_fills(marine_parks)
+# state_fills <- state_marine_park_fills(marine_parks)
+# amp_cols <- amp_marine_park_cols(marine_parks)
+# state_cols <- state_marine_park_fills(marine_parks)
 
 # 1. Location overview plot
 # Set plot inputs
@@ -216,8 +160,8 @@ bath_df1 <- dem_cross_section(115.096, 115.000, -33.804, -33.105, maxdist = 10)
 crosssection_labels = data.frame(x = c(-33, 3), # Labels for annotation
                                  y = c(-10, 145),
                                  label = c("Naturaliste Reefs", "Cape Naturaliste"))
-label_offset <- 7 # Distance from end of segment to label
 segment_offset <- 5 # Length of the segment
+label_offset <- segment_offset + 2 # Distance from end of segment to label
 # Create plot
 crosssection_plot(crosssection_labels, label_offset, segment_offset)
 # Save plot

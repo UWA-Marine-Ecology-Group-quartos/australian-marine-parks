@@ -40,17 +40,6 @@ capad <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Austr
   dplyr::select(name, zone_type, zone, epbc, colour, geometry) %>%
   glimpse()
 
-# test <- marine_parks %>%
-#   dplyr::filter(zone_type %in% c("Unassigned (IUCN VI)",
-#                                  "Unassigned (IUCN IV,VI)",
-#                                  "Restricted Access Zone - RAZ-2 (IUCN IA)",
-#                                  "Restricted Access Zone - RAZ-1 (IUCN IA)",
-#                                  "Unassigned (IUCN IA)",
-#                                  'Conservation Area (IUCN IA)',
-#                                  "Unassigned (IUCN IV)",
-#                                  "MP (Unclassified) (IUCN VI)",
-#                                  "MMA (Unclassified) (IUCN VI)"))
-
 rottnest <- st_read("data/south-west network/spatial/shapefiles/Rottnest_Sanctuaries.shp") %>%
   st_make_valid() %>%
   st_transform(4326) %>%
@@ -74,4 +63,5 @@ abrolhos <- st_read("data/south-west network/spatial/shapefiles/Abrolhos_ROAs.sh
 
 marine_parks <- dplyr::bind_rows(list(capad, rottnest, abrolhos)) %>%
   st_make_valid()
+
 st_write(marine_parks, "data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp", append = F)

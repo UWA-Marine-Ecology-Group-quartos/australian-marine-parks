@@ -21,22 +21,14 @@ library(scales)
 library(tidyterra)
 library(patchwork)
 
-pred_class <- readRDS(paste0("output/model-output/geographe/habitat/", name, "_predicted-habitat.rds")) %>%
-  dplyr::mutate(dom_tag = case_when(dom_tag %in% "p_sand.fit" ~ "Sand",
-                                    dom_tag %in% "p_inverts.fit" ~ "Sessile invertebrates",
-                                    dom_tag %in% "p_rock.fit" ~ "Rock",
-                                    dom_tag %in% "p_macro.fit" ~ "Macroalgae",
-                                    dom_tag %in% "p_seagrass.fit" ~ "Seagrass")) %>%
-  glimpse()
+# Load functions
+file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
+sapply(file.sources, source, .GlobalEnv)
 
-# Assign habitat class colours
-unique(pred_class$dom_tag)
-hab_fills <- scale_fill_manual(values = c(
-  "Sand" = "wheat",
-  "Sessile invertebrates" = "plum",
-  # "Rock" = "grey40",
-  "Macroalgae" = "darkgoldenrod4",
-  "Seagrass" = "forestgreen"), name = "Habitat")
+dat <- readRDS(paste0("output/model-output/geographe/habitat/", name, "_predicted-habitat.rds"))
+
+pred_class <- as.data.frame(dat, xy = T) %>%
+  glimpse()
 
 # Individual habitat class predictions
 ind_class <- pred_class %>%
@@ -62,40 +54,15 @@ aus    <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-in
 ausc <- st_crop(aus, e)
 
 # Australian outline and state and commonwealth marine parks
-marine_parks <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
-  CheckEM::clean_names() %>%
-  st_make_valid() %>%
-  dplyr::mutate(zone = case_when(
-    str_detect(pattern = "Sanctuary", string = zone_type) ~ "Sanctuary Zone",
-    str_detect(pattern = "IUCN II", string = zone_type) ~ "National Park Zone",
-    str_detect(pattern = "National Park", string = zone_type) ~ "National Park Zone",
-    str_detect(pattern = "Recreational|Recreation", string = zone_type) ~ "Recreational Use Zone",
-    str_detect(pattern = "Habitat Protection", string = zone_type) ~ "Habitat Protection Zone",
-    str_detect(pattern = "Special Purpose", string = zone_type) ~ "Special Purpose Zone",
-    str_detect(pattern = "Multiple Use", string = zone_type) ~ "Multiple Use Zone",
-    str_detect(pattern = "General", string = zone_type) ~ "General Use Zone")) %>%
-  st_crop(e)
+marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
+  glimpse()
 plot(marine_parks["zone"])
 
 marine_parks_amp <- marine_parks %>%
-  dplyr::filter(type %in% "Australian Marine Park")
+  dplyr::filter(epbc %in% "Commonwealth")
 marine_parks_state <- marine_parks %>%
-  dplyr::filter(type %in% "Marine Park")
-
-amp_cols <- scale_colour_manual(values = c("National Park Zone" = "#7bbc63",
-                                           "Habitat Protection Zone" = "#fff8a3",
-                                           "Multiple Use Zone" = "#b9e6fb",
-                                           "Recreational Use Zone" = "#ffb36b",
-                                           "Sanctuary Zone" = "#f7c0d8",
-                                           "Special Purpose Zone" = "#6daff4"),
-                                name = "Australian Marine Parks")
-
-state_cols <- scale_colour_manual(values = c("Sanctuary Zone" = "#bfd054",
-                                             # "Habitat Protection Zone" = "#fffbcc",
-                                             "General Use Zone" = "#bddde1",
-                                             "Recreational Use Zone" = "#f4e952",
-                                             "Special Purpose Zone" = "#c5bcc9"),
-                                  name = "State Marine Parks")
+  dplyr::filter(epbc %in% "State")
 
 # Normalise the inverse of standard error
 pred_plot <- pred_class %>%
@@ -109,52 +76,29 @@ summary(pred_plot)
 
 prediction_limits = c(115.0539, 115.5539, -33.64861, -33.35361)
 
-dominantbenthos_plot <- function(prediction_limits) {
-  ggplot() +
-    geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_inverts.alpha, alpha = p_inverts.fit)) +
-    scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Sessile invertebrates") +
-    scale_fill_gradient(low = "white", high = "deeppink3", name = "Sessile invertebrates", na.value = "transparent") +
-    new_scale_fill() +
-    new_scale("alpha") +
-    geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_sand.alpha, alpha = p_sand.fit)) +
-    scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Sand") +
-    scale_fill_gradient(low = "white", high = "wheat", name = "Sand", na.value = "transparent") +
-    new_scale_fill() +
-    new_scale("alpha") +
-    # geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_rock.alpha, alpha = p_rock.fit)) +
-    # scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Rock") +
-    # scale_fill_gradient(low = "white", high = "grey40", name = "Rock", na.value = "transparent") +
-    # new_scale_fill() +
-    # new_scale("alpha") +
-    geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_macro.alpha, alpha = p_macro.fit)) +
-    scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Macroalgae") +
-    scale_fill_gradient(low = "white", high = "darkorange4", name = "Macroalgae", na.value = "transparent") +
-    new_scale_fill() +
-    new_scale("alpha") +
-    geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_seagrass.alpha, alpha = p_seagrass.fit)) +
-    scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Seagrass") +
-    scale_fill_gradient(low = "white", high = "forestgreen", name = "Seagrass", na.value = "transparent") +
-    new_scale_fill() +
-    new_scale("alpha") +
-    geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
-    labs(x = "", y = "") +
-    geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, show.legend = F,
-            linewidth = 0.75) +
-    amp_cols +
-    theme_minimal() +
-    theme(legend.position = "bottom",
-          legend.direction = "horizontal",
-          legend.box = "horizontal",
-          legend.box.just = "left",
-          legend.text = element_text(size = 5),
-          legend.title = element_text(size = 7),
-          legend.key.size = unit(0.5, "cm"),
-          legend.margin = margin(t = -0.1, unit = "cm")
-    ) +
-    coord_sf(xlim = c(prediction_limits[1], prediction_limits[2]), ylim = c(prediction_limits[3], prediction_limits[4]), crs = 4326)
-}
+dominantbenthos_plot(prediction_limits) +
+  theme(legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.box = "horizontal",
+        legend.box.just = "left",
+        legend.text = element_text(size = 5),
+        legend.title = element_text(size = 7),
+        legend.key.size = unit(0.5, "cm"),
+        legend.margin = margin(t = -0.1, unit = "cm"))
 
-dominantbenthos_plot(prediction_limits)
+ggsave(filename = paste0("plots/geographe/habitat/", name, "_predicted-dominant-habitat.png"),
+       height = 6, width = 8, dpi = 600, units = "in", bg = "white")
+
+pred_rast <- subset(dat, str_detect(names(dat), "(?<!se).fit") & # String don't contain "fit" preceded by "se"
+                      str_detect(names(dat), "^(?!.*reef).*$")) # Strings don't contain "reef"
+names(pred_rast)
+names(pred_rast) <- c("Sand", "Macroalgae", "Seagrasses", "Sessile invertebrates")
+plot(pred_rast)
+
+individualbenthic_plot(prediction_limits)
+
+ggsave(filename = paste0("plots/geographe/habitat/", name, "_predicted-individual-habitat.png"),
+       height = 5.5, width = 8, dpi = 900, units = "in", bg = "white")
 
 # p1 <- ggplot() +
 #   geom_tile(data = pred_plot, aes(x = x, y = y, fill = p_inverts.alpha, alpha = p_inverts.fit)) +
@@ -203,58 +147,32 @@ dominantbenthos_plot(prediction_limits)
 #         ) +
 #   coord_sf(xlim = c(min(pred_class$x), max(pred_class$x)),
 #            ylim = c(min(pred_class$y), max(pred_class$y)), crs = 4326)
-ggsave(filename = paste0("plots/geographe/habitat/", name, "_predicted-dominant-habitat.png"),
-       plot = p1, height = 6, width = 8, dpi = 600, units = "in", bg = "white")
 
 # Individual habitat
 
-pred_rast <- rast(pred_class %>% dplyr::select(x, y, p_inverts.fit, p_seagrass.fit, p_macro.fit, p_seagrass.fit, p_sand.fit),
-             crs = "epsg:4326")
-names(pred_rast) <- c("Sessile invertebrates", "Seagrass", "Macroalgae", "Sand")
-plot(pred_rast)
-
-individualbenthic_plot <- function(prediction_limits) {ggplot() +
-    # geom_raster(data = dplyr::filter(ind_class, !habitat %in% "Reef"),
-    #           aes(x, y, fill = Probability)) +
-    geom_spatraster(data = pred_rast) +
-    scale_fill_gradientn(colours = c("#fde725", "#21918c", "#440154"),
-                         na.value = "transparent", name = "Probability") +
-    new_scale_fill() +
-    geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
-    geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, show.legend = F,
-            linewidth = 0.75) +
-    amp_cols +
-    coord_sf(xlim = c(prediction_limits[1], prediction_limits[2]), ylim = c(prediction_limits[3], prediction_limits[4]), crs = 4326) +
-    labs(x = NULL, y = NULL, fill = "Probability",                                    # Labels
-         colour = NULL) +
-    theme_minimal() +
-    facet_wrap(~lyr)
-}
-individualbenthic_plot(prediction_limits)
-
-p2 <- ggplot() +
-  # geom_raster(data = dplyr::filter(ind_class, !habitat %in% "Reef"),
-  #           aes(x, y, fill = Probability)) +
-  geom_spatraster(data = pred_rast) +
-  scale_fill_gradientn(colours = c("#fde725", "#21918c", "#440154"),
-                       na.value = "transparent", name = "Probability") +
-  new_scale_fill() +
-  geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
-  geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, show.legend = F,
-          linewidth = 0.75) +
-  amp_cols +
-  coord_sf(xlim = c(min(pred_class$x), max(pred_class$x)),
-           ylim = c(min(pred_class$y), max(pred_class$y)), crs = 4326) +
-  labs(x = NULL, y = NULL, fill = "Probability",                                    # Labels
-       colour = NULL) +
-  theme_minimal() +
-  facet_wrap(~lyr)
-ggsave(filename = paste0("plots/geographe/habitat/", name, "_predicted-individual-habitat.png"),
-         plot = p2, height = 5.5, width = 8, dpi = 900, units = "in", bg = "white")
+# p2 <- ggplot() +
+#   # geom_raster(data = dplyr::filter(ind_class, !habitat %in% "Reef"),
+#   #           aes(x, y, fill = Probability)) +
+#   geom_spatraster(data = pred_rast) +
+#   scale_fill_gradientn(colours = c("#fde725", "#21918c", "#440154"),
+#                        na.value = "transparent", name = "Probability") +
+#   new_scale_fill() +
+#   geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
+#   geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, show.legend = F,
+#           linewidth = 0.75) +
+#   amp_cols +
+#   coord_sf(xlim = c(min(pred_class$x), max(pred_class$x)),
+#            ylim = c(min(pred_class$y), max(pred_class$y)), crs = 4326) +
+#   labs(x = NULL, y = NULL, fill = "Probability",                                    # Labels
+#        colour = NULL) +
+#   theme_minimal() +
+#   facet_wrap(~lyr)
 
 # Make temporal plots for habitat types, by ecosystem depth contour
 # Shallow (0 - 30 m)
 # Mesophotic (30 - 70 m)
+preds <- readRDS(paste0("data/geographe/spatial/rasters/",
+                        name, "_bathymetry-derivatives.rds"))
 
 shallow <- preds[[1]] %>%
   clamp(upper = 0, lower = -30, values = F)
@@ -268,23 +186,53 @@ dat.meso <- dat %>%
   terra::mask(meso)
 plot(dat.meso)
 
-marine_parks <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
+# This is a bit confusing - same file and will overwrite previous file, but have changed the names to make them match what Tim wants
+marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
   CheckEM::clean_names() %>%
-  dplyr::filter(name %in% c("Geographe", "Ngari Capes")) %>%
-  dplyr::mutate(zone = case_when(
-    str_detect(pattern = "Sanctuary", string = zone_type) ~ "NCMP SZ (IUCN II)",
-    str_detect(pattern = "IUCN II", string = zone_type) ~ "GMP NPZ (IUCN II)",
-    str_detect(pattern = "National Park", string = zone_type) ~ "GMP NPZ (IUCN II)",
-    str_detect(pattern = "Recreational|Recreation", string = zone_type) ~ "NCMP other zones",
-    str_detect(pattern = "Habitat Protection", string = zone_type) ~ "GMP HPZ",
-    str_detect(pattern = "Special Purpose", string = zone_type) ~ "GMP other zones",
-    str_detect(pattern = "Multiple Use", string = zone_type) ~ "GMP other zones",
-    str_detect(pattern = "General", string = zone_type) ~ "NCMP other zones"))
-unique(marine_parks$zone)
-plot(marine_parks["zone"])
+  # dplyr::filter(name %in% c("Geographe", "Ngari Capes")) %>%
+  dplyr::mutate(zone_new = case_when(
+    str_detect(zone, "Other State Marine Park Zone")  ~ "State other zones",
+    str_detect(zone, "Habitat Protection Zone") & str_detect(epbc, "State")  ~ "State HPZ",
+    str_detect(zone, "Habitat Protection Zone") & str_detect(epbc, "Commonwealth")  ~ "AMP HPZ",
+    str_detect(zone, "Sanctuary Zone")  ~ "State SZ (IUCN II)",
+    str_detect(zone, "National Park Zone")  ~ "AMP NPZ (IUCN II)",
+    str_detect(zone, "Special Purpose Zone") & str_detect(epbc, "State")  ~ "State other zones",
+    str_detect(zone, "Special Purpose Zone") & str_detect(epbc, "Commonwealth")  ~ "AMP other zones",
+    str_detect(zone, "Multiple Use Zone") & str_detect(epbc, "State") ~ "State other zones",
+    str_detect(zone, "Multiple Use Zone") & str_detect(epbc, "Commonwealth") ~ "AMP other zones",
+    str_detect(zone, "Recreational Use Zone") & str_detect(epbc, "State") ~ "State other zones",
+    str_detect(zone, "Recreational Use Zone") & str_detect(epbc, "Commonwealth") ~ "AMP other zones",
+    str_detect(zone, "General Use Zone")  ~ "State other zones",
+    str_detect(zone, "Reef Observation Area")  ~ "State other zones"
+  )) %>%
+  glimpse()
+  # dplyr::mutate(zone = case_when(
+  #   str_detect(pattern = "Sanctuary", string = zone_type) ~ "NCMP SZ (IUCN II)",
+  #   str_detect(pattern = "IUCN II", string = zone_type) ~ "GMP NPZ (IUCN II)",
+  #   str_detect(pattern = "National Park", string = zone_type) ~ "GMP NPZ (IUCN II)",
+  #   str_detect(pattern = "Recreational|Recreation", string = zone_type) ~ "NCMP other zones",
+  #   str_detect(pattern = "Habitat Protection", string = zone_type) ~ "GMP HPZ",
+  #   str_detect(pattern = "Special Purpose", string = zone_type) ~ "GMP other zones",
+  #   str_detect(pattern = "Multiple Use", string = zone_type) ~ "GMP other zones",
+  #   str_detect(pattern = "General", string = zone_type) ~ "NCMP other zones"))
+
+# marine_parks <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
+#   CheckEM::clean_names() %>%
+#   dplyr::filter(name %in% c("Geographe", "Ngari Capes")) %>%
+#   dplyr::mutate(zone = case_when(
+#     str_detect(pattern = "Sanctuary", string = zone_type) ~ "NCMP SZ (IUCN II)",
+#     str_detect(pattern = "IUCN II", string = zone_type) ~ "GMP NPZ (IUCN II)",
+#     str_detect(pattern = "National Park", string = zone_type) ~ "GMP NPZ (IUCN II)",
+#     str_detect(pattern = "Recreational|Recreation", string = zone_type) ~ "NCMP other zones",
+#     str_detect(pattern = "Habitat Protection", string = zone_type) ~ "GMP HPZ",
+#     str_detect(pattern = "Special Purpose", string = zone_type) ~ "GMP other zones",
+#     str_detect(pattern = "Multiple Use", string = zone_type) ~ "GMP other zones",
+#     str_detect(pattern = "General", string = zone_type) ~ "NCMP other zones"))
+# unique(marine_parks$zone)
+# plot(marine_parks["zone"])
 
 # Function for standard error
-se <- function(x) sd(x, na.rm = T)/sqrt(length(x[!is.na(x)]))
+# se <- function(x) sd(x, na.rm = T)/sqrt(length(x[!is.na(x)]))
 
 # Spatial standard error for each marine park zone in the data
 # Be careful if you have multiple of the same zone type in dataset!
@@ -322,17 +270,6 @@ park_dat.shallow <- as.data.frame(marine_parks) %>%
   dplyr::group_by(zone, year) %>%
   summarise(across(everything(), .f = list(mean = mean), na.rm = TRUE)) %>%
   ungroup() %>%
-  glimpse()
-
-# Make a temporal dataframe for plotting
-temporal_dat <- data.frame(year = rep(c(2013:2024), 5)) %>% # Change rep here for number of park zones
-  arrange(year) %>%
-  dplyr::mutate(year = as.numeric(year),
-                zone = rep(c("GMP HPZ", "GMP NPZ (IUCN II)",
-                             "GMP other zones", 'NCMP SZ (IUCN II)',
-                             "NCMP other zones"),
-                           (nrow(.))/5)) %>% # Change here too
-  left_join(park_dat.shallow) %>%
   glimpse()
 
 # plot year by seagrass - plus a line for MPA gazetting time ---
@@ -528,16 +465,6 @@ park_dat.meso <- as.data.frame(marine_parks) %>%
   ungroup() %>%
   glimpse()
 
-# Make a temporal dataframe for plotting
-temporal_dat <- data.frame(year = rep(c(2013:2024), 5)) %>% # Change rep here for number of park zones
-  arrange(year) %>%
-  dplyr::mutate(year = as.numeric(year),
-                zone = rep(c("GMP HPZ", "GMP NPZ (IUCN II)",
-                             "GMP other zones", 'NCMP SZ (IUCN II)',
-                             "NCMP other zones"),
-                           (nrow(.))/5)) %>% # Change here too
-  left_join(park_dat.meso) %>%
-  glimpse()
 
 # plot year by seagrass - plus a line for MPA gazetting time ---
 gg_seagrass <- ggplot(data = temporal_dat, aes(x = year, y = seagrass_mean, fill = zone, shape = zone)) +

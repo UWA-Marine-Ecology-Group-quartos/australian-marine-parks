@@ -10,10 +10,12 @@ site_plot <- function(site_limits, # Tighter zoom for this plot
     terr_fills +
     new_scale_fill() +
     geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.4) +
-    state_fills +
+    scale_fill_manual(name = "State Marine Parks", guide = "legend",
+                      values = with(marine_parks_state, setNames(colour, zone))) +
     new_scale_fill() +
     geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
-    amp_fills +
+    scale_fill_manual(name = "Australian Marine Parks", guide = "legend",
+                      values = with(marine_parks_amp, setNames(colour, zone))) +
     new_scale_fill() +
     labs(x = NULL, y = NULL) +
     new_scale_fill() +
