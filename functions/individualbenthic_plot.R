@@ -1,7 +1,7 @@
 individualbenthic_plot <- function(prediction_limits) {
   ggplot() +
     geom_spatraster(data = pred_rast) +
-    scale_fill_viridis_c(na.value = "transparent", name = "Probability") +
+    scale_fill_viridis_c(na.value = "transparent", name = "Probability", direction = -1) +
     new_scale_fill() +
     geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
     geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, show.legend = F,

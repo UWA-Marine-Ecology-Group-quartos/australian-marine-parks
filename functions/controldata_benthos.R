@@ -1,4 +1,25 @@
-controldata_benthos <- function(year) {
+controldata_benthos <- function(year, amp_abbrv, state_abbrv) {
+
+  marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
+    CheckEM::clean_names() %>%
+    # dplyr::filter(name %in% c("Geographe", "Ngari Capes")) %>%
+    dplyr::mutate(zone_new = case_when(
+      str_detect(zone, "Other State Marine Park Zone")  ~ paste(state_abbrv, "other zones"),
+      str_detect(zone, "Habitat Protection Zone") & str_detect(epbc, "State")  ~ paste(state_abbrv,"HPZ"),
+      str_detect(zone, "Habitat Protection Zone") & str_detect(epbc, "Commonwealth")  ~ paste(amp_abbrv, "HPZ"),
+      str_detect(zone, "Sanctuary Zone")  ~ paste(state_abbrv, "SZ (IUCN II)"),
+      str_detect(zone, "National Park Zone")  ~ paste(amp_abbrv ,"NPZ (IUCN II)"),
+      str_detect(zone, "Special Purpose Zone") & str_detect(epbc, "State")  ~ paste(state_abbrv, "other zones"),
+      str_detect(zone, "Special Purpose Zone") & str_detect(epbc, "Commonwealth")  ~ paste(amp_abbrv, "other zones"),
+      str_detect(zone, "Multiple Use Zone") & str_detect(epbc, "State") ~ paste(state_abbrv, "other zones"),
+      str_detect(zone, "Multiple Use Zone") & str_detect(epbc, "Commonwealth") ~ paste(amp_abbrv, "other zones"),
+      str_detect(zone, "Recreational Use Zone") & str_detect(epbc, "State") ~ paste(state_abbrv, "other zones"),
+      str_detect(zone, "Recreational Use Zone") & str_detect(epbc, "Commonwealth") ~ paste(amp_abbrv, "other zones"),
+      str_detect(zone, "General Use Zone")  ~ paste(state_abbrv, "other zones"),
+      str_detect(zone, "Reef Observation Area")  ~ paste(state_abbrv, "other zones")
+    )) %>%
+    glimpse()
+
   preds <- readRDS(paste0("data/geographe/spatial/rasters/",
                           name, "_bathymetry-derivatives.rds")) %>%
     crop(dat)
@@ -157,6 +178,5 @@ controldata_benthos <- function(year) {
   }
 
 }
-controldata_benthos(year = 2014)
 
 

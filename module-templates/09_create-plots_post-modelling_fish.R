@@ -35,130 +35,125 @@ e <- ext(114.2, 115.8,-34.7, -33.1)
 # Load necessary spatial files
 sf_use_s2(F)                                                                    # Switch off spatial geometry for cropping
 # Australian outline and state and commonwealth marine parks
-marine_parks <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
-  CheckEM::clean_names() %>%
-  dplyr::mutate(zone = case_when(
-    str_detect(pattern = "Sanctuary", string = zone_type) ~ "Sanctuary Zone",
-    str_detect(pattern = "IUCN II", string = zone_type) ~ "National Park Zone",
-    str_detect(pattern = "National Park", string = zone_type) ~ "National Park Zone",
-    str_detect(pattern = "Recreational|Recreation", string = zone_type) ~ "Recreational Use Zone",
-    str_detect(pattern = "Habitat Protection", string = zone_type) ~ "Habitat Protection Zone",
-    str_detect(pattern = "Special Purpose", string = zone_type) ~ "Special Purpose Zone",
-    str_detect(pattern = "Multiple Use", string = zone_type) ~ "Multiple Use Zone",
-    str_detect(pattern = "General", string = zone_type) ~ "General Use Zone")) %>%
-  st_crop(e)
+marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
+  glimpse()
 plot(marine_parks["zone"])
 
 marine_parks_amp <- marine_parks %>%
-  dplyr::filter(type %in% "Australian Marine Park")
+  dplyr::filter(epbc %in% "Commonwealth")
 marine_parks_state <- marine_parks %>%
-  dplyr::filter(type %in% "Marine Park")
+  dplyr::filter(epbc %in% "State")
 
-amp_cols <- scale_colour_manual(values = c("National Park Zone" = "#7bbc63",
-                                           "Habitat Protection Zone" = "#fff8a3",
-                                           "Multiple Use Zone" = "#b9e6fb",
-                                           "Recreational Use Zone" = "#ffb36b",
-                                           "Sanctuary Zone" = "#f7c0d8",
-                                           "Special Purpose Zone" = "#6daff4"),
-                                name = "Australian Marine Parks")
-
-state_cols <- scale_colour_manual(values = c("Sanctuary Zone" = "#bfd054",
-                                             # "Habitat Protection Zone" = "#fffbcc",
-                                             "General Use Zone" = "#bddde1",
-                                             "Recreational Use Zone" = "#f4e952",
-                                             "Special Purpose Zone" = "#c5bcc9"),
-                                  name = "State Marine Parks")
+# Australian outline and state and commonwealth marine parks
+aus    <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp")
+ausc <- st_crop(aus, e)
 
 # Spatial predictions
-gg_mature <- ggplot() +
-  geom_spatraster(data = dat,
-                  aes(fill = p_mature.fit)) +
-  scale_fill_gradientn(colours = c("#fde725", "#21918c", "#440154"),
-                       na.value = "transparent") +
-  labs(fill = "> Lm", x = NULL, y = NULL, title = "Large bodied carnivores") +
-  new_scale_fill() +
-  geom_sf(data = marine_parks_state, aes(colour = zone), fill = NA,
-          linewidth = 0.7, show.legend = F) +
-  state_cols +
-  new_scale_colour() +
-  geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
-  geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA,
-          linewidth = 0.7, show.legend = F) +
-  amp_cols +
-  coord_sf(xlim = c(ext(dat)[1], ext(dat)[2]),
-           ylim = c(ext(dat)[3], ext(dat)[4]),
-           crs = 4326) +
-  theme_minimal()
 
-gg_cti <- ggplot() +
-  geom_spatraster(data = dat,
-                  aes(fill = p_cti.fit)) +
-  scale_fill_gradientn(colours = c("#fde725", "#21918c", "#440154"),
-                       na.value = "transparent") +
-  labs(fill = "CTI", x = NULL, y = NULL) +
-  new_scale_fill() +
-  geom_sf(data = marine_parks_state, aes(colour = zone), fill = NA,
-          linewidth = 0.7, show.legend = F) +
-  state_cols +
-  new_scale_colour() +
-  geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
-  geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA,
-          linewidth = 0.7, show.legend = F) +
-  amp_cols +
-  coord_sf(xlim = c(ext(dat)[1], ext(dat)[2]),
-           ylim = c(ext(dat)[3], ext(dat)[4]),
-           crs = 4326) +
-  theme_minimal()
+prediction_limits = c(115.0539, 115.5539, -33.64861, -33.35361)
+fishmetric_plot(prediction_limits)
 
-gg_richness <- ggplot() +
-  geom_spatraster(data = dat,
-                  aes(fill = p_richness.fit)) +
-  scale_fill_gradientn(colours = c("#fde725", "#21918c", "#440154"),
-                       na.value = "transparent") +
-  labs(fill = "Species \nrichness", x = NULL, y = NULL, title = "Whole assemblage") +
-  new_scale_fill() +
-  geom_sf(data = marine_parks_state, aes(colour = zone), fill = NA,
-          linewidth = 0.7, show.legend = F) +
-  state_cols +
-  new_scale_colour() +
-  geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
-  geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA,
-          linewidth = 0.7, show.legend = F) +
-  amp_cols +
-  coord_sf(xlim = c(ext(dat)[1], ext(dat)[2]),
-           ylim = c(ext(dat)[3], ext(dat)[4]),
-           crs = 4326) +
-  theme_minimal()
+ggsave(paste0("plots/geographe/fish/", name, "_individual-predictions.png"),
+    width = 9, height = 5, dpi = 300, units = "in", bg = "white")
 
-gg_pinkies <- ggplot() +
-  geom_spatraster(data = dat,
-                  aes(fill = p_pinkies.fit)) +
-  scale_fill_gradientn(colours = c("#fde725", "#21918c", "#440154"),
-                       na.value = "transparent") +
-  labs(fill = "< Lm", x = NULL, y = NULL, title = expression("Pink snapper"~italic("(Chrysophrys auratus)"))) +
-  new_scale_fill() +
-  geom_sf(data = marine_parks_state, aes(colour = zone), fill = NA,
-          linewidth = 0.7, show.legend = F) +
-  state_cols +
-  new_scale_colour() +
-  geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
-  geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA,
-          linewidth = 0.7, show.legend = F) +
-  amp_cols +
-  coord_sf(xlim = c(ext(dat)[1], ext(dat)[2]),
-           ylim = c(ext(dat)[3], ext(dat)[4]),
-           crs = 4326) +
-  theme_minimal()
 
-gg_grid <- gg_richness + gg_cti + gg_mature + gg_pinkies +
-  plot_layout(ncol = 2, nrow = 2) &
-  theme(legend.justification = "left")
 
-png(filename = paste(paste("plots/geographe/fish", name, sep = "/"),
-                     "fish-individual_predictions.png", sep = "_"),
-    width = 9, height = 5, res = 300, units = "in")                             # Change the dimensions here as necessary
-gg_grid
-dev.off()
+
+
+
+
+
+
+# gg_mature <- ggplot() +
+#   geom_spatraster(data = dat,
+#                   aes(fill = p_mature.fit)) +
+#   scale_fill_gradientn(colours = c("#fde725", "#21918c", "#440154"),
+#                        na.value = "transparent") +
+#   labs(fill = "> Lm", x = NULL, y = NULL, title = "Large bodied carnivores") +
+#   new_scale_fill() +
+#   geom_sf(data = marine_parks_state, aes(colour = zone), fill = NA,
+#           linewidth = 0.7, show.legend = F) +
+#   state_cols +
+#   new_scale_colour() +
+#   geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
+#   geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA,
+#           linewidth = 0.7, show.legend = F) +
+#   amp_cols +
+#   coord_sf(xlim = c(ext(dat)[1], ext(dat)[2]),
+#            ylim = c(ext(dat)[3], ext(dat)[4]),
+#            crs = 4326) +
+#   theme_minimal()
+#
+# gg_cti <- ggplot() +
+#   geom_spatraster(data = dat,
+#                   aes(fill = p_cti.fit)) +
+#   scale_fill_gradientn(colours = c("#fde725", "#21918c", "#440154"),
+#                        na.value = "transparent") +
+#   labs(fill = "CTI", x = NULL, y = NULL) +
+#   new_scale_fill() +
+#   geom_sf(data = marine_parks_state, aes(colour = zone), fill = NA,
+#           linewidth = 0.7, show.legend = F) +
+#   state_cols +
+#   new_scale_colour() +
+#   geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
+#   geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA,
+#           linewidth = 0.7, show.legend = F) +
+#   amp_cols +
+#   coord_sf(xlim = c(ext(dat)[1], ext(dat)[2]),
+#            ylim = c(ext(dat)[3], ext(dat)[4]),
+#            crs = 4326) +
+#   theme_minimal()
+#
+# gg_richness <- ggplot() +
+#   geom_spatraster(data = dat,
+#                   aes(fill = p_richness.fit)) +
+#   scale_fill_gradientn(colours = c("#fde725", "#21918c", "#440154"),
+#                        na.value = "transparent") +
+#   labs(fill = "Species \nrichness", x = NULL, y = NULL, title = "Whole assemblage") +
+#   new_scale_fill() +
+#   geom_sf(data = marine_parks_state, aes(colour = zone), fill = NA,
+#           linewidth = 0.7, show.legend = F) +
+#   state_cols +
+#   new_scale_colour() +
+#   geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
+#   geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA,
+#           linewidth = 0.7, show.legend = F) +
+#   amp_cols +
+#   coord_sf(xlim = c(ext(dat)[1], ext(dat)[2]),
+#            ylim = c(ext(dat)[3], ext(dat)[4]),
+#            crs = 4326) +
+#   theme_minimal()
+#
+# gg_pinkies <- ggplot() +
+#   geom_spatraster(data = dat,
+#                   aes(fill = p_pinkies.fit)) +
+#   scale_fill_gradientn(colours = c("#fde725", "#21918c", "#440154"),
+#                        na.value = "transparent") +
+#   labs(fill = "< Lm", x = NULL, y = NULL, title = expression("Pink snapper"~italic("(Chrysophrys auratus)"))) +
+#   new_scale_fill() +
+#   geom_sf(data = marine_parks_state, aes(colour = zone), fill = NA,
+#           linewidth = 0.7, show.legend = F) +
+#   state_cols +
+#   new_scale_colour() +
+#   geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
+#   geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA,
+#           linewidth = 0.7, show.legend = F) +
+#   amp_cols +
+#   coord_sf(xlim = c(ext(dat)[1], ext(dat)[2]),
+#            ylim = c(ext(dat)[3], ext(dat)[4]),
+#            crs = 4326) +
+#   theme_minimal()
+#
+# gg_grid <- gg_richness + gg_cti + gg_mature + gg_pinkies +
+#   plot_layout(ncol = 2, nrow = 2) &
+#   theme(legend.justification = "left")
+#
+# png(filename = paste(paste("plots/geographe/fish", name, sep = "/"),
+#                      "fish-individual_predictions.png", sep = "_"),
+#     width = 9, height = 5, res = 300, units = "in")                             # Change the dimensions here as necessary
+# gg_grid
+# dev.off()
 
 # Temporal predictions
 # NEED TO ADD IN SST TO CTI PLOT
