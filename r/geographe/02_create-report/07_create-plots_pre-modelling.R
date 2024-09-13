@@ -16,8 +16,9 @@
 # Clear your environment
 rm(list = ls())
 
-# Set the study name
+# Set the study name and marine park name (for folder structure)
 name <- "GeographeAMP"
+park <- "geographe"
 
 # Load libraries
 library(tidyverse)
@@ -114,11 +115,11 @@ location_plot(plot_limits,
               study_limits,
               annotation_labels)
 # Save plot
-ggsave(paste(paste0('plots/geographe/spatial/', name) , 'broad-site-plot.png',
+ggsave(paste(paste0('plots/', park, '/spatial/', name) , 'broad-site-plot.png',
              sep = "-"), dpi = 600, width = 8, height = 5, bg = "white")
 
 # 2. Site level overview - with sampling point locations
-metadata <- readRDS(paste0("data/geographe/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
+metadata <- readRDS(paste0("data/", park, "/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
   st_as_sf(coords = c("longitude_dd", "latitude_dd"), crs = 4326) %>%
   glimpse()
 # Set plot inputs
@@ -126,7 +127,7 @@ site_limits = c(115.0, 115.67, -33.3, -33.65) # Plot limits for subsequent plots
 # Create plot
 site_plot(site_limits, annotation_labels)
 # Save plot
-ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'sampling-locations.png',
+ggsave(filename = paste(paste0('plots/', park, '/spatial/', name) , 'sampling-locations.png',
                         sep = "-"), plot = p2, units = "in", dpi = 600,
        bg = "white",
        width = 8, height = 4)
@@ -135,7 +136,7 @@ ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'sampling-loc
 # Create plot
 kef_plot(plot_limits, annotation_labels)
 # Save plot
-ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'key-ecological-features.png',
+ggsave(filename = paste(paste0('plots/', park, '/spatial/', name) , 'key-ecological-features.png',
                         sep = "-"), units = "in", dpi = 600,
        bg = "white",
        width = 8, height = 6)
@@ -148,7 +149,7 @@ depth_fills <- scale_fill_manual(values = c("#f9ddb1","#ee9f27", "#dc6601"),
 # Create plot
 sealevel_plot(plot_limits, annotation_labels)
 # Save plot
-ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'old-sea-levels.png',
+ggsave(filename = paste(paste0('plots/', park, '/spatial/', name) , 'old-sea-levels.png',
                         sep = "-"), units = "in", dpi = 600,
        bg = "white",
        width = 8, height = 6)
@@ -166,7 +167,7 @@ label_offset <- segment_offset + 2 # Distance from end of segment to label
 # Create plot
 crosssection_plot(crosssection_labels, label_offset, segment_offset)
 # Save plot
-ggsave(filename = paste(paste0('plots/geographe/spatial/', name) , 'bathymetry-cross-section.png',
+ggsave(filename = paste(paste0('plots/', park, '/spatial/', name) , 'bathymetry-cross-section.png',
                         sep = "-"), units = "in", dpi = 600,
        bg = "white",
        width = 8, height = 4)

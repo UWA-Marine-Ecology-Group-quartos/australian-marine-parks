@@ -11,6 +11,7 @@ rm(list = ls())
 
 # Set the study name
 name <- "GeographeAMP"
+park <- "geographe"
 
 # Load libraries
 library(tidyverse)
@@ -26,7 +27,7 @@ file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
 sapply(file.sources, source, .GlobalEnv)
 
 # Read in the data
-dat <- readRDS(paste0("output/model-output/geographe/habitat/", name, "_predicted-habitat.rds"))
+dat <- readRDS(paste0("output/model-output/", park, "/habitat/", name, "_predicted-habitat.rds"))
 
 # Convert the data to a dataframe for some plotting
 pred_class <- as.data.frame(dat, xy = T) %>%
@@ -87,7 +88,7 @@ dominantbenthos_plot(prediction_limits) +
     legend.margin = margin(t = -0.1, unit = "cm"
     ))
 # Save the plot
-ggsave(filename = paste0("plots/geographe/habitat/", name, "_predicted-dominant-habitat.png"),
+ggsave(filename = paste0("plots/", park, "/habitat/", name, "_predicted-dominant-habitat.png"),
        height = 6, width = 8, dpi = 600, units = "in", bg = "white")
 
 # Subset the spatraster data to remove reef and standard error
@@ -101,7 +102,7 @@ plot(pred_rast)
 individualbenthic_plot(prediction_limits)
 
 # Save the plot
-ggsave(filename = paste0("plots/geographe/habitat/", name, "_predicted-individual-habitat.png"),
+ggsave(filename = paste0("plots/", park, "/habitat/", name, "_predicted-individual-habitat.png"),
        height = 5.5, width = 8, dpi = 900, units = "in", bg = "white")
 
 # Create the data (makes a dataframe for each ecosystem depth contour)
@@ -110,11 +111,11 @@ controldata_benthos(year = 2014, amp_abbrv = "GMP", state_abbrv = "NCMP")
 # Create and save the plot (shallow)
 controlplot_benthos(data = park_dat.shallow, amp_abbrv = "GMP", state_abbrv = "NCMP",
                     title = "Shallow (0 - 30 m)")
-ggsave(paste0("plots/geographe/habitat/", name, "_shallow-control-plots.png"),
+ggsave(paste0("plots/", park, "/habitat/", name, "_shallow-control-plots.png"),
        height = 9, width = 8, dpi = 300, units = "in")
 
 # Create and save the plot (mesophotic)
 controlplot_benthos(data = park_dat.meso, amp_abbrv = "GMP", state_abbrv = "NCMP",
                     title = "Mesophotic (30 - 70 m)")
-ggsave(paste0("plots/geographe/habitat/", name, "_mesophotic-control-plots.png"),
+ggsave(paste0("plots/", park, "/habitat/", name, "_mesophotic-control-plots.png"),
        height = 9, width = 8, dpi = 300, units = "in")

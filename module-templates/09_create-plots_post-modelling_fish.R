@@ -11,6 +11,7 @@ rm(list = ls())
 
 # Set the study name
 name <- "GeographeAMP"
+park <- "geographe"
 
 # Load libraries
 library(tidyverse)
@@ -24,7 +25,11 @@ library(patchwork)
 library(tidyterra)
 library(png)
 
-dat <- readRDS(paste0("output/model-output/geographe/fish/",
+# Load functions
+file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
+sapply(file.sources, source, .GlobalEnv)
+
+dat <- readRDS(paste0("output/model-output/", park, "/fish/",
                       name, "_predicted-fish.RDS")) %>%
   rast(crs = "epsg:4326")
 plot(dat)
@@ -54,13 +59,14 @@ ausc <- st_crop(aus, e)
 prediction_limits = c(115.0539, 115.5539, -33.64861, -33.35361)
 fishmetric_plot(prediction_limits)
 
-ggsave(paste0("plots/geographe/fish/", name, "_individual-predictions.png"),
+ggsave(paste0("plots/", park, "/fish/", name, "_individual-predictions.png"),
     width = 9, height = 5, dpi = 300, units = "in", bg = "white")
 
 
+controldata_fish(year = 2014, amp_abbrv = "GMP", state_abbrv = "NCMP")
 
-
-
+controlplot_fish(data = park_dat.shallow, amp_abbrv = "GMP",
+                 state_abbrv = "NCMP", title = "Shallow (0 - 30 m)")
 
 
 
@@ -258,9 +264,6 @@ gg_lm
 # plot year by community thermal index - plus a line for MPA gazetting time ---
 
 gg_cti <- ggplot() +
-
-  # SST needs turning back on after it is added to temporal_dat
-
   geom_line(data = sst, aes(x = year, y = sst))+
   geom_ribbon(data = sst, aes(x = year, y = sst,
                                        ymin = sst - sd, ymax = sst + sd),
