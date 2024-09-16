@@ -11,6 +11,7 @@ rm(list = ls())
 
 # Set the study name
 name <- "GeographeAMP"
+park <- "geographe"
 
 # Load libraries
 library(sf)
@@ -49,7 +50,7 @@ preds <- rast(list(bathy, preds, detre[[1]]))
 names(preds)[1] <- "geoscience_depth"
 
 # Save the bathymetry derivatives
-saveRDS(preds, file = paste0("data/geographe/spatial/rasters/",
+saveRDS(preds, file = paste0("data/", park, "/spatial/rasters/",
                       name, "_bathymetry-derivatives.rds"))
 
 # Read in the metadata
@@ -60,7 +61,7 @@ saveRDS(preds, file = paste0("data/geographe/spatial/rasters/",
 #                 latitude_dd = as.numeric(latitude_dd)) %>%
 #   glimpse()
 
-metadata <- readRDS(paste0("data/geographe/raw/", name, "_metadata.RDS")) %>%
+metadata <- readRDS(paste0("data/", park, "/raw/", name, "_metadata.RDS")) %>%
   dplyr::select(campaignid, sample, longitude_dd, latitude_dd, status) %>%
   glimpse()
 
@@ -80,18 +81,18 @@ metadata.bathy.derivatives   <- cbind(metadata,
   glimpse()
 
 # Save the metadata bathymetry derivatives
-saveRDS(metadata.bathy.derivatives, paste0("data/geographe/tidy/", name, "_metadata-bathymetry-derivatives.rds"))
+saveRDS(metadata.bathy.derivatives, paste0("data/", park, "/tidy/", name, "_metadata-bathymetry-derivatives.rds"))
 
 # Oceanography/Pressures
 # Sea surface temperature
-nc_sst <- open.nc("data/geographe/spatial/oceanography/SST.nc", write = TRUE)
+nc_sst <- open.nc(paste0("data/", park, "/spatial/oceanography/SST.nc"), write = TRUE)
 print.nc(nc_sst) # shows you all the file details
 time_nc <- var.get.nc(nc_sst, 'time')  # NC_CHAR time:units = "days since 1981-01-01 00:00:00" ;
 time_nc_sst <- utcal.nc("seconds since 1981-01-01 00:00:00", time_nc, type = "c")
 dates_sst <- as.Date(time_nc_sst)
 close.nc(nc_sst) # GDAL errors otherwise
 
-rast_sst <- rast("data/geographe/spatial/oceanography/SST.nc",
+rast_sst <- rast(paste0("data/", park, "/spatial/oceanography/SST.nc"),
                  subds = "sea_surface_temperature") %>%
   crop(e) %>%
   trim()
@@ -115,7 +116,7 @@ for (month in unique(month(time(rast_sst)))) {
   }
 }
 
-saveRDS(sst, paste0("data/geographe/spatial/oceanography/", name, "_SST_raster.rds"))
+saveRDS(sst, paste0("data/", park, "/spatial/oceanography/", name, "_SST_raster.rds"))
 
 sst_tsdf <- terra::global(rast_sst, fun = "mean", na.rm = T) %>%
   tibble::rownames_to_column() %>%
@@ -133,12 +134,12 @@ sst_tsdf <- terra::global(rast_sst, fun = "mean", na.rm = T) %>%
                                    month %in% c("12", "01", "02") ~ "Summer")) %>%
   glimpse()
 
-saveRDS(sst_tsdf, paste0("data/geographe/spatial/oceanography/", name, "_SST_time-series.rds"))
+saveRDS(sst_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_SST_time-series.rds"))
 
 # Sea Level Anomaly
 # nc_sla <- open.nc(paste0("data/geographe/spatial/oceanography/", name, "-SLA.nc"),
 #                   write = TRUE)
-nc_sla <- open.nc("data/geographe/spatial/oceanography/SLA.nc",
+nc_sla <- open.nc(paste0("data/", park, "/spatial/oceanography/SLA.nc"),
                   write = TRUE)
 print.nc(nc_sla) # shows you all the file details
 time_nc <- var.get.nc(nc_sla, 'TIME')
@@ -146,7 +147,7 @@ time_nc_sla <- utcal.nc("days since 1985-01-01 00:00:00 UTC", time_nc, type = "c
 dates_sla <- as.Date(time_nc_sla)
 close.nc(nc_sla)
 
-rast_sla <- terra::rast("data/geographe/spatial/oceanography/SLA.nc",
+rast_sla <- terra::rast(paste0("data/", park, "/spatial/oceanography/SLA.nc"),
                         subds = "GSLA")
 time(rast_sla) <- dates_sla
 names(rast_sla) <- dates_sla
@@ -169,7 +170,7 @@ for (month in unique(month(time(rast_sla)))) {
   }
 }
 
-saveRDS(sla, paste0("data/geographe/spatial/oceanography/", name, "_SLA_raster.rds"))
+saveRDS(sla, paste0("data/", park, "/spatial/oceanography/", name, "_SLA_raster.rds"))
 
 sla_tsdf <- terra::global(rast_sla, fun = "mean", na.rm = T) %>%
   tibble::rownames_to_column() %>%
@@ -185,10 +186,10 @@ sla_tsdf <- terra::global(rast_sla, fun = "mean", na.rm = T) %>%
                                    month %in% c("12", "01", "02") ~ "Summer")) %>%
   glimpse()
 
-saveRDS(sla_tsdf, paste0("data/geographe/spatial/oceanography/", name, "_SLA_time-series.rds"))
+saveRDS(sla_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_SLA_time-series.rds"))
 
 # Degree Heating Weeks
-nc_dhw <- open.nc("data/geographe/spatial/oceanography/DHW.nc",
+nc_dhw <- open.nc(paste0("data/", park, "/spatial/oceanography/DHW.nc"),
                   write = TRUE)
 print.nc(nc_dhw) # shows you all the file details
 time_nc <- var.get.nc(nc_dhw, 'time')
@@ -196,7 +197,7 @@ time_nc_dhw <- utcal.nc("seconds since 1970-01-01T00:00:00Z", time_nc, type = "c
 dates_dhw <- as.Date(time_nc_dhw)
 close.nc(nc_dhw)
 
-rast_dhw <- terra::rast("data/geographe/spatial/oceanography/DHW.nc",
+rast_dhw <- terra::rast(paste0("data/", park, "/spatial/oceanography/DHW.nc"),
                         subds = "CRW_DHW")
 time(rast_dhw) <- dates_dhw
 names(rast_dhw) <- dates_dhw
@@ -214,7 +215,7 @@ plot(dhw.2012)
 dhw <- rast(list(dhw.2011, dhw.2012))
 plot(dhw)
 
-saveRDS(dhw, paste0("data/geographe/spatial/oceanography/", name, "_DHW_raster.rds"))
+saveRDS(dhw, paste0("data/", park, "/spatial/oceanography/", name, "_DHW_raster.rds"))
 
 dhw_tsdf <- terra::global(rast_dhw, fun = "mean", na.rm = T) %>%
   tibble::rownames_to_column() %>%
@@ -230,10 +231,10 @@ dhw_tsdf <- terra::global(rast_dhw, fun = "mean", na.rm = T) %>%
                                    month %in% c("12", "01", "02") ~ "Summer")) %>%
   glimpse()
 
-saveRDS(dhw_tsdf, paste0("data/geographe/spatial/oceanography/", name, "_DHW_time-series.rds"))
+saveRDS(dhw_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_DHW_time-series.rds"))
 
 # Acifidication
-nc_acid <- open.nc("data/geographe/spatial/oceanography/Acidification.nc",
+nc_acid <- open.nc(paste0("data/", park, "/spatial/oceanography/Acidification.nc"),
                   write = TRUE)
 print.nc(nc_acid) # shows you all the file details
 time_nc <- var.get.nc(nc_acid, 'TIME')
@@ -241,7 +242,7 @@ time_nc_acid <- utcal.nc("months since 1800-01-01 00:00:00", time_nc, type = "c"
 dates_acid <- as.Date(time_nc_acid)
 close.nc(nc_acid)
 
-rast_acid <- terra::rast("data/geographe/spatial/oceanography/Acidification.nc",
+rast_acid <- terra::rast(paste0("data/", park, "/spatial/oceanography/Acidification.nc"),
                          subds = "pH_T")
 time(rast_acid) <- dates_acid
 names(rast_acid) <- dates_acid
@@ -261,4 +262,4 @@ acid_tsdf <- terra::global(rast_acid, fun = "mean", na.rm = T) %>%
                                    month %in% c("12", "01", "02") ~ "Summer")) %>%
   glimpse()
 
-saveRDS(acid_tsdf, paste0("data/geographe/spatial/oceanography/", name, "_Acidification_time-series.rds"))
+saveRDS(acid_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_Acidification_time-series.rds"))

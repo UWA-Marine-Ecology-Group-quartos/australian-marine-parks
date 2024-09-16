@@ -10,6 +10,7 @@ rm(list = ls())
 
 # Set the study name
 name <- "GeographeAMP"
+park <- "geographe"
 
 library(mgcv)
 library(tidyverse)
@@ -19,20 +20,11 @@ library(predicts)
 library(FSSgam)
 library(CheckEM)
 
-tidy_maxn <- readRDS(paste0("data/geographe/tidy/", name, "_tidy-count.rds")) %>%
+tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %>%
   dplyr::filter(!sample %in% "779",
                 !number > 200, # Remove some outliers
                 geoscience_roughness < 4) %>% # Remove outliers in roughness
   glimpse()
-
-unique(tidy_maxn$response)
-
-test <- tidy_maxn %>%
-  group_by(campaignid, longitude_dd, latitude_dd) %>%
-  dplyr::summarise(n = n())
-
-ggplot() +
-  geom_point(data = tidy_maxn, aes(x = sample, y = number), alpha = 0.5)
 
 # # Re-set the predictors for modeling----
 names(tidy_maxn)

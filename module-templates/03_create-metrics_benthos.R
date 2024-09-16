@@ -12,6 +12,7 @@ library(tidyverse)
 
 # Set the study name
 name <- "GeographeAMP"
+park <- "geographe"
 
 # Using dummy data
 # benthosold <- read.csv("data/geographe/raw/temp/2007-2014-Geographe-stereo-BRUVs_broad.habitat.csv") %>%
@@ -23,7 +24,7 @@ name <- "GeographeAMP"
 #   dplyr::select(-c(starts_with("broad"))) %>%
 #   glimpse()
 
-benthos <- readRDS(paste0("data/geographe/raw/", name, "_benthos.RDS")) %>%
+benthos <- readRDS(paste0("data/", park, "/raw/", name, "_benthos.RDS")) %>%
   dplyr::select(campaignid, sample, level_2, level_3, count) %>%
   dplyr::mutate(habitat = case_when(level_2 %in% "Macroalgae" ~ "macroalgae",
                                     level_2 %in% "Seagrasses" ~ "seagrasses",
@@ -38,4 +39,4 @@ benthos <- readRDS(paste0("data/geographe/raw/", name, "_benthos.RDS")) %>%
 
 length(unique(benthos$sample))
 
-saveRDS(benthos, paste0("data/geographe/tidy/", name, "_benthos-count.RDS"))
+saveRDS(benthos, paste0("data/", park, "/tidy/", name, "_benthos-count.RDS"))

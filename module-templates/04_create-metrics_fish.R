@@ -7,7 +7,7 @@
 ###
 
 # Clear the environment
-rm(list= ls())
+rm(list = ls())
 
 # Load necessary libraries
 library(CheckEM)
@@ -21,15 +21,16 @@ library(tidyterra)
 
 # Set the study name
 name <- "GeographeAMP"
+park <- "geographe"
 
-metadata_bathy_derivatives <- readRDS(paste0("data/geographe/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
+metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
   clean_names() %>%
   glimpse()
 
-metadata <- readRDS(paste0("data/geographe/raw/", name, "_metadata.RDS"))
+metadata <- readRDS(paste0("data/", park, "/raw/", name, "_metadata.RDS"))
 
 # This is formatted habitat from 03_create-metrics_habitat
-benthos <- readRDS(paste0("data/geographe/tidy/", name, "_benthos-count.RDS")) %>%
+benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) %>%
   CheckEM::clean_names() %>%
   dplyr::select(campaignid, sample, reef, total_pts) %>%
   dplyr::mutate(reef = reef/total_pts) %>% # Model reef as proportion for fish prediction
@@ -60,7 +61,7 @@ large_bodied_carnivores <- CheckEM::australia_life_history %>%
   dplyr::select(family, genus, species, l50) %>%
   glimpse()
 
-count <- readRDS(paste0("data/geographe/raw/", name, "_complete_count.RDS")) %>%
+count <- readRDS(paste0("data/", park, "/raw/", name, "_complete_count.RDS")) %>%
   dplyr::select(campaignid, sample, family, genus, species, count) %>%
   dplyr::mutate(scientific_name = paste(family, genus, species, sep = " ")) %>%
   glimpse()
@@ -76,68 +77,10 @@ ta.sr <- count %>%
   pivot_longer(cols = c("total_abundance", "species_richness"), names_to = "response", values_to = "number") %>%
   glimpse() # Should be nsamps * 2 = 594
 
-# The RLS thermal niche is going to already be in the data
-# master <- CheckEM::australia_life_history %>%
-#   clean_names() %>%
-#   dplyr::filter(grepl('Australia', global_region),
-#                 grepl('SW', marine_region)) %>% # Change country here
-#   dplyr::select(family, genus, species, rls_thermal_niche) %>%
-#   dplyr::distinct() %>%
-#   dplyr::glimpse()
-
-# create_cti <- function(data, country, region) {
-#   # Transform 'count' dataframe into new dataframe for Community Temperature Index
-#   # 'count' dataframe must have campaignid, sample, and count columns
-#   require(CheckEM)
-#   require(tidyverse)
-#
-#   master <- CheckEM::australia_life_history %>%
-#     clean_names() %>%
-#     dplyr::filter(grepl(country, global_region),
-#                   grepl(region, marine_region)) %>% # Change country here
-#     dplyr::select(family, genus, species, rls_thermal_niche) %>%
-#     dplyr::distinct()
-#
-#   data %>%
-#     dplyr::ungroup() %>%
-#     dplyr::filter(count > 0) %>%
-#     left_join(master) %>%
-#     uncount(count) %>%
-#     dplyr::mutate(count = 1) %>%
-#     dplyr::filter(!is.na(rls_thermal_niche)) %>%
-#     dplyr::mutate(log_count = log10(count + 1),
-#                   weightedsti = log_count*rls_thermal_niche) %>%
-#     dplyr::group_by(campaignid, sample) %>%
-#     dplyr::summarise(log_count = sum(log_count, na.rm = T),
-#                      w_sti = sum(weightedsti, na.rm = T),
-#                      CTI = w_sti/log_count,
-#                      number = mean(rls_thermal_niche, na.rm = T)) %>%
-#     dplyr::ungroup() %>%
-#     dplyr::mutate(response = "cti")
-# }
-
 cti <- CheckEM::create_cti(data = count) %>%
   dplyr::rename(number = cti) %>%
   dplyr::mutate(response = "cti") %>%
   glimpse()
-
-# cti <- count %>%
-#   dplyr::ungroup() %>%
-#   dplyr::filter(count > 0) %>%
-#   left_join(master) %>%
-#   uncount(count) %>%
-#   dplyr::mutate(count = 1) %>%
-#   dplyr::filter(!is.na(rls_thermal_niche)) %>%
-#   dplyr::mutate(log_count = log10(count + 1),
-#                 weightedsti = log_count*rls_thermal_niche) %>%
-#   dplyr::group_by(campaignid, sample) %>%
-#   dplyr::summarise(log_count = sum(log_count, na.rm = T),
-#                    w_sti = sum(weightedsti, na.rm = T),
-#                    CTI = w_sti/log_count,
-#                    number = mean(rls_thermal_niche, na.rm = T)) %>%
-#   dplyr::ungroup() %>%
-#   dplyr::mutate(response = "cti") %>%
-#   glimpse() # Can have less samples than in metadata, if there are samples with no fish or no fish with valid thermal niches
 
 tidy_maxn <- bind_rows(ta.sr, cti) %>%
   dplyr::select(-c(log_count, w_sti, CTI)) %>%
@@ -148,9 +91,9 @@ tidy_maxn <- bind_rows(ta.sr, cti) %>%
                 !is.na(geoscience_aspect)) %>% # Not valid values for modelling so will remove them now
   glimpse()
 
-saveRDS(tidy_maxn, file = paste0("data/geographe/tidy/", name, "_tidy-count.rds"))
+saveRDS(tidy_maxn, file = paste0("data/", park, "/tidy/", name, "_tidy-count.rds"))
 
-length <- readRDS(paste0("data/geographe/raw/", name, "_complete_length.RDS")) %>%
+length <- readRDS(paste0("data/", park, "/raw/", name, "_complete_length.RDS")) %>%
   dplyr::select(campaignid, sample, family, genus, species, length_mm, number) %>%
   left_join(large_bodied_carnivores) %>%
   dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
@@ -232,7 +175,7 @@ tidy_length <- bind_rows(big_carn, small_carn, small_snap) %>% # Removed snapper
   glimpse()
 
 # Visualise spatial patterns
-preds <- readRDS(paste0("data/geographe/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
+preds <- readRDS(paste0("data/{", park, "/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
 plot(preds)
 names(preds)
 
@@ -245,4 +188,4 @@ ggplot() +
   theme_classic() +
   coord_sf()
 
-saveRDS(tidy_length, file = paste0("data/geographe/tidy/", name, "_tidy-length.rds"))
+saveRDS(tidy_length, file = paste0("data/", park, "/tidy/", name, "_tidy-length.rds"))

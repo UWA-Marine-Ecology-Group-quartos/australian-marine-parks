@@ -73,7 +73,7 @@ controldata_fish <- function(year, amp_abbrv, state_abbrv) {
     dat.meso <- dat %>%
       terra::mask(meso)
 
-    errors.meso <- terra::extract(dat.shallow, marine_parks) %>%
+    errors.meso <- terra::extract(dat.meso, marine_parks) %>%
       dplyr::group_by(ID) %>%
       dplyr::summarise(across(starts_with("p"), se)) %>%
       dplyr::mutate(ID = as.character(ID),
@@ -82,7 +82,7 @@ controldata_fish <- function(year, amp_abbrv, state_abbrv) {
                     Lm_se = p_mature.fit) %>%
       dplyr::select(ID, year, cti_se, richness_se, Lm_se)
 
-    means.meso <- terra::extract(dat.shallow, marine_parks) %>%
+    means.meso <- terra::extract(dat.meso, marine_parks) %>%
       dplyr::group_by(ID) %>%
       dplyr::summarise(across(starts_with("p"), ~mean(.x, na.rm = T))) %>%
       dplyr::mutate(ID = as.character(ID),
@@ -113,7 +113,7 @@ controldata_fish <- function(year, amp_abbrv, state_abbrv) {
     dat.rari <- dat %>%
       terra::mask(rari)
 
-    errors.rari <- terra::extract(dat.shallow, marine_parks) %>%
+    errors.rari <- terra::extract(dat.rari, marine_parks) %>%
       dplyr::group_by(ID) %>%
       dplyr::summarise(across(starts_with("p"), se)) %>%
       dplyr::mutate(ID = as.character(ID),
@@ -122,7 +122,7 @@ controldata_fish <- function(year, amp_abbrv, state_abbrv) {
                     Lm_se = p_mature.fit) %>%
       dplyr::select(ID, year, cti_se, richness_se, Lm_se)
 
-    means.rari <- terra::extract(dat.shallow, marine_parks) %>%
+    means.rari <- terra::extract(dat.rari, marine_parks) %>%
       dplyr::group_by(ID) %>%
       dplyr::summarise(across(starts_with("p"), ~mean(.x, na.rm = T))) %>%
       dplyr::mutate(ID = as.character(ID),

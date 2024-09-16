@@ -19,15 +19,14 @@ library(doParallel)
 
 # Set the study name
 name <- "GeographeAMP"
+park <- "geographe"
 
-metadata_bathy_derivatives <- readRDS(paste0("data/geographe/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
+metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
   clean_names() %>%
   glimpse()
 
 # Bring in and format the data----
-habi <- readRDS(paste0("data/geographe/tidy/", name, "_benthos-count.RDS")) %>%
-  dplyr::filter(!str_detect(sample, "MF")) %>% # Removes 2007 habitat data - should be fixed with data download from API
-  dplyr::mutate(campaignid = "2014-12_Geographe.Bay_stereoBRUVs") %>% # Also remove this
+habi <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) %>%
   left_join(metadata_bathy_derivatives) %>%
   dplyr::filter(!is.na(longitude_dd), # Remove this later - metadata issue
                 !geoscience_roughness > 3) %>% # Filter outliers - check later when more data is added
@@ -44,7 +43,6 @@ pred.vars <- c("geoscience_depth", "geoscience_aspect", "geoscience_roughness", 
 round(cor(model_dat[ , pred.vars]), 2) # Roughness and depth 0.35 correlated
 
 # Review of individual predictors for even distribution---
-library(patchwork)
 CheckEM::plot_transformations(pred.vars = pred.vars, dat = model_dat)
 
 # Check to make sure Response vector has not more than 80% zeros----
@@ -60,7 +58,7 @@ for(i in 1:length(unique.vars)){
 unique.vars.use                                                                 # All good
 
 # Run the full subset model selection----
-outdir    <- ("output/model-output/geographe/habitat/")
+outdir    <- paste0("output/model-output/", park, "/habitat/")
 use.dat   <- model_dat[model_dat$response %in% c(unique.vars.use), ]
 out.all   <- list()
 var.imp   <- list()
@@ -162,17 +160,17 @@ m_reef <- gam(cbind(reef, total_pts - reef) ~
               data = habi, method = "REML", family = binomial("logit"))
 summary(m_reef)
 
-preds <- readRDS(paste0("data/geographe/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
+preds <- readRDS(paste0("data/", park, "/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
 preddf <- preds %>%
   as.data.frame(xy = T, na.rm = T)
 
 # predict, rasterise and plot
 predhab <- cbind(preddf,
-                "p_macro" = predict(m_macro, preddf, type = "response", se.fit = T),
-                "p_sand" = predict(m_sand, preddf, type = "response", se.fit = T),
+                "p_macro"    = predict(m_macro, preddf, type = "response", se.fit = T),
+                "p_sand"     = predict(m_sand, preddf, type = "response", se.fit = T),
                 "p_seagrass" = predict(m_seagrass, preddf, type = "response", se.fit = T),
-                "p_inverts" = predict(m_inverts, preddf, type = "response", se.fit = T),
-                "p_reef" = predict(m_reef, preddf, type = "response", se.fit = T)) %>%
+                "p_inverts"  = predict(m_inverts, preddf, type = "response", se.fit = T),
+                "p_reef"     = predict(m_reef, preddf, type = "response", se.fit = T)) %>%
   glimpse()
 
 prasts <- rast(predhab %>% dplyr::select(x, y, starts_with("p_")),
@@ -186,7 +184,6 @@ xy <- habi %>%
   dplyr::rename(x = longitude_dd, y = latitude_dd) %>%
   glimpse()
 
-# resp.vars <- names(preddf)[18:ncol(preddf)]
 resp.vars <- c("p_sand", "p_macro",
                "p_seagrass", "p_inverts", "p_reef")
 
@@ -215,7 +212,7 @@ for(i in 1:length(resp.vars)) {
   }
 }
 
-saveRDS(preddf_m, paste0("output/model-output/geographe/habitat/", name, "_predicted-habitat.rds"))      # Ignored
+saveRDS(preddf_m, paste0("output/model-output/", park, "/habitat/", name, "_predicted-habitat.rds"))      # Ignored
 
-writeRaster(predhab, paste0("output/model-output/geographe/habitat/", names(predhab), "_predicted.tif"),
+writeRaster(predhab, paste0("output/model-output/", park, "/habitat/", names(predhab), "_predicted.tif"),
             overwrite = TRUE)
