@@ -57,36 +57,54 @@ ui <- page_navbar(
         layout_column_wrap(
           width = 1 / 3,
           fill = FALSE,
-          min_height = 200,
+          min_height = 100,
+          max_height = 300,
 
           card(
             full_screen = TRUE,
+
+            card_title(">Lm large-bodied generalist carnivores"), # abundance by size class
+
+            plotOutput("geo_lm", height = 200)#, height = "100%")#,
             # plotOutput(),
-            card_body(
-              fill = FALSE, gap = 0,
-              card_title(">Lm large-bodied generalist carnivores abundance by size class"),
-              p(class = "text-muted", "Caption for plot of >Lm large-bodied generalist carnivores abundance by size class")
-            )
+            # card_body(
+            #   fill = FALSE, gap = 0,
+            #
+            #
+            #   #p(class = "text-muted", "Caption for plot of >Lm large-bodied generalist carnivores abundance by size class")
+            # )
           ),
 
           card(
             full_screen = TRUE,
+
+            card_title("Species richness"),
+
+            plotOutput("geo_sr", height = 200)#,
             # plotOutput(),
-            card_body(
-              fill = FALSE, gap = 0,
-              card_title("<Lm large-bodied generalist carnivores abundance by size class"),
-              p(class = "text-muted", "Caption for plot of <Lm large-bodied generalist carnivores abundance by size class")
-            )
+            # card_body(
+            #   fill = FALSE, gap = 0,
+            #   # card_title("<Lm large-bodied generalist carnivores abundance by size class"), # change back later
+            #
+            #
+            #   # p(class = "text-muted", "Caption for plot of <Lm large-bodied generalist carnivores abundance by size class") # change back later
+            #   #p(class = "text-muted", "Caption for species richness")
+            # )
           ),
 
           card(
             full_screen = TRUE,
+
+            card_title("CTI"),
+
+            plotOutput("geo_cti", height = 200)#,
             # plotOutput(),
-            card_body(
-              fill = FALSE, gap = 0,
-              card_title("CTI"),
-              p(class = "text-muted", "Caption for plot of CTI")
-            )
+            # card_body(
+            #   fill = FALSE, gap = 0,
+            #
+            #
+            #   #p(class = "text-muted", "Caption for plot of CTI")
+            # )
           )
         ),
 
@@ -94,13 +112,14 @@ ui <- page_navbar(
           min_height = 400,
           # card_header("Map"),
           full_screen = TRUE,
+          card_title("Spatial model outputs"),
           leafletOutput("demersal_fish_map"),
-          card_body(
-            fill = FALSE, gap = 0,
-            card_title("Raster outputs"),
-            p(class = "text-muted", "All the raster outputs will go on a leaflet here?
-              Where you can switch between layers?")
-          )
+          # card_body(
+          #   fill = FALSE, gap = 0,
+          #
+          #   # p(class = "text-muted", "All the raster outputs will go on a leaflet here?
+          #     # Where you can switch between layers?")
+          # )
         )
       ),
       nav_panel(
