@@ -3,6 +3,7 @@ library(ggplot2)
 library(dplyr)
 library(ggforce)
 library(patchwork)
+library(ggimage) # for adding icons
 
 # Dummy Data with a missing year (2022)
 data <- data.frame(
@@ -22,6 +23,15 @@ data$Condition_numeric <- as.numeric(factor(data$Condition, levels = c("Very poo
 
 # Define arrows for Trend (Right arrow for 'Improved', Left arrow for 'Deteriorated')
 data$Trend_Arrow <- ifelse(data$Trend == "Improved", "\u2192", ifelse(data$Trend == "Deteriorated", "\u2190", ""))
+
+# Add a column for the path to the confidence icons
+data$Confidence_Icon <- ifelse(data$Condition_Confidence == "High", "images/confidence_high.png",
+                               ifelse(data$Condition_Confidence == "Limited", "images/confidence_limited.png",
+                                      "images/confidence_very-limited.png"))
+
+# Define alpha values based on Trend_Confidence
+alpha_values <- c("High" = 1, "Limited" = 0.7, "Very limited" = 0.4)
+data$Alpha <- alpha_values[data$Trend_Confidence]
 
 # Function to create the shape corners using the year index
 create_shape <- function(index, condition_numeric) {
@@ -77,15 +87,23 @@ plot_condition <- ggplot() +
   # Add trend arrows for improving or deteriorating trends (horizontal)
   geom_text(data = data, aes(x = Condition_numeric,
                              y = years$Index[match(Year, years$Year)],
-                             label = Trend_Arrow),
+                             label = Trend_Arrow,
+                             alpha = Alpha),  # Alpha based on Trend_Confidence
             size = 18, color = "black", hjust = 0.5, vjust = 0.3, fontface = "bold") +
 
   # Adding horizontal line for 'Stable' trend
   geom_segment(data = subset(data, Trend == "Stable"),
                aes(x = Condition_numeric - 0.1, xend = Condition_numeric + 0.1,
                    y = years$Index[match(Year, years$Year)],
-                   yend = years$Index[match(Year, years$Year)]),
+                   yend = years$Index[match(Year, years$Year)],
+                   alpha = Alpha),  # Alpha based on Trend_Confidence
                color = "black", size = 1.2) +
+
+  # Add icons for Condition_Confidence above each tile
+  geom_image(data = data, aes(x = Condition_numeric,
+                              y = years$Index[match(Year, years$Year)] + 0.4,
+                              image = Confidence_Icon),
+             size = 0.15) +  # Adjust the size as needed
 
   # Axis and titles
   labs(#title = "Community Temperature Index",
