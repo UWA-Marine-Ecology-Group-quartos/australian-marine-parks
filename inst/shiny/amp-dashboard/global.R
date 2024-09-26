@@ -3,6 +3,8 @@ library(bslib)
 library(leaflet)
 library(dplyr)
 
+thematic::thematic_shiny()
+
 # Define the theme using bslib ----
 theme <- bs_theme(
   bg = "#FFFFFF",  # Background color
@@ -32,3 +34,4 @@ south_west <- networks_and_parks %>%
   dplyr::pull(park)
 
 # TODO fix coral sea
+
