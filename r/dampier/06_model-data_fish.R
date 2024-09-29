@@ -9,8 +9,8 @@
 rm(list = ls())
 
 # Set the study name
-name <- "GeographeAMP"
-park <- "geographe"
+name <- "dampierAMP"
+park <- "dampier"
 
 library(mgcv)
 library(tidyverse)
@@ -21,9 +21,6 @@ library(FSSgam)
 library(CheckEM)
 
 tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %>%
-  dplyr::filter(!sample %in% "779",
-                !number > 200, # Remove some outliers
-                geoscience_roughness < 4) %>% # Remove outliers in roughness
   glimpse()
 
 # # Re-set the predictors for modeling----
@@ -43,7 +40,7 @@ for(i in 1:length(unique.vars)){
 resp.vars # All good
 
 # Run the full subset model selection----
-savedir <- "output/model-output/geographe/fish/"
+savedir <- "output/model-output/dampier/fish/"
 factor.vars <- c("status")
 out.all     <- list()
 var.imp     <- list()
@@ -101,8 +98,7 @@ all.var.imp    <- do.call("rbind",var.imp)
 write.csv(all.mod.fits[ , -2], file = paste(savedir, paste(name, "all.mod.fits.csv", sep = "_"), sep = "/"))
 write.csv(all.var.imp, file = paste(savedir, paste(name, "all.var.imp.csv", sep = "_"), sep = "/"))
 
-tidy_length <- readRDS(paste0("data/geographe/tidy/", name, "_tidy-length.rds")) %>%
-  dplyr::filter(geoscience_roughness < 3) %>%
+tidy_length <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-length.rds")) %>%
   glimpse()
 
 # Check to make sure Response vector has not more than 80% zeros----

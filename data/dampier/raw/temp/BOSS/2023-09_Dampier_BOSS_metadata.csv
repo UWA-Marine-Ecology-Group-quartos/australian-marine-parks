@@ -1,4 +1,4 @@
-period,latitude_dd,longitude_dd,date_time,site,location,status,depth_m,successful_count,successful_length,observer_count,observer_length,forwards_habitat_image_saved,downwards_habitat_image_saved,successful_habitat_forwards,successful_habitat_downwards,observer_habitat_forwards,observer_habitat_downwards,comment,raw_hdd_number,con_hdd_number,maxn_complete_date,maxn_checker,length_complete_date
+period,latitude_dd,longitude_dd,date_time,site,location,status,depth_m,successful_count,successful_length,observer_count,observer_length,panoramic_habitat_image_saved,downwards_habitat_image_saved,successful_habitat_panoramic,successful_habitat_downwards,observer_habitat_panoramic,observer_habitat_downwards,comment,raw_hdd_number,con_hdd_number,maxn_complete_date,maxn_checker,length_complete_date
 DM-DC-015,-20.3619082374411,116.988046259433,2023-09-20T07:39:40+08:00,,,Fished,33.4,,,,,Yes,,Yes,,Nidhi Menon,,,,,,,
 DM-DC-010,-20.3569481663945,116.985750282348,2023-09-20T07:53:40+08:00,,,Fished,34,,,,,Yes,,Yes,,Nidhi Menon,,,,,,,
 DM-DC-006,-20.3553000002197,116.973198333088,2023-09-20T08:06:13+08:00,,,Fished,34.7,,,,,Yes,,Yes,,Nidhi Menon,,,,,,,

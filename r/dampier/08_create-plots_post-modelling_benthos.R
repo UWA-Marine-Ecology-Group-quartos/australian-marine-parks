@@ -10,8 +10,8 @@
 rm(list = ls())
 
 # Set the study name
-name <- "GeographeAMP"
-park <- "geographe"
+name <- "dampierAMP"
+park <- "dampier"
 
 # Load libraries
 library(tidyverse)
@@ -51,7 +51,7 @@ ind_class <- pred_class %>%
 unique(ind_class$habitat)
 
 # Set cropping extent - larger than most zoomed out plot
-e <- ext(114.2, 115.8,-34.7, -33.1)
+e <- ext(116.7, 117.7,-20.919, -20)
 
 # Load necessary spatial files
 # Australian outline and state and commonwealth marine parks
@@ -60,7 +60,7 @@ ausc <- st_crop(aus, e)
 
 # Australian outline and state and commonwealth marine parks
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
+  dplyr::filter(name %in% c("Dampier")) %>%
   glimpse()
 plot(marine_parks["zone"])
 
@@ -73,7 +73,7 @@ marine_parks_state <- marine_parks %>%
 pred_plot <- normalise_se(data = pred_class)
 
 # Set the limits for the plot
-prediction_limits = c(115.0539, 115.5539, -33.64861, -33.35361)
+prediction_limits = c(116.779, 117.544, -20.738, -20.282)
 
 # Create the plot
 dominantbenthos_plot(prediction_limits) +
@@ -95,7 +95,7 @@ ggsave(filename = paste0("plots/", park, "/habitat/", name, "_predicted-dominant
 pred_rast <- subset(dat, str_detect(names(dat), "(?<!se).fit") & # String don't contain "fit" preceded by "se"
                       str_detect(names(dat), "^(?!.*reef).*$")) # Strings don't contain "reef"
 names(pred_rast)
-names(pred_rast) <- c("Sand", "Macroalgae", "Seagrasses", "Sessile invertebrates") # Set the names - make sure this matches the order
+names(pred_rast) <- c("Sand", "Sessile invertebrates") # Set the names - make sure this matches the order
 plot(pred_rast)
 
 # Create the plot - same x and y limits
