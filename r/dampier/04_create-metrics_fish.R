@@ -20,14 +20,16 @@ library(terra)
 library(tidyterra)
 
 # Set the study name
-name <- "GeographeAMP"
-park <- "geographe"
+name <- "dampierAMP"
+park <- "dampier"
 
 metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
   clean_names() %>%
   glimpse()
 
-metadata <- readRDS(paste0("data/", park, "/raw/", name, "_metadata.RDS"))
+metadata <- readRDS(paste0("data/", park, "/raw/", name, "_BRUVs_metadata.RDS")) %>%
+  dplyr::rename(sample = opcode) %>%
+  glimpse()
 
 # This is formatted habitat from 03_create-metrics_habitat
 benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) %>%
@@ -38,7 +40,7 @@ benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) 
 
 # Maturity data from WA sheet - should this just get included in the life history?
 maturity_mean <- CheckEM::maturity %>%
-  dplyr::filter(!marine_region %in% c("NW", "N")) %>% # Change here for each marine park
+  dplyr::filter(!marine_region %in% c("SW")) %>% # Change here for each marine park
   dplyr::group_by(family, genus, species, sex) %>%
   dplyr::slice(which.min(l50_mm)) %>%
   ungroup() %>%
@@ -61,7 +63,8 @@ large_bodied_carnivores <- CheckEM::australia_life_history %>%
   dplyr::select(family, genus, species, l50) %>%
   glimpse()
 
-count <- readRDS(paste0("data/", park, "/raw/", name, "_complete_count.RDS")) %>%
+count <- readRDS(paste0("data/", park, "/raw/", name, "_BRUVs_complete_count.RDS")) %>%
+  dplyr::rename(sample = opcode) %>%
   dplyr::select(campaignid, sample, family, genus, species, count) %>%
   dplyr::mutate(scientific_name = paste(family, genus, species, sep = " ")) %>%
   glimpse()
@@ -83,7 +86,7 @@ cti <- CheckEM::create_cti(data = count) %>%
   glimpse()
 
 tidy_maxn <- bind_rows(ta.sr, cti) %>%
-  dplyr::select(-c(log_count, w_sti, CTI)) %>%
+  dplyr::select(-c(log_count, w_sti)) %>%
   dplyr::left_join(benthos) %>%
   dplyr::left_join(metadata) %>% # To join samples without valid bathymetry derivatives
   dplyr::left_join(metadata_bathy_derivatives) %>%
@@ -93,7 +96,8 @@ tidy_maxn <- bind_rows(ta.sr, cti) %>%
 
 saveRDS(tidy_maxn, file = paste0("data/", park, "/tidy/", name, "_tidy-count.rds"))
 
-length <- readRDS(paste0("data/", park, "/raw/", name, "_complete_length.RDS")) %>%
+length <- readRDS(paste0("data/", park, "/raw/", name, "_BRUVs_complete_length.RDS")) %>%
+  dplyr::rename(sample = opcode) %>%
   dplyr::select(campaignid, sample, family, genus, species, length_mm, number) %>%
   left_join(large_bodied_carnivores) %>%
   dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
@@ -139,43 +143,13 @@ small_carn <- length %>%
 # Check number of samples that are > 0
 nrow(filter(small_carn, number > 0))/nrow(small_carn)
 
-big_snap <- length %>%
-  dplyr::filter(species %in% "auratus",
-                length_mm > l50) %>%
-  dplyr::group_by(campaignid, sample) %>%
-  dplyr::summarise(number = sum(number)) %>%
-  ungroup() %>%
-  right_join(metadata_length) %>%
-  dplyr::mutate(number = ifelse(is.na(number), 0, number)) %>%
-  dplyr::mutate(response = "greater than Lm Pink snapper") %>%
-  left_join(benthos) %>%
-  dplyr::glimpse()
-# Check number of samples that are > 0
-nrow(filter(big_snap, number > 0))/nrow(big_snap) # This won't run
-
-small_snap <- length %>%
-  dplyr::filter(species %in% "auratus",
-                length_mm < l50) %>%
-  dplyr::group_by(campaignid, sample) %>%
-  dplyr::summarise(number = sum(number)) %>%
-  ungroup() %>%
-  right_join(metadata_length) %>%
-  dplyr::mutate(number = ifelse(is.na(number), 0, number)) %>%
-  dplyr::mutate(response = "smaller than Lm Pink snapper") %>%
-  left_join(benthos) %>%
-  dplyr::glimpse()
-# Check number of samples that are > 0
-nrow(filter(small_snap, number > 0))/nrow(small_snap)
-
-tidy_length <- bind_rows(big_carn, small_carn, small_snap) %>% # Removed snapper - not enough non-zero data
+tidy_length <- bind_rows(big_carn, small_carn) %>%
   dplyr::left_join(metadata) %>%
   dplyr::left_join(metadata_bathy_derivatives) %>%
-  dplyr::filter(!is.na(reef), # GBR3-4 missing habitat
-                !is.na(geoscience_aspect)) %>% # Not valid values for modelling so will remove them now
   glimpse()
 
 # Visualise spatial patterns
-preds <- readRDS(paste0("data/{", park, "/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
+preds <- readRDS(paste0("data/", park, "/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
 plot(preds)
 names(preds)
 
@@ -183,9 +157,9 @@ ggplot() +
   geom_spatraster(data = preds, aes(fill = geoscience_depth)) +
   geom_point(data = tidy_length,
              aes(x = longitude_dd, y = latitude_dd, size = number, colour = I(if_else(number == 0, "white", "darkblue"))),
-             show.legend = F) +
+             show.legend = F, alpha = 0.5) +
   facet_wrap(~response) +
   theme_classic() +
-  coord_sf()
+  coord_sf(crs = 4326)
 
 saveRDS(tidy_length, file = paste0("data/", park, "/tidy/", name, "_tidy-length.rds"))

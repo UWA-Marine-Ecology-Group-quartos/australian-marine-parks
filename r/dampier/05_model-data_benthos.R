@@ -18,8 +18,8 @@ library(foreach)
 library(doParallel)
 
 # Set the study name
-name <- "GeographeAMP"
-park <- "geographe"
+name <- "dampierAMP"
+park <- "dampier"
 
 metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
   clean_names() %>%
@@ -28,12 +28,11 @@ metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_me
 # Bring in and format the data----
 habi <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) %>%
   left_join(metadata_bathy_derivatives) %>%
-  dplyr::filter(!is.na(longitude_dd), # Remove this later - metadata issue
-                !geoscience_roughness > 3) %>% # Filter outliers - check later when more data is added
+  dplyr::filter(!is.na(latitude_dd)) %>% # Check this
   glimpse()
 
 model_dat <- habi %>%
-  pivot_longer(cols = c(macroalgae, sand, rock, sessile_invertebrates, reef, seagrasses),
+  pivot_longer(cols = c(macroalgae, sand, rock, sessile_invertebrates, reef),
                names_to = "response", values_to = "number")
 
 # Set predictor variables---
@@ -55,7 +54,7 @@ for(i in 1:length(unique.vars)){
     unique.vars.use = c(unique.vars.use, unique.vars[i])}
 }
 
-unique.vars.use                                                                 # All good
+unique.vars.use                                                                 # Not enough macroalgae or rock to model
 
 # Run the full subset model selection----
 outdir    <- paste0("output/model-output/", park, "/habitat/")
@@ -128,34 +127,22 @@ summary(m_sand)
 
 # Rock - too rare to model
 
-# Macroalgae
-m_macro <- gam(cbind(macroalgae, total_pts - macroalgae) ~
-                 s(geoscience_depth,     k = 5, bs = "cr")  +
-                 s(geoscience_detrended, k = 5, bs = "cr") +
-                 s(geoscience_roughness, k = 5, bs = "cr"),
-               data = habi, method = "REML", family = binomial("logit"))
-summary(m_macro)
+# Macroalgae - too rare to model
 
-# Seagrass
-m_seagrass <- gam(cbind(seagrasses, total_pts - seagrasses) ~
-                    s(geoscience_depth, k = 5, bs = "cr") +
-                    s(geoscience_detrended, k = 5, bs = "cr") +
-                    s(geoscience_roughness, k = 5, bs = "cr"),
-                  data = habi, method = "REML", family = binomial("logit"))
-summary(m_seagrass)
+# Seagrass - not in the dataset
 
 # Inverts
 m_inverts <- gam(cbind(sessile_invertebrates, total_pts - sessile_invertebrates) ~
                    s(geoscience_aspect,     k = 5, bs = "cc")  +
                    s(geoscience_depth, k = 5, bs = "cr") +
-                   s(geoscience_detrended, k = 5, bs = "cr"),
+                   s(geoscience_roughness, k = 5, bs = "cr"),
                  data = habi, method = "REML", family = binomial("logit"))
 summary(m_inverts)
 
 # Reef
 m_reef <- gam(cbind(reef, total_pts - reef) ~
-                s(geoscience_depth,     k = 5, bs = "cr")  +
-                s(geoscience_detrended, k = 5, bs = "cr") +
+                s(geoscience_aspect,     k = 5, bs = "cr")  +
+                s(geoscience_depth, k = 5, bs = "cr") +
                 s(geoscience_roughness, k = 5, bs = "cr"),
               data = habi, method = "REML", family = binomial("logit"))
 summary(m_reef)
@@ -166,9 +153,7 @@ preddf <- preds %>%
 
 # predict, rasterise and plot
 predhab <- cbind(preddf,
-                "p_macro"    = predict(m_macro, preddf, type = "response", se.fit = T),
                 "p_sand"     = predict(m_sand, preddf, type = "response", se.fit = T),
-                "p_seagrass" = predict(m_seagrass, preddf, type = "response", se.fit = T),
                 "p_inverts"  = predict(m_inverts, preddf, type = "response", se.fit = T),
                 "p_reef"     = predict(m_reef, preddf, type = "response", se.fit = T)) %>%
   glimpse()
@@ -182,10 +167,11 @@ summary(prasts)
 xy <- habi %>%
   dplyr::select(longitude_dd , latitude_dd) %>%
   dplyr::rename(x = longitude_dd, y = latitude_dd) %>%
+  dplyr::mutate(x = as.numeric(x),
+                y = as.numeric(y)) %>%
   glimpse()
 
-resp.vars <- c("p_sand", "p_macro",
-               "p_seagrass", "p_inverts", "p_reef")
+resp.vars <- c("p_sand", "p_inverts", "p_reef")
 
 for(i in 1:length(resp.vars)) {
   print(resp.vars[i])
@@ -196,8 +182,7 @@ for(i in 1:length(resp.vars)) {
                   paste0(resp.vars[i], ".se.fit")) %>%
     rast(crs = "epsg:4326")
 
-  dat <- terra::extract(subset(preds, names(mod$model)[2:length(names(mod$model))]), xy) %>%
-    dplyr::select(-ID)
+  dat <- terra::extract(subset(preds, names(mod$model)[2:length(names(mod$model))]), xy, ID = F)
   messrast <- predicts::mess(subset(preds, names(mod$model)[2:length(names(mod$model))]), dat) %>%
     terra::clamp(lower = -0.01, values = F)
   messrast <- terra::crop(messrast, temppred)
@@ -214,5 +199,5 @@ for(i in 1:length(resp.vars)) {
 
 saveRDS(preddf_m, paste0("output/model-output/", park, "/habitat/", name, "_predicted-habitat.rds"))      # Ignored
 
-writeRaster(predhab, paste0("output/model-output/", park, "/habitat/", names(predhab), "_predicted.tif"),
+writeRaster(preddf_m, paste0("output/model-output/", park, "/habitat/", names(preddf_m), "_predicted.tif"),
             overwrite = TRUE)

@@ -9,8 +9,8 @@
 rm(list = ls())
 
 # Set the study name
-name <- "GeographeAMP"
-park <- "geographe"
+name <- "dampierAMP"
+park <- "dampier"
 
 library(mgcv)
 library(tidyverse)
@@ -21,9 +21,6 @@ library(FSSgam)
 library(CheckEM)
 
 tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %>%
-  dplyr::filter(!sample %in% "779",
-                !number > 200, # Remove some outliers
-                geoscience_roughness < 4) %>% # Remove outliers in roughness
   glimpse()
 
 # # Re-set the predictors for modeling----
@@ -43,7 +40,7 @@ for(i in 1:length(unique.vars)){
 resp.vars # All good
 
 # Run the full subset model selection----
-savedir <- "output/model-output/geographe/fish/"
+savedir <- "output/model-output/dampier/fish/"
 factor.vars <- c("status")
 out.all     <- list()
 var.imp     <- list()
@@ -101,8 +98,7 @@ all.var.imp    <- do.call("rbind",var.imp)
 write.csv(all.mod.fits[ , -2], file = paste(savedir, paste(name, "all.mod.fits.csv", sep = "_"), sep = "/"))
 write.csv(all.var.imp, file = paste(savedir, paste(name, "all.var.imp.csv", sep = "_"), sep = "/"))
 
-tidy_length <- readRDS(paste0("data/geographe/tidy/", name, "_tidy-length.rds")) %>%
-  dplyr::filter(geoscience_roughness < 3) %>%
+tidy_length <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-length.rds")) %>%
   glimpse()
 
 # Check to make sure Response vector has not more than 80% zeros----
@@ -179,7 +175,7 @@ fabund <- bind_rows(tidy_maxn, tidy_length) %>%
   glimpse()
 
 # Load predictions in Spatraster format
-preds <- readRDS(paste(paste0('data/geographe/spatial/rasters/', name),    # This is ignored - too big!
+preds <- readRDS(paste(paste0('data/',park, '/spatial/rasters/', name),    # This is ignored - too big!
                        'bathymetry-derivatives.rds', sep = "_"))
 plot(preds)
 
@@ -189,16 +185,15 @@ preddf <- preds %>%
   glimpse()
 
 # Predicted reef
-pred_reef <- readRDS(paste0("output/model-output/geographe/habitat/",
+pred_reef <- readRDS(paste0("output/model-output/", park, "/habitat/",
                             name, "_predicted-habitat.rds")) %>%
-  dplyr::rename(reef = p_reef.fit) %>%
-  dplyr::select(x, y, reef) %>%
-  rast(type = "xyz", crs = "epsg:4326")
+  terra::subset("p_reef.fit")
 plot(pred_reef)
+names(pred_reef) <- "reef"
 
 # Add predicted reef on for fish modelling
 presp <- vect(preddf, geom = c("x", "y"))
-preddf <- cbind(preddf, terra::extract(pred_reef, presp))
+preddf <- cbind(preddf, terra::extract(pred_reef, presp, ID = F))
 names(preddf)
 
 # Back to spatraster
@@ -211,7 +206,7 @@ unique(fabund$response)
 # smaller than Lm carnivores, smaller than Lm snapper
 
 # Species richness
-m_richness <- gam(number ~ s(geoscience_aspect, k = 3, bs = "cc") +
+m_richness <- gam(number ~ s(geoscience_detrended, k = 3, bs = "cr") +
                     s(reef, k = 3, bs = "cr"),
                   data = fabund %>% dplyr::filter(response %in% "species_richness"),
                   family = gaussian(link = "identity"))
@@ -219,50 +214,35 @@ summary(m_richness)
 plot(m_richness)
 
 # CTI
-m_cti <- gam(number ~ s(reef, k = 3, bs = "cr") +
-               s(geoscience_detrended, k = 3, bs = "cr"),
+m_cti <- gam(number ~ s(geoscience_depth, k = 3, bs = "cr"),
              data = fabund %>% dplyr::filter(response %in% "cti"),
              family = gaussian(link = "identity"))
 summary(m_cti)
 plot(m_cti)
 
 # Greater than Lm large bodied carnivores
-m_mature <- gam(number ~ s(geoscience_detrended, k = 3, bs = "cr") +
-                  s(geoscience_roughness, k = 3, bs = "cr"),
+m_mature <- gam(number ~ s(reef, k = 3, bs = "cr"),
                 data = fabund %>% dplyr::filter(response %in% "greater than Lm carnivores"),
                 family = tw())
 summary(m_mature)
 plot(m_mature)
 
 # Smaller than Lm large bodied carnivores - NULL MODEL
-# m_immature <- gam(number ~ s(reef, k = 3, bs = "cr") +
-#                     s(roughness, k = 3, bs = "cr") +
-#                     s(SLA, k = 3, bs = "cr") +
-#                     s(SST, k = 3, bs = "cr") +
-#                     s(year, bs = "re"),
-#                   data = fabund %>% dplyr::filter(scientific %in% "smaller than Lm carnivores"),
-#                   family = tw())
-# summary(m_immature)
-
-# Smaller than Lm pinkies
-m_pinkies <- gam(number ~ s(geoscience_depth, k = 3, bs = "cr") +
-                   s(geoscience_aspect, k = 3, bs = "cc"),
-                 data = fabund %>% dplyr::filter(response %in% "smaller than Lm Pink snapper"),
-                 family = tw())
-summary(m_pinkies)
-plot(m_pinkies)
+m_immature <- gam(number ~ s(geoscience_detrended, k = 3, bs = "cr") +
+                    status,
+                  data = fabund %>% dplyr::filter(response %in% "smaller than Lm carnivores"),
+                  family = tw())
+summary(m_immature)
 
 predicted_fish <- cbind(preddf,
                         "p_mature" = mgcv::predict.gam(m_mature, preddf, type = "response",
                                                        se.fit = T),
-                        # "p_immature" = mgcv::predict.gam(m_immature, preddf, type = "response",
-                        #                                  se.fit = T),
+                        "p_immature" = mgcv::predict.gam(m_immature, preddf, type = "response",
+                                                         se.fit = T),
                         "p_cti" = mgcv::predict.gam(m_cti, preddf, type = "response",
                                                     se.fit = T),
                         "p_richness" = mgcv::predict.gam(m_richness, preddf, type = "response",
-                                                         se.fit = T),
-                        "p_pinkies" = mgcv::predict.gam(m_pinkies, preddf, type = "response",
-                                                        se.fit = T))
+                                                         se.fit = T))
 
 prasts <- rast(predicted_fish %>% dplyr::select(x, y, starts_with("p_")),
                crs = "epsg:4326")
