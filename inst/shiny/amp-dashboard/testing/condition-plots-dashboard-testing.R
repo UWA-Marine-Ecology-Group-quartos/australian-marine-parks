@@ -93,14 +93,14 @@ create_plots <- function(data, output_dir = "plots/") {
       geom_text(data = sub_data, aes(x = Condition_numeric,
                                      y = years$Index[match(year, years$Year)] - 0.3,
                                      label = toupper(condition)),
-                size = 18, color = "black", fontface = "bold") +
+                size = 8, color = "black", fontface = "bold") +
 
       # Add trend arrows for improving or deteriorating trends (horizontal)
       geom_text(data = sub_data, aes(x = Condition_numeric,
                                      y = years$Index[match(year, years$Year)],
                                      label = Trend_Arrow,
                                      alpha = Alpha),  # Alpha based on Trend_Confidence
-                size = 28, color = "black", hjust = 0.5, vjust = 0.3, fontface = "bold") +
+                size = 16, color = "black", hjust = 0.5, vjust = 0.3, fontface = "bold") +
 
       # Adding horizontal line for 'Stable' trend
       geom_segment(data = subset(sub_data, trend == "Stable"),
@@ -165,13 +165,17 @@ create_plots <- function(data, output_dir = "plots/") {
 
       # Add bold text in the middle of each rectangle for the year
       geom_text(data = years, aes(x = 1, y = Index, label = Year),
-                size = 18, fontface = "bold",
+                size = 6, fontface = "bold",
                 color = ifelse(years$Year == max(years$Year), "white", "#133946")) +
 
       theme_void()  # Remove axes and gridlines
 
     # Create a dynamic title using combination$network, combination$marine_park_or_area, and combination$metric
-    dynamic_title <- paste(combination$network, "Network:", combination$marine_park_or_area)
+    dynamic_title <- paste0(#combination$network,
+                            #" Network: ",
+                            combination$marine_park_or_area,
+                            " (",
+                            combination$depth_m, " m)")
 
     # Combine year legend and condition plot
     final_plot <- year_legend + plot_condition +
@@ -180,8 +184,8 @@ create_plots <- function(data, output_dir = "plots/") {
         title = dynamic_title,
         subtitle = combination$metric,
         theme = theme(
-          plot.title = element_text(size = 50, face = "bold"),  # Adjust title size and style
-          plot.subtitle = element_text(size = 44, face = "italic")  # Adjust subtitle size and style
+          plot.title = element_text(size = 18, face = "bold"),  # Adjust title size and style
+          plot.subtitle = element_text(size = 16, face = "italic")  # Adjust subtitle size and style
         )
       )
 
@@ -190,7 +194,7 @@ create_plots <- function(data, output_dir = "plots/") {
 
   # Loop through each unique combination of network, marine_park_or_area, and metric
   unique_combinations <- data %>%
-    distinct(network, marine_park_or_area, metric)
+    distinct(network, marine_park_or_area, metric, depth_m)
 
   for (i in 1:nrow(unique_combinations)) {
     combination <- unique_combinations[i, ]
@@ -199,7 +203,8 @@ create_plots <- function(data, output_dir = "plots/") {
     sub_data <- data %>%
       filter(network == combination$network,
              marine_park_or_area == combination$marine_park_or_area,
-             metric == combination$metric)
+             metric == combination$metric,
+             depth_m == combination$depth_m)
 
     # Create the plot for the current combination
     plot <- create_single_plot(sub_data)
@@ -208,7 +213,7 @@ create_plots <- function(data, output_dir = "plots/") {
     plot_height <- 4 + nrow(sub_data) * 0.5
 
     # Define file names for saving
-    file_prefix <- paste(combination$network, combination$marine_park_or_area, combination$metric, sep = "_")
+    file_prefix <- paste(combination$network, combination$marine_park_or_area, combination$metric, combination$depth_m, sep = "_")
 
     # Save the plot as RDS
     saveRDS(plot, file = paste0(output_dir, file_prefix, ".rds"))
@@ -227,4 +232,4 @@ library(googlesheets4)
 data <- read_sheet("https://docs.google.com/spreadsheets/d/1Iplohv6mM-CnpE6uYBi4uQnuhCyZMNpCRMSJFFnJxjM/edit?usp=sharing",
                    sheet = "dummy_data")
 
-create_plots(data, output_dir = "plots/dashboard/")
+create_plots(data, output_dir = "inst/shiny/amp-dashboard/plots/condition/")

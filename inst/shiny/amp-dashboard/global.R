@@ -5,6 +5,11 @@ library(dplyr)
 
 thematic::thematic_shiny()
 
+# TODO - create a dataframe with all the plot details
+# TODO - create ui dynamically (1 row and 1 column)
+# TODO - adjust min_height based on the number of years in the plot
+
+
 # Define the theme using bslib ----
 theme <- bs_theme(
   bg = "#FFFFFF",  # Background color
@@ -26,7 +31,14 @@ load("data/all_data.Rdata")
 
 # Remove extra park ----
 networks_and_parks <- all_data$networks_and_parks %>%
-  dplyr::filter(!park %in% "Coral Sea") # the Coral Sea does not have parks within it
+  dplyr::filter(!park %in% "Coral Sea") %>% # the Coral Sea does not have parks within it
+  dplyr::filter(network %in% c("South-west", "North-west")) %>% # temp filter for north and south WA
+  dplyr::filter(park %in% c("Dampier", # temp filter for parks we have data for
+                            "Ningaloo",
+                            "Abrolhos",
+                            "Geographe",
+                            "South-west Corner")) %>%
+  dplyr::glimpse()
 
 # Create dummy list
 south_west <- networks_and_parks %>%
@@ -34,4 +46,12 @@ south_west <- networks_and_parks %>%
   dplyr::pull(park)
 
 # TODO fix coral sea
+
+
+
+
+# Functions
+
+
+
 

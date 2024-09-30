@@ -15,13 +15,14 @@ ui <- page_navbar(
         # First radio button for selecting network
         radioButtons("network", "Choose a Network:",
 
-                     choices = c(
-                       "Coral Sea",
-                       "North",
-                       "North-west",
-                       "South-east",
-                       "South-west",
-                       "Temperate East"
+                     choices = c(unique(all_data$file_info$network)
+                                  # TODO I' ve changed this to only invclude plots where we have dummy data
+                       # "Coral Sea",
+                       # "North",
+                       # "North-west",
+                       # "South-east",
+                       # "South-west"#,
+                       # "Temperate East"
                      ),
 
                      selected = "South-west"),
@@ -39,8 +40,8 @@ ui <- page_navbar(
         condition = "input.filterpark == 'Marine Park'",
 
         # Radio button for selecting the park, initially set to 'south_west'
-        radioButtons("park",
-                     "Park:",
+        radioButtons("marine_park",
+                     "Marine Park:",
                      choices = south_west)
       )
       )
@@ -54,73 +55,92 @@ ui <- page_navbar(
       nav_panel(
         title = "Demersal fish",
 
-        layout_column_wrap(
-          width = 1 / 3,
-          fill = FALSE,
-          min_height = 100,
-          max_height = 300,
 
-          card(
-            full_screen = TRUE,
+        navset_tab(
+          nav_panel(title = "Trophic group by abundance by size class",
+                    uiOutput("trophic_group_by_abundance_by_size_class_plots"),
+                    accordion(open = FALSE,
+                      accordion_panel(
+                        "Expand to see more plots of trophic group by abundance by size class",
 
-            card_title(">Lm large-bodied generalist carnivores"), # abundance by size class
 
-            plotOutput("geo_lm", height = 200)#, height = "100%")#,
-            # plotOutput(),
-            # card_body(
-            #   fill = FALSE, gap = 0,
-            #
-            #
-            #   #p(class = "text-muted", "Caption for plot of >Lm large-bodied generalist carnivores abundance by size class")
-            # )
-          ),
+                        layout_column_wrap(
+                          width = 1/3,
+                          fill = FALSE,
+                          min_height = 500,
+                          max_height = 600,
 
-          card(
-            full_screen = TRUE,
+                        card(
+                          full_screen = TRUE,
+                          # card_title("0 - 30 m"),
+                          plotOutput("geo_lm", height = 200)
+                        ),
 
-            card_title("Species richness"),
+                        card(
+                          full_screen = TRUE,
+                          # card_title("30 - 70 m"),
+                          plotOutput("geo_sr", height = 200)
+                        ),
 
-            plotOutput("geo_sr", height = 200)#,
-            # plotOutput(),
-            # card_body(
-            #   fill = FALSE, gap = 0,
-            #   # card_title("<Lm large-bodied generalist carnivores abundance by size class"), # change back later
-            #
-            #
-            #   # p(class = "text-muted", "Caption for plot of <Lm large-bodied generalist carnivores abundance by size class") # change back later
-            #   #p(class = "text-muted", "Caption for species richness")
-            # )
-          ),
+                        card(
+                          full_screen = TRUE,
+                          # card_title("70 - 200 m"),
+                          plotOutput("geo_cti", height = 200)
+                        )
+                      )
+                    ))
+                    ),
 
-          card(
-            full_screen = TRUE,
 
-            card_title("CTI"),
 
-            plotOutput("geo_cti", height = 200)#,
-            # plotOutput(),
-            # card_body(
-            #   fill = FALSE, gap = 0,
-            #
-            #
-            #   #p(class = "text-muted", "Caption for plot of CTI")
-            # )
-          )
-        ),
+          nav_panel(title = "Community Temperature Index",
+                    uiOutput("community_temperature_index_plots")#,
+                    # p("Second tab content.")
+                    ))
+        # )
+      #,
 
-        card(
-          min_height = 400,
-          # card_header("Map"),
-          full_screen = TRUE,
-          card_title("Spatial model outputs"),
-          leafletOutput("demersal_fish_map"),
-          # card_body(
-          #   fill = FALSE, gap = 0,
-          #
-          #   # p(class = "text-muted", "All the raster outputs will go on a leaflet here?
-          #     # Where you can switch between layers?")
-          # )
-        )
+
+        # h4("Trophic group by abundance by size class"),
+        #
+        #   card(
+        #     min_height = 400,
+        #     full_screen = TRUE,
+        #     plotOutput("sw30", height = 200)
+        #   ),
+        #
+        #   card(
+        #     full_screen = TRUE,
+        #     min_height = 400,
+        #     # card_title("30 - 70 m"),
+        #     plotOutput("sw70", height = 200)
+        #   ),
+        #
+        #   card(
+        #     min_height = 400,
+        #     full_screen = TRUE,
+        #     # card_title("70 - 200 m"),
+        #     plotOutput("sw200", height = 200)
+        #   # )
+        # ),
+        #
+
+        #
+
+
+        # card(
+        #   min_height = 400,
+        #   # card_header("Map"),
+        #   full_screen = TRUE,
+        #   card_title("Spatial model outputs"),
+        #   leafletOutput("demersal_fish_map"),
+        #   # card_body(
+        #   #   fill = FALSE, gap = 0,
+        #   #
+        #   #   # p(class = "text-muted", "All the raster outputs will go on a leaflet here?
+        #   #     # Where you can switch between layers?")
+        #   # )
+        # )
       ),
       nav_panel(
         title = "Mobile macro invertebrates",
@@ -147,11 +167,11 @@ ui <- page_navbar(
         p("Content for Benthic ecosystem map tab.")
       ),
       nav_panel(
-        title = "Suberged Aquatic Vegetation",
+        title = "Submerged aquatic vegetation",
         p("Content for Extent/% cover of vegetation map tab.")
-      ),
-    )
+      )#,
     # )
+    )
   ),
   nav_panel(
     "Socio-economic Values",

@@ -1,16 +1,103 @@
 server <- function(input, output, session) {
 
+  # Helper function to create safe IDs by replacing spaces with underscores
+  make_safe_id <- function(name) {
+    gsub(" ", "_", name)
+  }
+
+  # Helper function to dynamically generate plot UI and render plots
+  generate_plots <- function(metric, output_id_prefix) {
+
+    observeEvent(input$marine_park, {
+      req(input$marine_park)
+
+      filtered_data <- file_info %>%
+        dplyr::filter(marine_park %in% c(input$marine_park)) %>%
+        dplyr::filter(metric %in% c(metric)) %>%
+        dplyr::glimpse()
+
+      if (nrow(filtered_data) > 0) {
+
+        output[[paste0(output_id_prefix, "_plots")]] <- renderUI({
+          plot_list <-
+            lapply(1:length(unique(filtered_data$depth)), function(i) {
+
+              plotOutput(make_safe_id(paste0(output_id_prefix, "_", filtered_data$depth[i])))
+
+            })
+
+          do.call(tagList, plot_list)
+
+        })
+
+      } else {
+
+        NULL
+
+      }
+
+      lapply(seq_len(nrow(filtered_data)), function(i) {
+        plot_id <- make_safe_id(paste0(output_id_prefix, "_", filtered_data$depth[i]))
+
+        output[[plot_id]] <- renderPlot({
+          plot_object <- readRDS(here::here(filtered_data$file[i]))
+          plot_object
+        })
+      })
+    })
+  }
+
+
+
+#
+#
+#
+#       # Remove previous UI elements to prevent residual plots
+#       # removeUI(selector = paste0("#", output_id_prefix, "_plots"), multiple = TRUE)
+#
+#       # Filter files based on the selected marine park and metric
+#       metric_files <- subset(file_info, marine_park == input$marine_park & metric == metric)
+#
+#       # Dynamically generate plot UI for the selected metric
+#       output[[paste0(output_id_prefix, "_plots")]] <- renderUI({
+#         req(input$marine_park)
+#
+#         # If no matching files, return nothing
+#         if (nrow(metric_files) == 0) {
+#           return(NULL)
+#         }
+#
+#         # Create a list of plots with safe IDs
+#         plot_list <- lapply(seq_len(nrow(metric_files)), function(i) {
+#           plotOutput(make_safe_id(paste0(output_id_prefix, "_", metric_files$depth[i])))
+#         })
+#
+#         do.call(tagList, plot_list)
+#       })
+#
+#       # Dynamically render the plots
+#       lapply(seq_len(nrow(metric_files)), function(i) {
+#         plot_id <- make_safe_id(paste0(output_id_prefix, "_", metric_files$depth[i]))
+#
+#         output[[plot_id]] <- renderPlot({
+#           plot_object <- readRDS(here::here(metric_files$file[i]))
+#           plot_object
+#         })
+#       })
+#     })
+#   }
   # bs_themer() # Turn this on if want to see real-time theming
 
   # Update the parks choices based on the selected network
   observeEvent(input$network, {
     selected_network <- input$network
 
-    parks <- networks_and_parks %>%
+    parks <- all_data$file_info %>%
       dplyr::filter(network == selected_network) %>%
-      dplyr::pull(park)
+      dplyr::distinct(marine_park) %>%
+      dplyr::pull(marine_park)
 
-    updateRadioButtons(session, "park", choices = c(parks))
+    updateRadioButtons(session, "marine_park", choices = c(parks))
   })
 
 
@@ -88,5 +175,22 @@ server <- function(input, output, session) {
   output$geo_cti <- renderPlot({
     all_data$geo_cti
   })
+
+  output$sw30 <- renderPlot({
+    all_data$sw30
+  })
+
+  output$sw70 <- renderPlot({
+    all_data$sw70
+  })
+
+  output$sw200 <- renderPlot({
+    all_data$sw200
+  })
+
+
+  # Call the helper function for "Community Temperature Index"
+  generate_plots("Community Temperature Index", "community_temperature_index")
+  generate_plots("Trophic group by abundance by size class", "trophic_group_by_abundance_by_size_class")
 
 }
