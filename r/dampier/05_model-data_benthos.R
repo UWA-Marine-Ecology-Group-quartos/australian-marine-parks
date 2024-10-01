@@ -197,7 +197,21 @@ for(i in 1:length(resp.vars)) {
   }
 }
 
-saveRDS(preddf_m, paste0("output/model-output/", park, "/habitat/", name, "_predicted-habitat.rds"))      # Ignored
+sites <- st_as_sf(habi, coords = c("longitude_dd", "latitude_dd"), crs = 4326) %>%
+  st_transform(9473) %>%
+  st_union()
 
-writeRaster(preddf_m, paste0("output/model-output/", park, "/habitat/", names(preddf_m), "_predicted.tif"),
+buffer <- sites %>%
+  st_buffer(dist = 10000) %>%
+  st_transform(4326) %>%
+  vect()
+
+predhab <- preddf_m %>%
+  mask(buffer) %>%
+  trim()
+plot(predhab)
+
+saveRDS(predhab, paste0("output/model-output/", park, "/habitat/", name, "_predicted-habitat.rds"))      # Ignored
+
+writeRaster(predhab, paste0("output/model-output/", park, "/habitat/", names(predhab), "_predicted.tif"),
             overwrite = TRUE)
