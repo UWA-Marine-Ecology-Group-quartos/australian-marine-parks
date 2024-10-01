@@ -66,8 +66,8 @@ ggsave(paste0("plots/", park, "/fish/", name, "_individual-predictions.png"),
 
 controldata_fish(year = 2023, amp_abbrv = "DMP", state_abbrv = "NA")
 
-controlplot_fish(data = park_dat.shallow, amp_abbrv = "GMP",
-                 state_abbrv = "NCMP", title = "Shallow (0 - 30 m)")
+controlplot_fish(data = park_dat.shallow, amp_abbrv = "DMP",
+                 state_abbrv = "NA", title = "Shallow (0 - 30 m)")
 ggsave(paste0("plots/geographe/fish/", name, "_shallow_control-plots.png"),
        height = 7, width = 8, dpi = 300, units = "in", bg = "white")
 
