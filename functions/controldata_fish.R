@@ -19,11 +19,33 @@ controldata_fish <- function(year, amp_abbrv, state_abbrv) {
       str_detect(zone, "Reef Observation Area")  ~ paste(state_abbrv, "other zones")
     ))
 
-  preds <- readRDS(paste0("data/geographe/spatial/rasters/",
+  preds <- readRDS(paste0("data/", park, "/spatial/rasters/",
                           name, "_bathymetry-derivatives.rds")) %>%
     crop(dat)
   tempdat_v <- vect(as.data.frame(dat, xy = T), geom = c("x", "y"), crs = "epsg:4326")
   tempdat <- cbind(as.data.frame(dat, xy = T), terra::extract(preds[[1]], tempdat_v, ID = F))
+
+  depth_qs <- c(-2000, -200, -70, -30, 0)
+  class_values <- 4:1
+  reclass_matrix <- cbind(depth_qs[-length(depth_qs)], depth_qs[-1], class_values)
+  edc <- classify(preds$geoscience_depth, rcl = reclass_matrix) %>%
+    as.polygons() %>%
+    st_as_sf()
+
+  areas <- st_intersection(edc, marine_parks) %>%
+    dplyr::mutate(area = st_area(.)) %>%
+    dplyr::filter(area > units::set_units(625000, "m^2")) %>%
+    dplyr::mutate(depth_contour = case_when(geoscience_depth == 1 ~ "shallow",
+                                            geoscience_depth == 2 ~ "mesophotic",
+                                            geoscience_depth == 3 ~ "rariphotic",
+                                            geoscience_depth == 4 ~ "deep"),
+                  filter = "no") %>%
+    dplyr::select(zone, depth_contour, filter) %>%
+    as.data.frame() %>%
+    dplyr::select(-geometry)
+  areas_shallow <- dplyr::filter(areas, depth_contour %in% "shallow")
+  areas_meso <- dplyr::filter(areas, depth_contour %in% "mesophotic")
+  areas_rari <- dplyr::filter(areas, depth_contour %in% "rariphotic")
 
   # SHALLOW (0-30 m)
   if(any(tempdat$geoscience_depth < 0 & tempdat$geoscience_depth > -30)) { # a
@@ -57,6 +79,8 @@ controldata_fish <- function(year, amp_abbrv, state_abbrv) {
       dplyr::rename(ID = rowname) %>%
       left_join(errors.shallow) %>%
       left_join(means.shallow) %>%
+      left_join(areas_shallow) %>%
+      dplyr::filter(filter == "no") %>%
       dplyr::select(zone_new, year, cti, cti_se, richness, richness_se,
                     Lm, Lm_se) %>%
       dplyr::filter(!is.na(Lm)) %>%
@@ -97,6 +121,8 @@ controldata_fish <- function(year, amp_abbrv, state_abbrv) {
       dplyr::rename(ID = rowname) %>%
       left_join(errors.meso) %>%
       left_join(means.meso) %>%
+      left_join(areas_meso) %>%
+      dplyr::filter(filter == "no") %>%
       dplyr::select(zone_new, year, cti, cti_se, richness, richness_se,
                     Lm, Lm_se) %>%
       dplyr::filter(!is.na(Lm)) %>%
@@ -137,6 +163,8 @@ controldata_fish <- function(year, amp_abbrv, state_abbrv) {
       dplyr::rename(ID = rowname) %>%
       left_join(errors.shallow) %>%
       left_join(means.shallow) %>%
+      left_join(areas_rari) %>%
+      dplyr::filter(filter == "no") %>%
       dplyr::select(zone_new, year, cti, cti_se, richness, richness_se,
                     Lm, Lm_se) %>%
       dplyr::filter(!is.na(Lm)) %>%

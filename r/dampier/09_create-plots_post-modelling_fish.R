@@ -10,8 +10,8 @@
 rm(list = ls())
 
 # Set the study name
-name <- "GeographeAMP"
-park <- "geographe"
+name <- "dampierAMP"
+park <- "dampier"
 
 # Load libraries
 library(tidyverse)
@@ -35,13 +35,14 @@ dat <- readRDS(paste0("output/model-output/", park, "/fish/",
 plot(dat)
 
 # Set cropping extent - larger than most zoomed out plot
-e <- ext(114.2, 115.8,-34.7, -33.1)
+e <- ext(116.7, 117.7,-20.919, -20)
 
 # Load necessary spatial files
 sf_use_s2(F)                                                                    # Switch off spatial geometry for cropping
 # Australian outline and state and commonwealth marine parks
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
+  dplyr::filter(name %in% c("Dampier")) %>%
+  arrange(zone) %>%
   glimpse()
 plot(marine_parks["zone"])
 
@@ -56,14 +57,14 @@ ausc <- st_crop(aus, e)
 
 # Spatial predictions
 
-prediction_limits = c(115.0539, 115.5539, -33.64861, -33.35361)
+prediction_limits = c(116.779, 117.544, -20.738, -20.282)
 fishmetric_plot(prediction_limits)
 
 ggsave(paste0("plots/", park, "/fish/", name, "_individual-predictions.png"),
        width = 9, height = 5, dpi = 300, units = "in", bg = "white")
 
 
-controldata_fish(year = 2014, amp_abbrv = "GMP", state_abbrv = "NCMP")
+controldata_fish(year = 2023, amp_abbrv = "DMP", state_abbrv = "NA")
 
 controlplot_fish(data = park_dat.shallow, amp_abbrv = "GMP",
                  state_abbrv = "NCMP", title = "Shallow (0 - 30 m)")
