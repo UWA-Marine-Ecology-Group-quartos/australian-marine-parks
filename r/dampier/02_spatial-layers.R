@@ -201,27 +201,33 @@ saveRDS(sla_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_SLA_ti
 
 # Degree Heating Weeks
 # https://coastwatch.pfeg.noaa.gov/erddap/griddap/NOAA_DHW.html
-response <- griddap("NOAA_DHW",
-                stride = 7,
-                time = c('1992-03-18T12:00:00Z','2024-09-30T12:00:00Z'),
-                latitude = c(-20.77, -19.98),
-                longitude = c(116.59, 117.34),
-                fields = "CRW_DHW",
-                store = disk(path = paste0("data/", park, "/spatial/oceanography"),
-                             overwrite = T))
-# Get the actual filename that was saved
-downloaded_file <- str_replace_all(response$summary$filename, "\\\\", "/") %>%
-  str_remove_all(paste0(getwd(), "/"))
-
 # Specify the new desired filename
-new_filename <- paste0(paste0("data/", park, "/spatial/oceanography/"), "DHW.nc")
+new_filename <- paste0("data/", park, "/spatial/oceanography/DHW.nc")
 
-# Rename the file
-file.rename(from = downloaded_file, to = new_filename)
+# Only run the griddap function if the file doesn't exist
+if (!file.exists(new_filename)) {
+  response <- griddap("NOAA_DHW",
+                      stride = 7,
+                      time = c('1992-03-18T12:00:00Z', '2024-09-30T12:00:00Z'),
+                      latitude = c(-20.77, -19.98),
+                      longitude = c(116.59, 117.34),
+                      fields = "CRW_DHW",
+                      store = disk(path = paste0("data/", park, "/spatial/oceanography"),
+                                   overwrite = TRUE))
 
-rerddap::cache_list()
-rerddap::cache_delete_all()
+  # Get the actual filename that was saved
+  downloaded_file <- str_replace_all(response$summary$filename, "\\\\", "/") %>%
+    str_remove_all(paste0(getwd(), "/"))
 
+  # Rename the file
+  file.rename(from = downloaded_file, to = new_filename)
+
+  # Clear the rerddap cache
+  rerddap::cache_list()
+  rerddap::cache_delete_all()
+} else {
+  message("File already exists: ", new_filename)
+}
 
 nc_dhw <- open.nc(paste0("data/", park, "/spatial/oceanography/DHW.nc"),
                   write = TRUE)
@@ -237,20 +243,6 @@ time(rast_dhw) <- dates_dhw
 names(rast_dhw) <- dates_dhw
 plot(rast_dhw)
 
-dhw.2011 <- subset(rast_dhw, year(time(rast_dhw)) == 2011 & month(time(rast_dhw)) == 5) %>%
-  mean(na.rm = T)
-names(dhw.2011) <- "May 2011"
-plot(dhw.2011)
-dhw.2012 <- subset(rast_dhw, year(time(rast_dhw)) == 2012 & month(time(rast_dhw)) == 4) %>%
-  mean(na.rm = T)
-names(dhw.2012) <- "April 2012"
-plot(dhw.2012)
-
-dhw <- rast(list(dhw.2011, dhw.2012))
-plot(dhw)
-
-saveRDS(dhw, paste0("data/", park, "/spatial/oceanography/", name, "_DHW_raster.rds"))
-
 dhw_tsdf <- terra::global(rast_dhw, fun = "mean", na.rm = T) %>%
   tibble::rownames_to_column() %>%
   cbind(terra::global(rast_dhw, fun = "sd", na.rm = T)) %>%
@@ -265,7 +257,24 @@ dhw_tsdf <- terra::global(rast_dhw, fun = "mean", na.rm = T) %>%
                                    month %in% c("12", "01", "02") ~ "Summer")) %>%
   glimpse()
 
+ggplot() +
+  geom_line()
+
 saveRDS(dhw_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_DHW_time-series.rds"))
+
+dhw.2011 <- subset(rast_dhw, year(time(rast_dhw)) == 2011 & month(time(rast_dhw)) == 5) %>%
+  mean(na.rm = T)
+names(dhw.2011) <- "May 2011"
+plot(dhw.2011)
+dhw.2012 <- subset(rast_dhw, year(time(rast_dhw)) == 2012 & month(time(rast_dhw)) == 4) %>%
+  mean(na.rm = T)
+names(dhw.2012) <- "April 2012"
+plot(dhw.2012)
+
+dhw <- rast(list(dhw.2011, dhw.2012))
+plot(dhw)
+
+saveRDS(dhw, paste0("data/", park, "/spatial/oceanography/", name, "_DHW_raster.rds"))
 
 # Acifidication
 nc_acid <- open.nc(paste0("data/", park, "/spatial/oceanography/Acidification.nc"),
