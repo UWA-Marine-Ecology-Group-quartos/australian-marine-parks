@@ -106,7 +106,7 @@ Fig - Practice = National RUM of recreational fishing
 
 ![Sea level anomaly, as an index of upwelling, at the scale of the `{r} marine_park`. Heatmap values represent high (yellow) and low (blue) bimonthly sea level anomaly (SLA). Grey polygons represent State spatial management and Australian Marine Park boundaries. ](images/GeographeAMP_SLA.png){#fig-spatialsla}
 
-![Spatial patterns in Sea Surface Temperature](images/GeographeAMP_SST.png){#fig-spatialsst}
+![Spatial patterns in Sea Surface Temperature at the scale of the `{r} marine_park`.](images/GeographeAMP_SST.png){#fig-spatialsst}
 
 ![Spatial patterns in Degree Heating Weeks for 2 maximal timepoints](images/GeographeAMP_DHW.png){#fig-spatialdhw}
 
@@ -128,11 +128,11 @@ Fig - Practice = National RUM of recreational fishing
 
 ### Knowledge
 
-Fig - Awareness of the AMP
+![Knowledge of the `{r} marine_park`](images/control-plots_knowledge-01.png){#fig-controlknowledge}
 
 ### Attitudes
 
-Fig - support the AMP
+![Attitudes towards the `{r} marine_park`](images/control-plots_attitudes-01.png){#fig-controlattitudes}
 
 ### Practice
 
@@ -154,15 +154,15 @@ Figure - spatial non-fishing use of the Geographe Marine Park
 
 ### Distribution of dominant habitat classes
 
-![Predicted dominant habitat across the broader study area. State and Commonwealth marine park boundaries are shown.](images/GeographeAMP_predicted-dominant-habitat.png)
+![Predicted dominant habitat for the `{r} marine_park`. State and Commonwealth marine park boundaries are shown.](images/GeographeAMP_predicted-dominant-habitat.png)
 
 ### Distribution of individual habitat classes
 
-![Predictions for individual habitat classes across the broader study area. State and Commonwealth marine park boundaries are shown.](images/GeographeAMP_predicted-individual-habitat.png)
+![Predictions for individual habitat classes for the `{r} marine_park`. State and Commonwealth marine park boundaries are shown.](images/GeographeAMP_predicted-individual-habitat.png)
 
-ADD FIGURE - temporal patterns in habitats - shallow
+![Temporal patterns in key benthic classes in the shallow ecosystem depth contour (0 - 30 m) `{r} marine_park`.](images/GeographeAMP_shallow-control-plots.png)
 
-ADD FIGURE - temporal patterns in habitats - mesophotic
+![Temporal patterns in key benthic classes in the mesophotic ecosystem depth contour (30 - 70 m) in the `{r} marine_park`.](images/GeographeAMP_mesophotic-control-plots.png)
 
 ### Distribution of sessile invertebrates by size class
 
@@ -170,15 +170,15 @@ ADD FIGURE - temporal patterns in habitats - mesophotic
 
 ## Demersal fish assemblage
 
-![Spatial predictions for whole assemblage and large-bodied carnivorous assemblage metrics across the broader study area. Individual heat maps represent species richness per deployment, Community Thermal Index (CTI) per deployment, the abundance of greater than size of maturity large bodied carnivorous species per deployment (\> Lm) and the abundance of smaller than size of maturity Pink snapper (*Chrysophrys auratus*) per deployment (\< Lm). State and Commonwealth marine park boundaries are shown.](images/GeographeAMP_fish-individual_predictions.png){#fig-spatialpreds fig-align="center"}
+![Spatial predictions for whole assemblage and large-bodied carnivorous assemblage metrics across the `{r} marine_park`. Individual heat maps represent species richness per deployment, Community Thermal Index (CTI) per deployment, the abundance of greater than size of maturity large bodied carnivorous species per deployment (\> Lm) and the abundance of smaller than size of maturity Pink snapper (*Chrysophrys auratus*) per deployment (\< Lm). State and Commonwealth marine park boundaries are shown.](images/GeographeAMP_fish-individual_predictions.png){#fig-spatialpreds fig-align="center"}
 
 Spatial patterns in the distribution of key fish metrics for the `{r} marine_park` highlight increased species richness along reef features that run through the National Park and Habitat Protection Zones (@fig-spatialpreds).
 
-![Temporal predictions for the shallow ecosystem depth contour (0 - 30 m) of key fish metrics for the `{r} marine_park`.](images/GeographeAMP_shallow_control-plots.png){#fig-temppreds}
+![Temporal predictions for the shallow ecosystem depth contour (0 - 30 m) of key fish metrics for the `{r} marine_park`.](images/GeographeAMP_shallow_control-plots.png){#fig-fishtempshallow}
 
-![Temporal predictions for the mesophotic ecosystem depth contour (30 - 70 m) of key fish metrics for the `{r} marine_park`.](images/GeographeAMP_mesophotic_control-plots.png)
+![Temporal predictions for the mesophotic ecosystem depth contour (30 - 70 m) of key fish metrics for the `{r} marine_park`.](images/GeographeAMP_mesophotic_control-plots.png){#fig-fishtempmeso}
 
-Temporal trends of key fish metrics for the `{r} marine_park` highlight increased abundance of mature large bodied carnivorous species in the National Park Zone (@fig-temppreds).
+Temporal trends of key fish metrics for the `{r} marine_park` highlight increased abundance of mature large bodied carnivorous species in the National Park Zone (@fig-fishtempshallow).
 
 ### Threatened species
 
