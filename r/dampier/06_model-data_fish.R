@@ -9,7 +9,7 @@
 rm(list = ls())
 
 # Set the study name
-name <- "dampierAMP"
+name <- "DampierAMP"
 park <- "dampier"
 
 library(mgcv)

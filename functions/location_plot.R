@@ -8,7 +8,8 @@ location_plot <- function(plot_limits, study_limits, annotation_labels) {
     geom_spatraster_contour_filled(data = bathy,
                                    breaks = c(0, -30, -70, -200, - 700, -2000 , -4000, -6000),
                                    colour = NA, show.legend = F) +
-    scale_fill_grey(start = 1, end = 0.5, guide = "none") +
+    # scale_fill_grey(start = 1, end = 0.5, guide = "none") +
+    scale_fill_manual(values = c("#FFFFFF", "#EFEFEF", "#DEDEDE", "#CCCCCC", "#B6B6B6", "#9E9E9E", "#808080")) +
     new_scale_fill() +
     geom_spatraster_contour(data = bathy,
                             breaks = c(-30, -70, -200, - 700, -2000 , -4000, -6000), colour = "white",

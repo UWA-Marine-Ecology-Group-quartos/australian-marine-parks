@@ -10,7 +10,7 @@
 rm(list = ls())
 
 # Set the study name
-name <- "dampierAMP"
+name <- "DampierAMP"
 park <- "dampier"
 
 # Load libraries
@@ -107,16 +107,16 @@ ggsave(filename = paste0("plots/", park, "/habitat/", name, "_predicted-individu
        height = 3.5, width = 8, dpi = 900, units = "in", bg = "white")
 
 # Create the data (makes a dataframe for each ecosystem depth contour)
-controldata_benthos(year = 2014, amp_abbrv = "DMP", state_abbrv = NA)
+controldata_benthos(year = 2023, amp_abbrv = "DMP", state_abbrv = NA)
 
 # Create and save the plot (shallow)
-controlplot_benthos(data = park_dat.shallow, amp_abbrv = "GMP", state_abbrv = "NCMP",
+controlplot_benthos(data = park_dat.shallow, amp_abbrv = "DMP", state_abbrv = NA,
                     title = "Shallow (0 - 30 m)")
 ggsave(paste0("plots/", park, "/habitat/", name, "_shallow-control-plots.png"),
        height = 9, width = 8, dpi = 300, units = "in")
 
 # Create and save the plot (mesophotic)
-controlplot_benthos(data = park_dat.meso, amp_abbrv = "GMP", state_abbrv = "NCMP",
+controlplot_benthos(data = park_dat.meso, amp_abbrv = "DMP", state_abbrv = NA,
                     title = "Mesophotic (30 - 70 m)")
 ggsave(paste0("plots/", park, "/habitat/", name, "_mesophotic-control-plots.png"),
        height = 9, width = 8, dpi = 300, units = "in")

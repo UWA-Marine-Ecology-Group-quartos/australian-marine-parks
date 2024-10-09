@@ -121,6 +121,8 @@ ggsave(paste(paste0('plots/', park, '/spatial/', name) , 'broad-site-plot.png',
 # 2. Site level overview - with sampling point locations
 metadata <- readRDS(paste0("data/", park, "/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
   st_as_sf(coords = c("longitude_dd", "latitude_dd"), crs = 4326) %>%
+  dplyr::mutate(method = case_when(str_detect(campaignid, "BRUV") ~ "BRUV",
+                                   str_detect(campaignid, "BOSS") ~ "BOSS")) %>%
   glimpse()
 
 # Set plot inputs
@@ -129,9 +131,9 @@ site_limits = c(116.779, 117.544, -20.738, -20.282) # For Dampier match it to th
 site_plot(site_limits, annotation_labels)
 # Save plot
 ggsave(filename = paste(paste0('plots/', park, '/spatial/', name) , 'sampling-locations.png',
-                        sep = "-"), plot = p2, units = "in", dpi = 600,
+                        sep = "-"), units = "in", dpi = 600,
        bg = "white",
-       width = 8, height = 4)
+       width = 8, height = 3.5)
 
 # 3. Key Ecological Features
 # Create plot
@@ -160,7 +162,7 @@ ggsave(filename = paste(paste0('plots/', park, '/spatial/', name) , 'old-sea-lev
 bath_df1 <- dem_cross_section(116.7475, 116.9888, -20.6993, -20.2273, maxdist = 10)
 # Set plot inputs
 crosssection_labels = data.frame(x = c(-5, -10, -16), # Labels for annotation
-                                 y = c(100, 80, 10),
+                                 y = c(110, 80, 20),
                                  label = c("Burrup Peninsula", "Dolphin Island", "Legendre Island"))
 
 segment_offset <- 5 # Length of the segment

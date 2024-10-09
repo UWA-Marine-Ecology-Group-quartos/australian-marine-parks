@@ -96,60 +96,58 @@ saveRDS(metadata.bathy.derivatives, paste0("data/", park, "/tidy/", name, "_meta
 
 # Oceanography/Pressures
 # Sea surface temperature
-# nc_sst <- open.nc(paste0("data/", park, "/spatial/oceanography/SST.nc"), write = TRUE)
-# print.nc(nc_sst) # shows you all the file details
-# time_nc <- var.get.nc(nc_sst, 'time')  # NC_CHAR time:units = "days since 1981-01-01 00:00:00" ;
-# time_nc_sst <- utcal.nc("seconds since 1981-01-01 00:00:00", time_nc, type = "c")
-# dates_sst <- as.Date(time_nc_sst)
-# close.nc(nc_sst) # GDAL errors otherwise
-#
-# rast_sst <- rast(paste0("data/", park, "/spatial/oceanography/SST.nc"),
-#                  subds = "sea_surface_temperature") %>%
-#   crop(e) %>%
-#   trim()
-# plot(rast_sst)
-# names(rast_sst) <- dates_sst
-# time(rast_sst) <- dates_sst
-#
-# winter_sst_ts <- rast_sst[[names(rast_sst)[str_detect(names(rast_sst), "-06-|-07-|-08-")]]]
-#
-# for (month in unique(month(time(rast_sst)))) {
-#   print(month)
-#   monthly_rast <- subset(rast_sst, month(time(rast_sst)) == month) %>%
-#     mean(na.rm = T) %>%
-#     app(fun = function(i) {i - 273.15})
-#   names(monthly_rast) <- month.abb[month]
-#   if (month == 3) {
-#     sst <- monthly_rast
-#   }
-#   else {
-#     sst <- rast(list(sst, monthly_rast))
-#   }
-# }
-#
-# saveRDS(sst, paste0("data/", park, "/spatial/oceanography/", name, "_SST_raster.rds"))
-#
-# sst_tsdf <- terra::global(rast_sst, fun = "mean", na.rm = T) %>%
-#   tibble::rownames_to_column() %>%
-#   cbind(terra::global(rast_sst, fun = "sd", na.rm = T)) %>%
-#   # dplyr::mutate(temp = mean - 273.15, # Convert kelvin to celsius
-#   #               date = date(rowname)) %>%
-#   tidyr::separate(rowname, into = c("year", "month", "day"), sep = "-") %>%
-#   dplyr::group_by(year, month) %>%
-#   summarise(sst = mean(mean, na.rm = T) - 273.15, # Convert kelvin to celsius
-#             sd = mean(sd, na.rm = T)) %>%
-#   ungroup() %>%
-#   dplyr::mutate(season = case_when(month %in% c("03", "04", "05") ~ "Autumn",
-#                                    month %in% c("06", "07", "08") ~ "Winter",
-#                                    month %in% c("09", "10", "11") ~ "Spring",
-#                                    month %in% c("12", "01", "02") ~ "Summer")) %>%
-#   glimpse()
-#
-# saveRDS(sst_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_SST_time-series.rds"))
-#
+nc_sst <- open.nc(paste0("data/", park, "/spatial/oceanography/SST.nc"), write = TRUE)
+print.nc(nc_sst) # shows you all the file details
+time_nc <- var.get.nc(nc_sst, 'time')  # NC_CHAR time:units = "days since 1981-01-01 00:00:00" ;
+time_nc_sst <- utcal.nc("seconds since 1981-01-01 00:00:00", time_nc, type = "c")
+dates_sst <- as.Date(time_nc_sst)
+close.nc(nc_sst) # GDAL errors otherwise
+
+rast_sst <- rast(paste0("data/", park, "/spatial/oceanography/SST.nc"),
+                 subds = "sea_surface_temperature") %>%
+  crop(e) %>%
+  trim()
+plot(rast_sst)
+names(rast_sst) <- dates_sst
+time(rast_sst) <- dates_sst
+
+winter_sst_ts <- rast_sst[[names(rast_sst)[str_detect(names(rast_sst), "-06-|-07-|-08-")]]]
+
+for (month in unique(month(time(rast_sst)))) {
+  print(month)
+  monthly_rast <- subset(rast_sst, month(time(rast_sst)) == month) %>%
+    mean(na.rm = T) %>%
+    app(fun = function(i) {i - 273.15})
+  names(monthly_rast) <- month.abb[month]
+  if (month == 3) {
+    sst <- monthly_rast
+  }
+  else {
+    sst <- rast(list(sst, monthly_rast))
+  }
+}
+
+saveRDS(sst, paste0("data/", park, "/spatial/oceanography/", name, "_SST_raster.rds"))
+
+sst_tsdf <- terra::global(rast_sst, fun = "mean", na.rm = T) %>%
+  tibble::rownames_to_column() %>%
+  cbind(terra::global(rast_sst, fun = "sd", na.rm = T)) %>%
+  # dplyr::mutate(temp = mean - 273.15, # Convert kelvin to celsius
+  #               date = date(rowname)) %>%
+  tidyr::separate(rowname, into = c("year", "month", "day"), sep = "-") %>%
+  dplyr::group_by(year, month) %>%
+  summarise(sst = mean(mean, na.rm = T) - 273.15, # Convert kelvin to celsius
+            sd = mean(sd, na.rm = T)) %>%
+  ungroup() %>%
+  dplyr::mutate(season = case_when(month %in% c("03", "04", "05") ~ "Autumn",
+                                   month %in% c("06", "07", "08") ~ "Winter",
+                                   month %in% c("09", "10", "11") ~ "Spring",
+                                   month %in% c("12", "01", "02") ~ "Summer")) %>%
+  glimpse()
+
+saveRDS(sst_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_SST_time-series.rds"))
+
 # Sea Level Anomaly
-# nc_sla <- open.nc(paste0("data/geographe/spatial/oceanography/", name, "-SLA.nc"),
-#                   write = TRUE)
 nc_sla <- open.nc(paste0("data/", park, "/spatial/oceanography/SLA.nc"),
                   write = TRUE)
 print.nc(nc_sla) # shows you all the file details
@@ -163,10 +161,6 @@ rast_sla <- terra::rast(paste0("data/", park, "/spatial/oceanography/SLA.nc"),
 time(rast_sla) <- dates_sla
 names(rast_sla) <- dates_sla
 plot(rast_sla)
-
-# sla <- mean(rast_sla, na.rm = T)
-# plot(sla)
-# saveRDS(sla, paste0("data/geographe/spatial/oceanography/", name, "_SLA_raster.rds"))
 
 for (month in unique(month(time(rast_sla)))) {
   print(month)
@@ -257,18 +251,26 @@ dhw_tsdf <- terra::global(rast_dhw, fun = "mean", na.rm = T) %>%
                                    month %in% c("12", "01", "02") ~ "Summer")) %>%
   glimpse()
 
+# Plot to find maximal values for DHW to plot
+test <- dhw_tsdf %>%
+  dplyr::mutate(year = as.numeric(year)) %>%
+  dplyr::group_by(year) %>%
+  summarise(dhw = mean(dhw, na.rm = T), sd = mean(sd, na.rm = T)) %>%
+  ungroup() %>%
+  glimpse()
 ggplot() +
-  geom_line()
+  geom_line(data = test, aes(x = year, y = dhw)) +
+  scale_x_continuous(labels = as.character(test$year), breaks = test$year)
 
 saveRDS(dhw_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_DHW_time-series.rds"))
 
-dhw.2011 <- subset(rast_dhw, year(time(rast_dhw)) == 2011 & month(time(rast_dhw)) == 5) %>%
+dhw.2011 <- subset(rast_dhw, year(time(rast_dhw)) == 2013 & month(time(rast_dhw)) == 3) %>%
   mean(na.rm = T)
-names(dhw.2011) <- "May 2011"
+names(dhw.2011) <- "March 2013"
 plot(dhw.2011)
-dhw.2012 <- subset(rast_dhw, year(time(rast_dhw)) == 2012 & month(time(rast_dhw)) == 4) %>%
+dhw.2012 <- subset(rast_dhw, year(time(rast_dhw)) == 2022 & month(time(rast_dhw)) == 4) %>%
   mean(na.rm = T)
-names(dhw.2012) <- "April 2012"
+names(dhw.2012) <- "April 2022"
 plot(dhw.2012)
 
 dhw <- rast(list(dhw.2011, dhw.2012))

@@ -18,7 +18,7 @@ library(foreach)
 library(doParallel)
 
 # Set the study name
-name <- "dampierAMP"
+name <- "DampierAMP"
 park <- "dampier"
 
 metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%

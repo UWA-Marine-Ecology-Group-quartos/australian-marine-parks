@@ -70,7 +70,7 @@ controldata_fish <- function(year, amp_abbrv, state_abbrv) {
       dplyr::mutate(ID = as.character(ID),
                     year = year) %>%
       dplyr::rename(cti = p_cti.fit, richness = p_richness.fit,
-                    Lm= p_mature.fit) %>%
+                    Lm = p_mature.fit) %>%
       dplyr::select(ID, year, cti, richness, Lm)
 
     # Join the data back to the zone data by ID
