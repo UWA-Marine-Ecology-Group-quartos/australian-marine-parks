@@ -20,7 +20,7 @@ controldata_benthos <- function(year, amp_abbrv, state_abbrv) {
     )) %>%
     glimpse()
 
-  preds <- readRDS(paste0("data/geographe/spatial/rasters/",
+  preds <- readRDS(paste0("data/", park, "/spatial/rasters/",
                           name, "_bathymetry-derivatives.rds")) %>%
     crop(dat)
   tempdat_v <- vect(as.data.frame(dat, xy = T), geom = c("x", "y"), crs = "epsg:4326")
@@ -39,26 +39,30 @@ controldata_benthos <- function(year, amp_abbrv, state_abbrv) {
       dplyr::summarise(across(starts_with("p"), se)) %>%
       dplyr::mutate(ID = as.character(ID),
                     year = year) %>%
-      dplyr::rename(seagrass_se = p_seagrass.fit,
-                    macroalgae_se = p_macro.fit,
-                    # rock_se = p_rock.fit,
-                    sand_se = p_sand.fit,
-                    inverts_se = p_inverts.fit) %>%
-      dplyr::select(ID, year, seagrass_se, macroalgae_se,
-                    # rock_se,
-                    sand_se, inverts_se)
+      # Conditional renaming
+      dplyr::rename_with(~ if_else(.x == "p_seagrass.fit", "seagrass_se", .x), "p_seagrass.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_macro.fit", "macroalgae_se", .x), "p_macro.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_rock.fit", "rock_se", .x), "p_rock.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_sand.fit", "sand_se", .x), "p_sand.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_inverts.fit", "inverts_se", .x), "p_inverts.fit") %>%
+      # Use any_of() to safely select columns if they exist
+      dplyr::select(ID, year, any_of(c("seagrass_se", "macroalgae_se",
+                                       "rock_se", "sand_se", "inverts_se")))
 
     means.shallow <- terra::extract(dat.shallow, marine_parks) %>%
       dplyr::group_by(ID) %>%
       dplyr::summarise(across(starts_with("p"), ~mean(.x, na.rm = T))) %>%
       dplyr::mutate(ID = as.character(ID),
                     year = year) %>%
-      dplyr::rename(seagrass = p_seagrass.fit, macroalgae = p_macro.fit,
-                    # rock = prock.fit,
-                    sand = p_sand.fit, inverts = p_inverts.fit) %>%
-      dplyr::select(ID, year, seagrass, macroalgae,
-                    # rock,
-                    sand, inverts)
+      # Conditional renaming
+      dplyr::rename_with(~ if_else(.x == "p_seagrass.fit", "seagrass", .x), "p_seagrass.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_macro.fit", "macroalgae", .x), "p_macro.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_rock.fit", "rock", .x), "p_rock.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_sand.fit", "sand", .x), "p_sand.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_inverts.fit", "inverts", .x), "p_inverts.fit") %>%
+      # Use any_of() to safely select columns if they exist
+      dplyr::select(ID, year, any_of(c("seagrass", "macroalgae",
+                                       "rock", "sand", "inverts")))
 
     # Join the data back to the zone data by ID
     park_dat.shallow <- as.data.frame(marine_parks) %>%
@@ -66,10 +70,9 @@ controldata_benthos <- function(year, amp_abbrv, state_abbrv) {
       dplyr::rename(ID = rowname) %>%
       left_join(errors.shallow) %>%
       left_join(means.shallow) %>%
-      dplyr::select(zone_new, year, seagrass, seagrass_se, macroalgae, macroalgae_se,
-                    # rock, rock_se,
-                    sand, sand_se, inverts, inverts_se) %>%
-      dplyr::filter(!is.na(seagrass)) %>%
+      dplyr::select(zone_new, year, any_of(c(seagrass, seagrass_se, macroalgae, macroalgae_se,
+                                             rock, rock_se,sand, sand_se, inverts, inverts_se))) %>%
+      # dplyr::filter(!is.na(seagrass)) %>%
       dplyr::group_by(zone_new, year) %>%
       summarise(across(everything(), .f = list(mean = mean), na.rm = TRUE)) %>%
       ungroup() %>%
@@ -89,26 +92,30 @@ controldata_benthos <- function(year, amp_abbrv, state_abbrv) {
       dplyr::summarise(across(starts_with("p"), se)) %>%
       dplyr::mutate(ID = as.character(ID),
                     year = year) %>%
-      dplyr::rename(seagrass_se = p_seagrass.fit,
-                    macroalgae_se = p_macro.fit,
-                    # rock_se = p_rock.fit,
-                    sand_se = p_sand.fit,
-                    inverts_se = p_inverts.fit) %>%
-      dplyr::select(ID, year, seagrass_se, macroalgae_se,
-                    # rock_se,
-                    sand_se, inverts_se)
+      # Conditional renaming
+      dplyr::rename_with(~ if_else(.x == "p_seagrass.fit", "seagrass_se", .x), "p_seagrass.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_macro.fit", "macroalgae_se", .x), "p_macro.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_rock.fit", "rock_se", .x), "p_rock.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_sand.fit", "sand_se", .x), "p_sand.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_inverts.fit", "inverts_se", .x), "p_inverts.fit") %>%
+      # Use any_of() to safely select columns if they exist
+      dplyr::select(ID, year, any_of(c("seagrass_se", "macroalgae_se",
+                                       "rock_se", "sand_se", "inverts_se")))
 
     means.meso <- terra::extract(dat.meso, marine_parks) %>%
       dplyr::group_by(ID) %>%
       dplyr::summarise(across(starts_with("p"), ~mean(.x, na.rm = T))) %>%
       dplyr::mutate(ID = as.character(ID),
                     year = year) %>%
-      dplyr::rename(seagrass = p_seagrass.fit, macroalgae = p_macro.fit,
-                    # rock = prock.fit,
-                    sand = p_sand.fit, inverts = p_inverts.fit) %>%
-      dplyr::select(ID, year, seagrass, macroalgae,
-                    # rock,
-                    sand, inverts)
+      # Conditional renaming
+      dplyr::rename_with(~ if_else(.x == "p_seagrass.fit", "seagrass", .x), "p_seagrass.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_macro.fit", "macroalgae", .x), "p_macro.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_rock.fit", "rock", .x), "p_rock.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_sand.fit", "sand", .x), "p_sand.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_inverts.fit", "inverts", .x), "p_inverts.fit") %>%
+      # Use any_of() to safely select columns if they exist
+      dplyr::select(ID, year, any_of(c("seagrass", "macroalgae",
+                                       "rock", "sand", "inverts")))
 
     # Join the data back to the zone data by ID
     park_dat.meso <- as.data.frame(marine_parks) %>%
@@ -116,10 +123,9 @@ controldata_benthos <- function(year, amp_abbrv, state_abbrv) {
       dplyr::rename(ID = rowname) %>%
       left_join(errors.meso) %>%
       left_join(means.meso) %>%
-      dplyr::select(zone_new, year, seagrass, seagrass_se, macroalgae, macroalgae_se,
-                    # rock, rock_se,
-                    sand, sand_se, inverts, inverts_se) %>%
-      dplyr::filter(!is.na(seagrass)) %>%
+      dplyr::select(zone_new, year, any_of(c(seagrass, seagrass_se, macroalgae, macroalgae_se,
+                                             rock, rock_se,sand, sand_se, inverts, inverts_se))) %>%
+      # dplyr::filter(!is.na(seagrass)) %>%
       dplyr::group_by(zone_new, year) %>%
       summarise(across(everything(), .f = list(mean = mean), na.rm = TRUE)) %>%
       ungroup() %>%
@@ -139,26 +145,30 @@ controldata_benthos <- function(year, amp_abbrv, state_abbrv) {
       dplyr::summarise(across(starts_with("p"), se)) %>%
       dplyr::mutate(ID = as.character(ID),
                     year = year) %>%
-      dplyr::rename(seagrass_se = p_seagrass.fit,
-                    macroalgae_se = p_macro.fit,
-                    # rock_se = p_rock.fit,
-                    sand_se = p_sand.fit,
-                    inverts_se = p_inverts.fit) %>%
-      dplyr::select(ID, year, seagrass_se, macroalgae_se,
-                    # rock_se,
-                    sand_se, inverts_se)
+      # Conditional renaming
+      dplyr::rename_with(~ if_else(.x == "p_seagrass.fit", "seagrass_se", .x), "p_seagrass.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_macro.fit", "macroalgae_se", .x), "p_macro.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_rock.fit", "rock_se", .x), "p_rock.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_sand.fit", "sand_se", .x), "p_sand.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_inverts.fit", "inverts_se", .x), "p_inverts.fit") %>%
+      # Use any_of() to safely select columns if they exist
+      dplyr::select(ID, year, any_of(c("seagrass_se", "macroalgae_se",
+                                       "rock_se", "sand_se", "inverts_se")))
 
     means.rari <- terra::extract(dat.rari, marine_parks) %>%
       dplyr::group_by(ID) %>%
       dplyr::summarise(across(starts_with("p"), ~mean(.x, na.rm = T))) %>%
       dplyr::mutate(ID = as.character(ID),
                     year = year) %>%
-      dplyr::rename(seagrass = p_seagrass.fit, macroalgae = p_macro.fit,
-                    # rock = prock.fit,
-                    sand = p_sand.fit, inverts = p_inverts.fit) %>%
-      dplyr::select(ID, year, seagrass, macroalgae,
-                    # rock,
-                    sand, inverts)
+      # Conditional renaming
+      dplyr::rename_with(~ if_else(.x == "p_seagrass.fit", "seagrass", .x), "p_seagrass.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_macro.fit", "macroalgae", .x), "p_macro.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_rock.fit", "rock", .x), "p_rock.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_sand.fit", "sand", .x), "p_sand.fit") %>%
+      dplyr::rename_with(~ if_else(.x == "p_inverts.fit", "inverts", .x), "p_inverts.fit") %>%
+      # Use any_of() to safely select columns if they exist
+      dplyr::select(ID, year, any_of(c("seagrass", "macroalgae",
+                                       "rock", "sand", "inverts")))
 
     # Join the data back to the zone data by ID
     park_dat.rari <- as.data.frame(marine_parks) %>%
@@ -166,10 +176,9 @@ controldata_benthos <- function(year, amp_abbrv, state_abbrv) {
       dplyr::rename(ID = rowname) %>%
       left_join(errors.shallow) %>%
       left_join(means.shallow) %>%
-      dplyr::select(zone_new, year, seagrass, seagrass_se, macroalgae, macroalgae_se,
-                    # rock, rock_se,
-                    sand, sand_se, inverts, inverts_se) %>%
-      dplyr::filter(!is.na(seagrass)) %>%
+      dplyr::select(zone_new, year, any_of(c(seagrass, seagrass_se, macroalgae, macroalgae_se,
+                    rock, rock_se,sand, sand_se, inverts, inverts_se))) %>%
+      # dplyr::filter(!is.na(seagrass)) %>%
       dplyr::group_by(zone_new, year) %>%
       summarise(across(everything(), .f = list(mean = mean), na.rm = TRUE)) %>%
       ungroup() %>%

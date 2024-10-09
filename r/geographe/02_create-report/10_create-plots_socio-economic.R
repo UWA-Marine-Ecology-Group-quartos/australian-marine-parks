@@ -17,6 +17,32 @@ library(ggh4x)
 name <- "GeographeAMP"
 park <- "geographe"
 
+test <- readRDS(paste0("data/", park, "/tidy/National_KAP.rds")) %>%
+  clean_names() %>%
+  dplyr::select(cmwlth_support, cmwlth_impfish, cmwlth_impnonextr, cmwlth_impenv,
+                cmwlth_awastated, cmwlth_awaname, mp, year) %>%
+  dplyr::filter(mp %in% "Ngari Capes MP") %>%
+  dplyr::mutate(cmwlth_awastated = if_else(cmwlth_awastated == 1, "Aware", "Unaware"),
+                cmwlth_awaname = if_else(cmwlth_awaname == 1, "Aware", "Unaware")) %>%
+  glimpse()
+
+socdat <- function(data, columns){
+  data %>%
+    pivot_longer(cols = {{columns}},
+                 names_to = "metric",
+                 values_to = "value") %>%
+    dplyr::group_by(mp, year, metric, value) %>%
+    dplyr::filter(!is.na(value)) %>%
+    dplyr::summarise(n = n()) %>%
+    dplyr::mutate(total = sum(n),
+                  perc = (n / total) * 100) %>%
+    ungroup() %>%
+    glimpse()
+}
+
+test2 <- socdat(data = test, columns = c(cmwlth_support, cmwlth_impfish, cmwlth_impnonextr,
+                                        cmwlth_impenv, cmwlth_awastated, cmwlth_awaname)) #
+
 dat <- read.csv(paste0("data/", park, "/tidy/socio-economic_monitoring_MN.csv")) %>%
   clean_names() %>%
   dplyr::filter(!metric %in% "Awarenes of AMPs nationally amongst South-west network residents") %>%

@@ -107,7 +107,7 @@ ggsave(filename = paste0("plots/", park, "/habitat/", name, "_predicted-individu
        height = 3.5, width = 8, dpi = 900, units = "in", bg = "white")
 
 # Create the data (makes a dataframe for each ecosystem depth contour)
-controldata_benthos(year = 2014, amp_abbrv = "GMP", state_abbrv = "NCMP")
+controldata_benthos(year = 2014, amp_abbrv = "DMP", state_abbrv = NA)
 
 # Create and save the plot (shallow)
 controlplot_benthos(data = park_dat.shallow, amp_abbrv = "GMP", state_abbrv = "NCMP",
