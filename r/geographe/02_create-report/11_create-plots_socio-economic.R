@@ -31,7 +31,13 @@ socdat <- function(data, columns){
     pivot_longer(cols = {{columns}},
                  names_to = "metric",
                  values_to = "value") %>%
-    dplyr::group_by(mp, year, metric, value) %>%
+    dplyr::filter(metric %in% "cmwlth_awaname" & value %in% "Aware" | # Because its 100% unaware its getting rid of the survey
+                    metric %in% "cmwlth_awastated" & value %in% "Aware" |
+                    metric %in% "cmwlth_impenv" & value %in% "Positive" |
+                    metric %in% "cmwlth_impfish" & value %in% c("Positive", "No change") |
+                    metric %in% "cmwlth_support" & value %in% "Supportive" |
+                    metric %in% "cmwlth_impnonextr" & value %in% c("Somewhat increase", "Strongly increase")) %>%
+    dplyr::group_by(mp, year, metric) %>%
     dplyr::filter(!is.na(value)) %>%
     dplyr::summarise(n = n()) %>%
     dplyr::mutate(total = sum(n),
@@ -46,17 +52,7 @@ socdat <- function(data, columns){
 }
 
 dat <- socdat(data = test, columns = c(cmwlth_support, cmwlth_impfish, cmwlth_impnonextr,
-                                        cmwlth_impenv, cmwlth_awastated, cmwlth_awaname)) %>%
-  dplyr::filter(metric %in% "cmwlth_awaname" & value %in% "Aware" |
-                metric %in% "cmwlth_awastated" & value %in% "Aware" |
-                metric %in% "cmwlth_impenv" & value %in% "Positive" |
-                metric %in% "cmwlth_impfish" & value %in% c("Positive", "No change") |
-                metric %in% "cmwlth_support" & value %in% "Supportive" |
-                metric %in% "cmwlth_impnonextr" & value %in% c("Somewhat increase", "Strongly increase")) %>%
-  dplyr::group_by(mp, year, metric) %>%
-  dplyr::summarise(perc = sum(perc),
-                   lower_ci = sum(lower_ci),
-                   upper_ci = sum(upper_ci))
+                                        cmwlth_impenv, cmwlth_awastated, cmwlth_awaname))
 
 ggplot(data = dat, aes(x = year, y = perc)) +
   geom_line(linetype = "dashed") +
