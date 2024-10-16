@@ -1,6 +1,6 @@
 library(sf)
 library(tidyverse)
-
+library(CheckEM)
 
 # Commonwealth and State marine parks at the scale of the location
 crop <- st_read("data/south-west network/spatial/shapefiles/temp_crop-marine-parks.shp") %>%
@@ -10,10 +10,11 @@ capad <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Austr
   CheckEM::clean_names() %>%
   st_make_valid() %>%
   st_crop(crop) %>%
-  dplyr::filter(!type %in% "Nature Reserve") %>%
+  dplyr::filter(!type %in% "Nature Reserve",
+                !name %in% c("North Kimberley", "Eighty Mile Beach")) %>%
   dplyr::mutate(zone = case_when(
     str_detect(pattern = "Sanctuary", string = zone_type) ~ "Sanctuary Zone",
-    str_detect(pattern = "IUCN II", string = zone_type) ~ "National Park Zone",
+    str_detect(pattern = "National Park", string = zone_type) ~ "National Park Zone",
     str_detect(pattern = "National Park", string = zone_type) ~ "National Park Zone",
     str_detect(pattern = "Recreational|Recreation", string = zone_type) ~ "Recreational Use Zone",
     str_detect(pattern = "Habitat Protection", string = zone_type) ~ "Habitat Protection Zone",
@@ -61,7 +62,77 @@ abrolhos <- st_read("data/south-west network/spatial/shapefiles/Abrolhos_ROAs.sh
   dplyr::select(name, zone_type, zone, epbc, colour, geometry) %>%
   glimpse()
 
-marine_parks <- dplyr::bind_rows(list(capad, rottnest, abrolhos)) %>%
+bardi <- st_read("data/south-west network/spatial/shapefiles/mcr-bamp-zoning-hwm_kim_20220819_DRAFT.shp") %>%
+  st_make_valid() %>%
+  st_transform(4326) %>%
+  clean_names() %>%
+  dplyr::filter(!descriptor %in% "island",
+                !is.na(class_type)) %>%
+  dplyr::mutate(zone = case_when(
+    str_detect(pattern = "Sanctuary", string = class_type) ~ "Sanctuary Zone",
+    str_detect(pattern = "Recreational|Recreation", string = class_type) ~ "Recreational Use Zone",
+    str_detect(pattern = "Habitat Protection", string = class_type) ~ "Habitat Protection Zone",
+    str_detect(pattern = "Special purpose", string = class_type) ~ "Special Purpose Zone",
+    str_detect(pattern = "General", string = class_type) ~ "General Use Zone",
+    .default = "Other State Marine Park Zone")) %>%
+  dplyr::mutate(epbc = "State") %>%
+  dplyr::mutate(colour = case_when(zone %in% "Sanctuary Zone" & epbc %in% "State"~ "#bfd054",
+                                   zone %in% "Recreational Use Zone" & epbc %in% "State" ~ "#f4e952",
+                                   zone %in% "Habitat Protection Zone"& epbc %in% "State" ~ "#fffbcc",
+                                   zone %in% "Special Purpose Zone"& epbc %in% "State" ~ "#c5bcc9",
+                                   zone %in% "General Use Zone" ~ "#bddde1",
+                                   zone %in% "Other State Marine Park Zone" ~ "gray80")) %>%
+  dplyr::rename(zone_type = class_type) %>%
+  dplyr::select(name, zone_type, zone, epbc, colour, geometry) %>%
+  glimpse()
+
+eighty <- st_read("data/south-west network/spatial/shapefiles/mcr-embmp-zoning_kim_20170818.shp") %>%
+  st_make_valid() %>%
+  st_transform(4326) %>%
+  clean_names() %>%
+  dplyr::mutate(zone = case_when(
+    str_detect(pattern = "Sanctuary", string = class_type) ~ "Sanctuary Zone",
+    str_detect(pattern = "Recreational|Recreation", string = class_type) ~ "Recreational Use Zone",
+    str_detect(pattern = "Habitat Protection", string = class_type) ~ "Habitat Protection Zone",
+    str_detect(pattern = "Special purpose", string = class_type) ~ "Special Purpose Zone",
+    str_detect(pattern = "General", string = class_type) ~ "General Use Zone",
+    .default = "Other State Marine Park Zone")) %>%
+  dplyr::mutate(epbc = "State") %>%
+  dplyr::mutate(colour = case_when(zone %in% "Sanctuary Zone" & epbc %in% "State"~ "#bfd054",
+                                   zone %in% "Recreational Use Zone" & epbc %in% "State" ~ "#f4e952",
+                                   zone %in% "Habitat Protection Zone"& epbc %in% "State" ~ "#fffbcc",
+                                   zone %in% "Special Purpose Zone"& epbc %in% "State" ~ "#c5bcc9",
+                                   zone %in% "General Use Zone" ~ "#bddde1",
+                                   zone %in% "Special Purpose Zone"& epbc %in% "State" ~ "#c5bcc9",
+                                   zone %in% "Other State Marine Park Zone" ~ "gray80")) %>%
+  dplyr::rename(zone_type = class_type) %>%
+  dplyr::select(name, zone_type, zone, epbc, colour, geometry) %>%
+  glimpse()
+
+northkim <- st_read("data/south-west network/spatial/shapefiles/mcr-nkmp-zoning-hwm-m-plan_kim_20160913.shp") %>%
+  st_make_valid() %>%
+  st_transform(4326) %>%
+  clean_names() %>%
+  dplyr::mutate(zone = case_when(
+    str_detect(pattern = "sanctuary", string = class_type) ~ "Sanctuary Zone",
+    str_detect(pattern = "recreational|recreation", string = class_type) ~ "Recreational Use Zone",
+    str_detect(pattern = "habitat Protection", string = class_type) ~ "Habitat Protection Zone",
+    str_detect(pattern = "special purpose", string = class_type) ~ "Special Purpose Zone",
+    str_detect(pattern = "general", string = class_type) ~ "General Use Zone",
+    .default = "Other State Marine Park Zone")) %>%
+  dplyr::mutate(epbc = "State") %>%
+  dplyr::mutate(colour = case_when(zone %in% "Sanctuary Zone" & epbc %in% "State"~ "#bfd054",
+                                   zone %in% "Recreational Use Zone" & epbc %in% "State" ~ "#f4e952",
+                                   zone %in% "Habitat Protection Zone"& epbc %in% "State" ~ "#fffbcc",
+                                   zone %in% "Special Purpose Zone"& epbc %in% "State" ~ "#c5bcc9",
+                                   zone %in% "General Use Zone" ~ "#bddde1",
+                                   zone %in% "Special Purpose Zone"& epbc %in% "State" ~ "#c5bcc9",
+                                   zone %in% "Other State Marine Park Zone" ~ "gray80")) %>%
+  dplyr::rename(zone_type = class_type) %>%
+  dplyr::select(name, zone_type, zone, epbc, colour, geometry) %>%
+  glimpse()
+
+marine_parks <- dplyr::bind_rows(list(capad, rottnest, abrolhos, bardi, eighty, northkim)) %>%
   st_make_valid()
 
 st_write(marine_parks, "data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp", append = F)
