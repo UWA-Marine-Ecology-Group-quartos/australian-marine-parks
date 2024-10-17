@@ -44,3 +44,20 @@ sst_tsdf <- terra::global(rast_sst, fun = "mean", na.rm = T) %>%
   glimpse()
 
 saveRDS(sst_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_SST_time-series.rds"))
+
+testall <- sst_tsdf %>%
+  dplyr::group_by(year) %>%
+  summarise(sst = mean(sst),
+            sd = mean(sd))
+
+ggplot() +
+  geom_line(data = testall, aes(group = 1, x = year, y = sst))
+
+testwint <- sst_tsdf %>%
+  dplyr::filter(month %in% c("06", "07", "08")) %>%
+  dplyr::group_by(year) %>%
+  summarise(sst = mean(sst),
+            sd = mean(sd))
+
+ggplot() +
+  geom_line(data = testwint, aes(group = 1, x = year, y = sst))
