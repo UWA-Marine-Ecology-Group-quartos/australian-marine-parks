@@ -71,7 +71,7 @@ controlplot_fish(data = park_dat.shallow, amp_abbrv = "DMP",
 ggsave(paste0("plots/", park, "/fish/", name, "_shallow_control-plots.png"),
        height = 7, width = 8, dpi = 300, units = "in", bg = "white")
 
-controlplot_fish(data = park_dat.meso, amp_abbrv = "GMP",
-                 state_abbrv = "NCMP", title = "Mesophotic (30 - 70 m)")
+controlplot_fish(data = park_dat.meso, amp_abbrv = "DMP",
+                 state_abbrv = NA, title = "Mesophotic (30 - 70 m)")
 ggsave(paste0("plots/", park, "/fish/", name, "_mesophotic_control-plots.png"),
        height = 7, width = 8, dpi = 300, units = "in", bg = "white")

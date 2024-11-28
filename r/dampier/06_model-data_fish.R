@@ -321,8 +321,11 @@ buffer <- sites %>%
   st_transform(4326) %>%
   vect()
 
+remove <- st_read("data/dampier/spatial/shapefiles/remove-shipping-channel.shp")
+
 predfish <- rast(preddf_m, crs = "epsg:4326") %>%
   mask(buffer) %>%
+  mask(remove, inverse = T) %>%
   trim()
 plot(predfish)
 

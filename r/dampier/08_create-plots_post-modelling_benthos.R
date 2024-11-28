@@ -113,10 +113,10 @@ controldata_benthos(year = 2023, amp_abbrv = "DMP", state_abbrv = NA)
 controlplot_benthos(data = park_dat.shallow, amp_abbrv = "DMP", state_abbrv = NA,
                     title = "Shallow (0 - 30 m)")
 ggsave(paste0("plots/", park, "/habitat/", name, "_shallow-control-plots.png"),
-       height = 9, width = 8, dpi = 300, units = "in")
+       height = 6, width = 8, dpi = 300, units = "in")
 
 # Create and save the plot (mesophotic)
 controlplot_benthos(data = park_dat.meso, amp_abbrv = "DMP", state_abbrv = NA,
                     title = "Mesophotic (30 - 70 m)")
 ggsave(paste0("plots/", park, "/habitat/", name, "_mesophotic-control-plots.png"),
-       height = 9, width = 8, dpi = 300, units = "in")
+       height = 6, width = 8, dpi = 300, units = "in")

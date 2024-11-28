@@ -46,7 +46,7 @@ plot_sst(prediction_limits) +
 #            ylim = c(-33.65736, -33.35236),
 #            crs = 4326)
 ggsave(paste0("plots/", park, "/spatial/", name, "_SST.png"),
-       height = 4.5, width = 8, dpi = 600, bg = "white", units = "in")
+       height = 3.8, width = 8, dpi = 600, bg = "white", units = "in")
 
 ## SLA
 sla <- rast(paste0("data/", park, "/spatial/oceanography/", name, "_SLA_raster.rds")) %>%
@@ -57,7 +57,7 @@ plot_sla(prediction_limits) +
   theme(axis.text = element_text(size = 6))
 
 ggsave(paste0("plots/", park, "/spatial/", name, "_SLA.png"),
-       height = 4.5, width = 8, dpi = 600, bg = "white", units = "in")
+       height = 3.8, width = 8, dpi = 600, bg = "white", units = "in")
 
 ## DHW
 dhw <- rast(paste0("data/", park, "/spatial/oceanography/", name, "_DHW_raster.rds"))
@@ -67,11 +67,11 @@ plot_dhw(prediction_limits) +
   theme(axis.text = element_text(size = 6))
 
 ggsave(paste0("plots/", park, "/spatial/", name, "_DHW.png"),
-       height = 3.5, width = 8, dpi = 600, bg = "white", units = "in")
+       height = 2.7, width = 8, dpi = 600, bg = "white", units = "in")
 
 pressure_data()
 
-maxyear = c(2011, 2012)
+maxyear = c(2013, 2022)
 pressure_plot(maxyear)
 
 ggsave(filename = paste0('plots/', park, '/spatial/', name, '_oceanography_time-series.png'),
