@@ -3,11 +3,20 @@ library(bslib)
 library(leaflet)
 library(dplyr)
 
+
+# Load the data
+# dropdown_data <- read.csv(here::here("data/dropdowns.csv"), stringsAsFactors = FALSE)
+
 thematic::thematic_shiny()
 
 # TODO - create a dataframe with all the plot details
 # TODO - create ui dynamically (1 row and 1 column)
-# TODO - adjust min_height based on the number of years in the plot
+# TODO - adjust min_height based on the number of years in the plot (ningaloo has 3 years and is limiting facotr)
+# TODO - add the rasters back in, add them based off of the fitlers that are selected
+# Think that i might need to add number of years to the file info sheet and used that to get the height of the plot
+# TODO - add summary stats page (could show deployments on that page so it is less overwhelming)
+# TODO - add fishnclips page
+# TODO - work out why the images are not loading on server
 
 
 # Define the theme using bslib ----
@@ -46,12 +55,3 @@ south_west <- networks_and_parks %>%
   dplyr::pull(park)
 
 # TODO fix coral sea
-
-
-
-
-# Functions
-
-
-
-

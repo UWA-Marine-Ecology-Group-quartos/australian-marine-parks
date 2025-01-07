@@ -1,28 +1,69 @@
 server <- function(input, output, session) {
 
+  # Dynamic dropdown for Ecosystem Component
+  output$dynamic_ecosystem_subcomponent <- renderUI({
+    req(input$metric)
+    components <- unique(all_data$dropdown_data$ecosystem_component[all_data$dropdown_data$metric == input$metric])
+    selectInput(
+      inputId = "ecosystemsubcomponent",
+      label = "Ecosystem sub-component:",
+      choices = components,
+      selected = components[1]
+    )
+  })
+
+  output$dynamic_options <- renderUI({
+    req(input$metric, input$ecosystemsubcomponent)
+    options <- all_data$dropdown_data$options[all_data$dropdown_data$metric == input$metric & all_data$dropdown_data$ecosystem_component == input$ecosystemsubcomponent]
+    if (length(options) > 0) {
+      options_list <- strsplit(options, "\\|")[[1]]
+      selectInput(
+        inputId = "options",
+        label = "Indicator metric",#paste(input$ecosystemcomponent, "Options:"),
+        choices = options_list,
+        selected = options_list[1],
+        width = "100%"
+      )
+    }
+  })
+
+  output$marinepark_name <- renderUI({
+    h3(input$marine_park)
+  })
+
+  output$network_name <- renderUI({
+    h3(paste(input$network, "Network"))
+  })
+
+
   # Helper function to create safe IDs by replacing spaces with underscores
   make_safe_id <- function(name) {
     gsub(" ", "_", name)
   }
 
   # Helper function to dynamically generate plot UI and render plots
-  generate_plots <- function(metric, output_id_prefix) {
+  generate_plots_park <- function(chosen_metric, output_id_prefix) {
 
     observeEvent(input$marine_park, {
       req(input$marine_park)
 
-      filtered_data <- file_info %>%
+      message("viewing metric")
+      message(chosen_metric)
+
+      message("viewing data")
+      filtered_data <- all_data$file_info %>%
         dplyr::filter(marine_park %in% c(input$marine_park)) %>%
-        dplyr::filter(metric %in% c(metric)) %>%
+        dplyr::filter(metric == chosen_metric) %>%
+        dplyr::mutate(years = as.numeric(years)) %>%
         dplyr::glimpse()
 
       if (nrow(filtered_data) > 0) {
 
         output[[paste0(output_id_prefix, "_plots")]] <- renderUI({
           plot_list <-
-            lapply(1:length(unique(filtered_data$depth)), function(i) {
+            lapply(1:length(unique(filtered_data$metric)), function(i) {
 
-              plotOutput(make_safe_id(paste0(output_id_prefix, "_", filtered_data$depth[i])))
+              plotOutput(make_safe_id(paste0(output_id_prefix)), height = 50 + unique(filtered_data$years) * 160)
 
             })
 
@@ -37,7 +78,7 @@ server <- function(input, output, session) {
       }
 
       lapply(seq_len(nrow(filtered_data)), function(i) {
-        plot_id <- make_safe_id(paste0(output_id_prefix, "_", filtered_data$depth[i]))
+        plot_id <- make_safe_id(paste0(output_id_prefix))
 
         output[[plot_id]] <- renderPlot({
           plot_object <- readRDS(here::here(filtered_data$file[i]))
@@ -47,45 +88,6 @@ server <- function(input, output, session) {
     })
   }
 
-
-
-#
-#
-#
-#       # Remove previous UI elements to prevent residual plots
-#       # removeUI(selector = paste0("#", output_id_prefix, "_plots"), multiple = TRUE)
-#
-#       # Filter files based on the selected marine park and metric
-#       metric_files <- subset(file_info, marine_park == input$marine_park & metric == metric)
-#
-#       # Dynamically generate plot UI for the selected metric
-#       output[[paste0(output_id_prefix, "_plots")]] <- renderUI({
-#         req(input$marine_park)
-#
-#         # If no matching files, return nothing
-#         if (nrow(metric_files) == 0) {
-#           return(NULL)
-#         }
-#
-#         # Create a list of plots with safe IDs
-#         plot_list <- lapply(seq_len(nrow(metric_files)), function(i) {
-#           plotOutput(make_safe_id(paste0(output_id_prefix, "_", metric_files$depth[i])))
-#         })
-#
-#         do.call(tagList, plot_list)
-#       })
-#
-#       # Dynamically render the plots
-#       lapply(seq_len(nrow(metric_files)), function(i) {
-#         plot_id <- make_safe_id(paste0(output_id_prefix, "_", metric_files$depth[i]))
-#
-#         output[[plot_id]] <- renderPlot({
-#           plot_object <- readRDS(here::here(metric_files$file[i]))
-#           plot_object
-#         })
-#       })
-#     })
-#   }
   # bs_themer() # Turn this on if want to see real-time theming
 
   # Update the parks choices based on the selected network
@@ -95,6 +97,7 @@ server <- function(input, output, session) {
     parks <- all_data$file_info %>%
       dplyr::filter(network == selected_network) %>%
       dplyr::distinct(marine_park) %>%
+      dplyr::filter(!marine_park %in% c("South-west Network", "North-west Network")) %>%
       dplyr::pull(marine_park)
 
     updateRadioButtons(session, "marine_park", choices = c(parks))
@@ -188,9 +191,37 @@ server <- function(input, output, session) {
     all_data$sw200
   })
 
+  output$sw_cti <- renderPlot({
+    readRDS(here::here("plots/condition/demersal_fish/South-west_South-west Network_Community Temperature Index_2.rds"))
+  })
+
+  output$sw_lbc <- renderPlot({
+    readRDS(here::here("plots/condition/demersal_fish/South-west_South-west Network_Abundance of large-bodied generalist carnivores greater than Lm_2.rds"))
+  })
+
+  output$nw_cti <- renderPlot({
+    readRDS(here::here("plots/condition/demersal_fish/North-west_North-west Network_Community Temperature Index_2.rds"))
+  })
+
+  output$nw_lbc <- renderPlot({
+    readRDS(here::here("plots/condition/demersal_fish/North-west_North-west Network_Abundance of large-bodied generalist carnivores greater than Lm_2.rds"))
+  })
+
+  output$australia_map <- renderLeaflet({
+    leaflet() %>%
+      addTiles() %>%
+      addMarkers(
+        lng = 133.7751, lat = -25.2744,
+        popup = "Australia"
+      ) %>%
+      setView(lng = 133.7751, lat = -25.2744, zoom = 4)
+  })
 
   # Call the helper function for "Community Temperature Index"
-  generate_plots("Community Temperature Index", "community_temperature_index")
-  generate_plots("Trophic group by abundance by size class", "trophic_group_by_abundance_by_size_class")
+  generate_plots_park("Community Temperature Index",
+                 "community_temperature_index")
+
+  generate_plots_park("Abundance of large-bodied generalist carnivores greater than Lm",
+                 "abundance_of_large_bodied_generalist_carnivores")
 
 }
