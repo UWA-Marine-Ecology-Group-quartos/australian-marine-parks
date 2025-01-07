@@ -35,57 +35,9 @@ server <- function(input, output, session) {
     h3(paste(input$network, "Network"))
   })
 
-
   # Helper function to create safe IDs by replacing spaces with underscores
   make_safe_id <- function(name) {
     gsub(" ", "_", name)
-  }
-
-  # Helper function to dynamically generate plot UI and render plots
-  generate_plots_park <- function(chosen_metric, output_id_prefix) {
-
-    observeEvent(input$marine_park, {
-      req(input$marine_park)
-
-      message("viewing metric")
-      message(chosen_metric)
-
-      message("viewing data")
-      filtered_data <- all_data$file_info %>%
-        dplyr::filter(marine_park %in% c(input$marine_park)) %>%
-        dplyr::filter(metric == chosen_metric) %>%
-        dplyr::mutate(years = as.numeric(years)) %>%
-        dplyr::glimpse()
-
-      if (nrow(filtered_data) > 0) {
-
-        output[[paste0(output_id_prefix, "_plots")]] <- renderUI({
-          plot_list <-
-            lapply(1:length(unique(filtered_data$metric)), function(i) {
-
-              plotOutput(make_safe_id(paste0(output_id_prefix)), height = 50 + unique(filtered_data$years) * 160)
-
-            })
-
-          do.call(tagList, plot_list)
-
-        })
-
-      } else {
-
-        NULL
-
-      }
-
-      lapply(seq_len(nrow(filtered_data)), function(i) {
-        plot_id <- make_safe_id(paste0(output_id_prefix))
-
-        output[[plot_id]] <- renderPlot({
-          plot_object <- readRDS(here::here(filtered_data$file[i]))
-          plot_object
-        })
-      })
-    })
   }
 
   # bs_themer() # Turn this on if want to see real-time theming
@@ -104,107 +56,152 @@ server <- function(input, output, session) {
   })
 
 
-  # Render the Leaflet map for Demersal fish
-  output$demersal_fish_map <- renderLeaflet({
+  # # Render the Leaflet map for Demersal fish
+  # output$demersal_fish_map <- renderLeaflet({
+  #
+  #   points <- all_data$metadata
+  #
+  #   leaflet(points) %>%
+  #     # Base groups
+  #     addTiles(group = "OSM (default)") %>%
+  #     addProviderTiles(providers$Esri.WorldImagery, group = "World Imagery (satellite)") %>%
+  #     # Add the raster tile layer using the provided URL
+  #     addTiles(
+  #       urlTemplate = "https://dev.globalarchive.org/cog/tiles/{z}/{x}/{y}.png?file_path=synthesis_14/p_cti.fit_predicted.tif&colormap_name=viridis",
+  #       attribution = "© GlobalArchive",
+  #       group = "Predicted CTI"
+  #     ) %>%
+  #
+  #     addTiles(
+  #       urlTemplate = "https://dev.globalarchive.org/cog/tiles/{z}/{x}/{y}.png?file_path=synthesis_14/p_mature.fit_predicted.tif&colormap_name=viridis",
+  #       attribution = "© GlobalArchive",
+  #       group = "Predicted larger Lm large-bodied generalist carnivores"
+  #     ) %>%
+  #
+  #     addTiles(
+  #       urlTemplate = "https://dev.globalarchive.org/cog/tiles/{z}/{x}/{y}.png?file_path=synthesis_14/p_pinkies.fit_predicted.tif&colormap_name=viridis",
+  #       attribution = "© GlobalArchive",
+  #       group = "Predicted smaller Lm Pink Snapper"
+  #     ) %>%
+  #
+  #     addTiles(
+  #       urlTemplate = "https://dev.globalarchive.org/cog/tiles/{z}/{x}/{y}.png?file_path=synthesis_14/p_richness.fit_predicted.tif&colormap_name=viridis",
+  #       attribution = "© GlobalArchive",
+  #       group = "Predicted Species Richness"
+  #     ) %>%
+  #
+  #     addMarkers(
+  #       ~longitude_dd, ~latitude_dd,  # Coordinates for the markers
+  #       # label = ~label,  # Add labels to the markers
+  #       # popup = ~label,  # Popup text for markers
+  #       group = "Sampling locations",
+  #       icon = makeAwesomeIcon(icon = 'info-circle', markerColor = 'blue')  # Nice-looking icons
+  #     ) %>%
+  #     fitBounds(
+  #       lng1 = min(points$longitude_dd), lat1 = min(points$latitude_dd),
+  #       lng2 = max(points$longitude_dd), lat2 = max(points$latitude_dd)  # Set bounds to the extent of the points
+  #     ) %>%
+  #
+  #     # Layers control
+  #     addLayersControl(
+  #       baseGroups = c(
+  #         "OSM (default)",
+  #         "World Imagery (satellite)"
+  #       ),
+  #       overlayGroups = c("Sampling locations",
+  #                         "Predicted CTI",
+  #                         "Predicted Species Richness",
+  #                         "Predicted larger Lm large-bodied generalist carnivores",
+  #                         "Predicted smaller Lm Pink Snapper"),
+  #       options = layersControlOptions(collapsed = FALSE)
+  #     )
+  # })
 
-    points <- all_data$metadata
+  output$condition_plot <- renderPlot({
 
+    req(input$toggle, input$network)
 
-    leaflet(points) %>%
-      # Base groups
-      addTiles(group = "OSM (default)") %>%
-      addProviderTiles(providers$Esri.WorldImagery, group = "World Imagery (satellite)") %>%
-      # Add the raster tile layer using the provided URL
-      addTiles(
-        urlTemplate = "https://dev.globalarchive.org/cog/tiles/{z}/{x}/{y}.png?file_path=synthesis_14/p_cti.fit_predicted.tif&colormap_name=viridis",
-        attribution = "© GlobalArchive",
-        group = "Predicted CTI"
-      ) %>%
+    plot_list <- all_data$file_info
 
-      addTiles(
-        urlTemplate = "https://dev.globalarchive.org/cog/tiles/{z}/{x}/{y}.png?file_path=synthesis_14/p_mature.fit_predicted.tif&colormap_name=viridis",
-        attribution = "© GlobalArchive",
-        group = "Predicted larger Lm large-bodied generalist carnivores"
-      ) %>%
+    if(input$toggle %in% "Marine Park"){
 
-      addTiles(
-        urlTemplate = "https://dev.globalarchive.org/cog/tiles/{z}/{x}/{y}.png?file_path=synthesis_14/p_pinkies.fit_predicted.tif&colormap_name=viridis",
-        attribution = "© GlobalArchive",
-        group = "Predicted smaller Lm Pink Snapper"
-      ) %>%
+      chosen_plot <- plot_list %>%
+        dplyr::filter(network %in% input$network) %>%
+        dplyr::filter(marine_park %in% input$marine_park) %>%
+        dplyr::filter(metric %in% input$options)
 
-      addTiles(
-        urlTemplate = "https://dev.globalarchive.org/cog/tiles/{z}/{x}/{y}.png?file_path=synthesis_14/p_richness.fit_predicted.tif&colormap_name=viridis",
-        attribution = "© GlobalArchive",
-        group = "Predicted Species Richness"
-      ) %>%
+    } else {
 
-      addMarkers(
-        ~longitude_dd, ~latitude_dd,  # Coordinates for the markers
-        # label = ~label,  # Add labels to the markers
-        # popup = ~label,  # Popup text for markers
-        group = "Sampling locations",
-        icon = makeAwesomeIcon(icon = 'info-circle', markerColor = 'blue')  # Nice-looking icons
-      ) %>%
-      fitBounds(
-        lng1 = min(points$longitude_dd), lat1 = min(points$latitude_dd),
-        lng2 = max(points$longitude_dd), lat2 = max(points$latitude_dd)  # Set bounds to the extent of the points
-      ) %>%
+      chosen_plot <- plot_list %>%
+        dplyr::filter(network %in% input$network) %>%
+        dplyr::filter(marine_park %in% paste(input$network, "Network")) %>%
+        dplyr::filter(metric %in% input$options)
+    }
 
-      # Layers control
-      addLayersControl(
-        baseGroups = c(
-          "OSM (default)",
-          "World Imagery (satellite)"
-        ),
-        overlayGroups = c("Sampling locations",
-                          "Predicted CTI",
-                          "Predicted Species Richness",
-                          "Predicted larger Lm large-bodied generalist carnivores",
-                          "Predicted smaller Lm Pink Snapper"),
-        options = layersControlOptions(collapsed = FALSE)
-      )
+    print(unique(chosen_plot$file))
+
+    chosen_file <- readRDS(here::here(paste(unique(chosen_plot$file))))
+    plot(chosen_file)
+
+  })
+
+  condition_plot_height <- reactive({
+
+    req(input$toggle, input$network)
+
+    if(input$toggle %in% "Marine Park"){
+
+      chosen_plot <- plot_list %>%
+        dplyr::filter(network %in% input$network) %>%
+        dplyr::filter(marine_park %in% input$marine_park) %>%
+        dplyr::filter(metric %in% input$options)
+
+    } else {
+
+      chosen_plot <- plot_list %>%
+        dplyr::filter(network %in% input$network) %>%
+        dplyr::filter(marine_park %in% paste(input$network, "Network")) %>%
+        dplyr::filter(metric %in% input$options)
+    }
+
+    num_years <- as.numeric(unique(chosen_plot$years))
+
+    height <- 50 + num_years * 160
+
+    return(height)
+  })
+
+  output$condition_plot_ui <- renderUI({
+    plotOutput("condition_plot", height = condition_plot_height())
   })
 
 
-  output$geo_lm <- renderPlot({
-    all_data$geo_lm
-  })
+  output$temporal_plot <- renderPlot({
 
-  output$geo_sr <- renderPlot({
-    all_data$geo_sr
-  })
+    req(input$toggle, input$network)
 
-  output$geo_cti <- renderPlot({
-    all_data$geo_cti
-  })
+    plot_list <- all_data$temporal_file_info
 
-  output$sw30 <- renderPlot({
-    all_data$sw30
-  })
+    if(input$toggle %in% "Marine Park"){
 
-  output$sw70 <- renderPlot({
-    all_data$sw70
-  })
+    chosen_plot <- plot_list %>%
+      dplyr::filter(network %in% input$network) %>%
+      dplyr::filter(marine_park %in% input$marine_park) %>%
+      dplyr::filter(metric %in% input$options)
 
-  output$sw200 <- renderPlot({
-    all_data$sw200
-  })
+    } else {
 
-  output$sw_cti <- renderPlot({
-    readRDS(here::here("plots/condition/demersal_fish/South-west_South-west Network_Community Temperature Index_2.rds"))
-  })
+      chosen_plot <- plot_list %>%
+        dplyr::filter(network %in% input$network) %>%
+        dplyr::filter(marine_park %in% paste(input$network, "Network")) %>%
+        dplyr::filter(metric %in% input$options)
+    }
 
-  output$sw_lbc <- renderPlot({
-    readRDS(here::here("plots/condition/demersal_fish/South-west_South-west Network_Abundance of large-bodied generalist carnivores greater than Lm_2.rds"))
-  })
+    print(unique(chosen_plot$file))
 
-  output$nw_cti <- renderPlot({
-    readRDS(here::here("plots/condition/demersal_fish/North-west_North-west Network_Community Temperature Index_2.rds"))
-  })
+    chosen_file <- readRDS(here::here(paste(unique(chosen_plot$file))))
+    plot(chosen_file)
 
-  output$nw_lbc <- renderPlot({
-    readRDS(here::here("plots/condition/demersal_fish/North-west_North-west Network_Abundance of large-bodied generalist carnivores greater than Lm_2.rds"))
   })
 
   output$australia_map <- renderLeaflet({
@@ -216,12 +213,5 @@ server <- function(input, output, session) {
       ) %>%
       setView(lng = 133.7751, lat = -25.2744, zoom = 4)
   })
-
-  # Call the helper function for "Community Temperature Index"
-  generate_plots_park("Community Temperature Index",
-                 "community_temperature_index")
-
-  generate_plots_park("Abundance of large-bodied generalist carnivores greater than Lm",
-                 "abundance_of_large_bodied_generalist_carnivores")
 
 }
