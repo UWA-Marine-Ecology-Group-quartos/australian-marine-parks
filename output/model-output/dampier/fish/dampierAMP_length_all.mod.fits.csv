@@ -1,9 +1,9 @@
 "","modname","AICc","BIC","r2.vals","r2.vals.unique","edf","edf.less.1","delta.AICc","delta.BIC","wi.AICc","wi.BIC","reef","geoscience_depth","geoscience_aspect","geoscience_roughness","geoscience_detrended","status","cumsum.wi"
 "greater than Lm carnivores.reef+status","reef+status",573.324950909098,585.881107783681,0.26311,NA,3,0,0,1.156,0.238,0.199,1,0,0,0,0,1,0.238
-"greater than Lm carnivores.geoscience_aspect+reef+status","geoscience_aspect+reef+status",573.328003155022,585.889332607036,0.26314,NA,4,1,0.003,1.164,0.237,0.198,1,0,1,0,0,1,0.475
+"greater than Lm carnivores.geoscience_aspect+reef+status","geoscience_aspect+reef+status",573.327922346284,585.889118503656,0.26314,NA,4,1,0.003,1.164,0.237,0.198,1,0,1,0,0,1,0.475
 "greater than Lm carnivores.reef","reef",574.592982025604,584.725378005711,0.26209,NA,2,0,1.268,0,0.126,0.354,1,0,0,0,0,0,0.601
 "greater than Lm carnivores.geoscience_aspect+reef","geoscience_aspect+reef",575.137648479046,586.524778345694,0.26764,NA,3,0,1.813,1.799,0.096,0.144,1,0,1,0,0,0,0.697
-"smaller than Lm carnivores.geoscience_detrended+status","geoscience_detrended+status",257.973291711101,272.854964168529,0.06419,NA,3.85,0,0,0.542,0.246,0.169,0,0,0,0,1,1,0.246
+"smaller than Lm carnivores.geoscience_detrended+status","geoscience_detrended+status",257.973305003572,272.854970854869,0.06419,NA,3.85,0,0,0.542,0.246,0.169,0,0,0,0,1,1,0.246
 "smaller than Lm carnivores.geoscience_aspect+geoscience_detrended+status","geoscience_aspect+geoscience_detrended+status",257.973950906538,272.856442560171,0.06419,NA,4.85,1,0.001,0.543,0.246,0.169,0,0,1,0,1,1,0.492
-"smaller than Lm carnivores.geoscience_detrended+reef+status","geoscience_detrended+reef+status",259.387988707214,276.600003482141,0.06193,NA,4.85,0,1.415,4.287,0.121,0.026,1,0,0,0,1,1,0.613
+"smaller than Lm carnivores.geoscience_detrended+reef+status","geoscience_detrended+reef+status",259.387988707288,276.600003482306,0.06193,NA,4.85,0,1.415,4.287,0.121,0.026,1,0,0,0,1,1,0.613
 "smaller than Lm carnivores.geoscience_aspect+geoscience_detrended+reef+status","geoscience_aspect+geoscience_detrended+reef+status",259.388274141888,276.600566912236,0.06193,NA,5.85,1,1.415,4.287,0.121,0.026,1,0,1,0,1,1,0.734

@@ -10,7 +10,7 @@
 rm(list = ls())
 
 # Set the study name
-name <- "dampierAMP"
+name <- "DampierAMP"
 park <- "dampier"
 
 # Load libraries
@@ -61,6 +61,7 @@ ausc <- st_crop(aus, e)
 # Australian outline and state and commonwealth marine parks
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
   dplyr::filter(name %in% c("Dampier")) %>%
+  arrange(zone) %>%
   glimpse()
 plot(marine_parks["zone"])
 
@@ -103,19 +104,19 @@ individualbenthic_plot(prediction_limits)
 
 # Save the plot
 ggsave(filename = paste0("plots/", park, "/habitat/", name, "_predicted-individual-habitat.png"),
-       height = 5.5, width = 8, dpi = 900, units = "in", bg = "white")
+       height = 3.5, width = 8, dpi = 900, units = "in", bg = "white")
 
 # Create the data (makes a dataframe for each ecosystem depth contour)
-controldata_benthos(year = 2014, amp_abbrv = "GMP", state_abbrv = "NCMP")
+controldata_benthos(year = 2023, amp_abbrv = "DMP", state_abbrv = NA)
 
 # Create and save the plot (shallow)
-controlplot_benthos(data = park_dat.shallow, amp_abbrv = "GMP", state_abbrv = "NCMP",
+controlplot_benthos(data = park_dat.shallow, amp_abbrv = "DMP", state_abbrv = NA,
                     title = "Shallow (0 - 30 m)")
 ggsave(paste0("plots/", park, "/habitat/", name, "_shallow-control-plots.png"),
-       height = 9, width = 8, dpi = 300, units = "in")
+       height = 6, width = 8, dpi = 300, units = "in")
 
 # Create and save the plot (mesophotic)
-controlplot_benthos(data = park_dat.meso, amp_abbrv = "GMP", state_abbrv = "NCMP",
+controlplot_benthos(data = park_dat.meso, amp_abbrv = "DMP", state_abbrv = NA,
                     title = "Mesophotic (30 - 70 m)")
 ggsave(paste0("plots/", park, "/habitat/", name, "_mesophotic-control-plots.png"),
-       height = 9, width = 8, dpi = 300, units = "in")
+       height = 6, width = 8, dpi = 300, units = "in")

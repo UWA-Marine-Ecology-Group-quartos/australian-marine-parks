@@ -25,10 +25,11 @@ count <- read_points("data/dampier/raw/temp/BRUVs", method = "BRUVs") %>%
   clean_names() %>%
   right_join(metadata) %>% # Join back samples with no fish
   dplyr::filter(successful_count %in% "Yes") %>%
-  dplyr::select(campaignid, opcode, family, genus, species, number) %>%
-  group_by(campaignid, opcode, family, genus, species) %>%
+  dplyr::select(campaignid, opcode, family, genus, species, number, frame) %>%
+  group_by(campaignid, opcode, family, genus, species, frame) %>%
   summarise(count = sum(number)) %>%
   ungroup() %>%
+  dplyr::select(-frame) %>%
   dplyr::group_by(campaignid, opcode, family, genus, species) %>%
   dplyr::slice(which.max(count)) %>%
   dplyr::ungroup() %>%

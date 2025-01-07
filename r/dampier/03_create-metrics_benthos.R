@@ -11,7 +11,7 @@ rm(list = ls())
 library(tidyverse)
 
 # Set the study name
-name <- "dampierAMP"
+name <- "DampierAMP"
 park <- "dampier"
 
 # Using dummy data

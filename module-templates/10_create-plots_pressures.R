@@ -11,11 +11,11 @@ file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
 sapply(file.sources, source, .GlobalEnv)
 
 # Set the study name
-name <- "GeographeAMP"
-park <- "geographe"
+name <- "DampierAMP"
+park <- "dampier"
 
 # Set the extent of the study
-e <- ext(115.05, 115.558, -33.67, -33.349)
+e <- ext(116.7, 117.7,-20.919, -20)
 
 # Read in shapefile data for maps
 aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp")

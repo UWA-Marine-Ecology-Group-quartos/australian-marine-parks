@@ -9,7 +9,7 @@
 rm(list = ls())
 
 # Set the study name
-name <- "dampierAMP"
+name <- "DampierAMP"
 park <- "dampier"
 
 library(mgcv)
@@ -184,7 +184,7 @@ preddf <- preds %>%
   as.data.frame(xy = T) %>%
   glimpse()
 
-# Predicted reef
+# Predicted reef - extents don't match
 pred_reef <- readRDS(paste0("output/model-output/", park, "/habitat/",
                             name, "_predicted-habitat.rds")) %>%
   terra::subset("p_reef.fit")
@@ -199,6 +199,15 @@ names(preddf)
 # Back to spatraster
 preds <- rast(preddf, crs = "epsg:4326")
 plot(preds)
+
+# Add on status for prediction status
+status <- rast("data/south-west network/spatial/rasters/status_raster.tif")
+plot(status)
+
+# Add status on for fish modelling
+preddf <- cbind(preddf, terra::extract(status, presp, ID = F)) %>%
+  dplyr::mutate(status = if_else(status == 1, "No-take", "Fished"))
+names(preddf)
 
 # use formula from top model from FSSGam model selection
 unique(fabund$response)
@@ -227,12 +236,14 @@ m_mature <- gam(number ~ s(reef, k = 3, bs = "cr"),
 summary(m_mature)
 plot(m_mature)
 
-# Smaller than Lm large bodied carnivores - NULL MODEL
+# Smaller than Lm large bodied carnivores
 m_immature <- gam(number ~ s(geoscience_detrended, k = 3, bs = "cr") +
                     status,
                   data = fabund %>% dplyr::filter(response %in% "smaller than Lm carnivores"),
                   family = tw())
 summary(m_immature)
+
+# Predict
 
 predicted_fish <- cbind(preddf,
                         "p_mature" = mgcv::predict.gam(m_mature, preddf, type = "response",
@@ -257,23 +268,37 @@ xy <- fabund %>%
 
 # resp.vars <- names(preddf)[18:ncol(preddf)]
 resp.vars <- c("p_mature", "p_cti",
-               "p_richness", "p_pinkies")
+               "p_richness", "p_immature")
 
 for(i in 1:length(resp.vars)) {
   print(resp.vars[i])
   mod <- get(str_replace_all(resp.vars[i], "p_", "m_"))
 
+  if (length(setdiff(names(mod$model)[2:length(names(mod$model))], "status")) > 1) {
   temppred <- predicted_fish %>%
     dplyr::select(x, y, paste0(resp.vars[i], ".fit"),
                   paste0(resp.vars[i], ".se.fit")) %>%
     rast(crs = "epsg:4326")
 
-  dat <- terra::extract(subset(preds, names(mod$model)[2:length(names(mod$model))]), xy) %>%
-    dplyr::select(-ID)
-  messrast <- predicts::mess(subset(preds, names(mod$model)[2:length(names(mod$model))]), dat) %>%
-    terra::clamp(lower = -0.01, values = F)
-  messrast <- terra::crop(messrast, temppred)
+  dat <- terra::extract(subset(preds, setdiff(names(mod$model)[2:length(names(mod$model))], "status")), xy, ID = F)
+  messrast <- predicts::mess(subset(preds, setdiff(names(mod$model)[2:length(names(mod$model))], "status")), dat) %>%
+    terra::clamp(lower = -0.01, values = F) %>%
+    terra::crop(temppred)
   temppred_m <- terra::mask(temppred, messrast)
+  }
+
+  if (length(setdiff(names(mod$model)[2:length(names(mod$model))], "status")) == 1) {
+    temppred <- predicted_fish %>%
+      dplyr::select(x, y, paste0(resp.vars[i], ".fit"),
+                    paste0(resp.vars[i], ".se.fit")) %>%
+      rast(crs = "epsg:4326")
+
+    dat <- terra::extract(subset(preds, setdiff(names(mod$model)[2:length(names(mod$model))], "status")), xy, ID = F)
+    messrast <- subset(preds, setdiff(names(mod$model)[2:length(names(mod$model))], "status")) %>%
+      clamp(lower = min(dat), upper = max(dat), values = F) %>%
+      terra::crop(temppred)
+    temppred_m <- terra::mask(temppred, messrast)
+  }
 
 
   if (i == 1) {
@@ -287,11 +312,27 @@ for(i in 1:length(resp.vars)) {
 
 glimpse(preddf_m)
 
-saveRDS(preddf_m, paste0("output/model-output/geographe/fish/", name,
-                         "_predicted-fish.RDS"))
+sites <- st_as_sf(tidy_maxn, coords = c("longitude_dd", "latitude_dd"), crs = 4326) %>%
+  st_transform(9473) %>%
+  st_union()
 
-predfish <- rast(preddf_m, crs = "epsg:4326")
+buffer <- sites %>%
+  st_buffer(dist = 10000) %>%
+  st_transform(4326) %>%
+  vect()
+
+remove <- st_read("data/dampier/spatial/shapefiles/remove-shipping-channel.shp")
+
+predfish <- rast(preddf_m, crs = "epsg:4326") %>%
+  mask(buffer) %>%
+  mask(remove, inverse = T) %>%
+  trim()
 plot(predfish)
 
-writeRaster(predfish, paste0("output/model-output/geographe/fish/", names(predfish), "_predicted.tif"),
+preddf_m <- as.data.frame(predfish, xy = T)
+
+saveRDS(preddf_m, paste0("output/model-output/", park, "/fish/", name,
+                         "_predicted-fish.RDS"))
+
+writeRaster(predfish, paste0("output/model-output/", park, "/fish/", names(predfish), "_predicted.tif"),
             overwrite = TRUE)
