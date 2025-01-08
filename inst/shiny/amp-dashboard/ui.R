@@ -1,6 +1,6 @@
 ui <- page_navbar(
   title = div(
-    "Australian Marine Parks Dashboard",
+    "Australian Marine Parks Dashboard (this is a draft and contains fake data DO NOT USE FOR INTERPRETATION)",
   ),
   nav_spacer(),
 
@@ -25,10 +25,12 @@ ui <- page_navbar(
     conditionalPanel(
       condition = "input.toggle == 'Marine Park'",
 
-      # Radio button for selecting the park, initially set to 'south_west'
-      radioButtons("marine_park",
-                   "Marine Park:",
-                   choices = south_west)
+      uiOutput("dynamic_marine_park")#,
+
+    #   # Radio button for selecting the park, initially set to 'south_west'
+    #   radioButtons("marine_park",
+    #                "Marine Park:",
+    #                choices = south_west)
     ),
 
   ),
@@ -69,7 +71,7 @@ ui <- page_navbar(
           ),
 
           uiOutput("condition_plot_ui"),
-          plotOutput("temporal_plot"),
+          uiOutput("temporal_plot_ui"),
         )
 
       ),

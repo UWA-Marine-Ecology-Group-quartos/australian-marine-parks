@@ -2,7 +2,7 @@ library(shiny)
 library(bslib)
 library(leaflet)
 library(dplyr)
-
+library(tibble)
 
 # Load the data
 # dropdown_data <- read.csv(here::here("data/dropdowns.csv"), stringsAsFactors = FALSE)

@@ -2,17 +2,14 @@ library(readr)
 library(dplyr)
 library(googlesheets4)
 
+# Read in dropdown information ----
 dropdown_data <- read_sheet("https://docs.google.com/spreadsheets/d/1Iplohv6mM-CnpE6uYBi4uQnuhCyZMNpCRMSJFFnJxjM/edit?usp=sharing",
                    sheet = "dropdowns")
 
-
+# Read in network information ----
 networks_and_parks <- read_csv("inst/shiny/amp-dashboard/data/networks-and-parks.csv")
-#
-# # read in plots (this is just an example, I will need to loop through these and turn them into a list?)
-# geo_cti <- readRDS("inst/shiny/amp-dashboard/plots/geographe_gg_cti.RDS")
-# geo_lm <- readRDS("inst/shiny/amp-dashboard/plots/geographe_gg_lm.RDS")
-# geo_sr <- readRDS("inst/shiny/amp-dashboard/plots/geographe_gg_sr.RDS") # temporaily reading in SR
 
+# read in condition plot information ----
 # Define the folder path containing the .rds files for the condition plots
 folder_path <- "inst/shiny/amp-dashboard/plots/condition/demersal_fish"
 
@@ -33,7 +30,7 @@ file_info <- do.call(rbind, lapply(rds_files, function(f) {
 })) %>%
   dplyr::mutate(file = stringr::str_replace_all(file, "inst/shiny/amp-dashboard/",""))
 
-
+# read in temporal plot information ----
 # For the temporal plots
 # Define the folder path containing the .rds files for the condition plots
 folder_path <- "inst/shiny/amp-dashboard/plots/temporal"
@@ -55,23 +52,34 @@ temporal_file_info <- do.call(rbind, lapply(rds_files, function(f) {
 })) %>%
   dplyr::mutate(file = stringr::str_replace_all(file, "inst/shiny/amp-dashboard/",""))
 
+# Read in example metadata for Geographe ----
+metadata <- readRDS("data/geographe/tidy/GeographeAMP_metadata-bathymetry-derivatives.rds") %>%
+  dplyr::mutate(network = "South-west") %>%
+  dplyr::mutate(marine_park = "Geographe Marine Park")
 
-metadata <- readRDS("data/geographe/tidy/GeographeAMP_metadata-bathymetry-derivatives.rds")
+# Read in rasters and tags ----
+raster_data <- read_sheet("https://docs.google.com/spreadsheets/d/1BJLDy9pCjXSdFIJ-xczRC9Wj3kBkYLYnHnPczWoX9Eo/edit?usp=sharing",
+                            sheet = "raster_tags") %>%
+  dplyr::filter(!is.na(tile_service_url)) %>%
+  dplyr::mutate(metric = if_else((indicator_group %in% "Large-bodied carnivores"& indicator_class %in% "Greater than maturity"), "Abundance of large-bodied generalist carnivores greater than Lm", NA)) %>%
+  dplyr::mutate(metric = if_else(indicator_metric %in% "Community temperature index", "Community Temperature Index", metric)) %>%
+  dplyr::mutate(tile_service_url = if_else(estimate %in% "Error", str_replace_all(tile_service_url, "viridis", "plasma"), tile_service_url))
+
+
+# Combine all information together -----
 
 all_data <- structure(
   list(
     networks_and_parks = networks_and_parks,
-    # geo_cti = geo_cti,
-    # geo_lm = geo_lm,
-    # geo_sr = geo_sr,
     file_info = file_info,
     temporal_file_info = temporal_file_info,
     metadata = metadata,
-    dropdown_data = dropdown_data
-    # iucn.pal = iucn.pal
+    dropdown_data = dropdown_data,
+    raster_data = raster_data
   ),
   class = "data"
 )
 
+# Save ----
 save(all_data, file = here::here("data/all_data.Rdata"))
 save(all_data, file = here::here("inst/shiny/amp-dashboard/data/all_data.Rdata")) #I'm not actually sure which ones of these works
