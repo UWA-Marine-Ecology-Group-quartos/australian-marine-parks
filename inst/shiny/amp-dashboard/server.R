@@ -299,77 +299,9 @@ server <- function(input, output, session) {
     }
   })
 
-  # output$australia_map <- renderLeaflet({
-  #
-  #   points <- metadata_filtered_data() %>% glimpse()
-  #
-  #   print(nrow(points))
-  #
-  #   # This is just to keep the map working if there are no points in the metadata
-  #   # Check if the dataframe is empty
-  #   if (nrow(points) == 0) {
-  #     points <- tibble(
-  #       latitude_dd = c(-25.0, -25.1),   # Two close but distinct points in central Australia
-  #       longitude_dd = c(133.0, 133.1)  # Two close but distinct points in central Australia
-  #     )
-  #   }
-  #
-  #     map <- leaflet(points) %>%
-  #           addTiles(group = "OSM (default)") %>%
-  #           addProviderTiles(providers$Esri.WorldImagery, group = "World Imagery (satellite)") %>%
-  #       addMarkers(
-  #         ~longitude_dd, ~latitude_dd,  # Coordinates for the markers
-  #         group = "Sampling locations",
-  #         icon = makeAwesomeIcon(icon = 'info-circle', markerColor = 'blue')  # Nice-looking icons
-  #       ) %>%
-  #       fitBounds(
-  #         lng1 = min(points$longitude_dd), lat1 = min(points$latitude_dd),
-  #         lng2 = max(points$longitude_dd), lat2 = max(points$latitude_dd)  # Set bounds to the extent of the points
-  #       ) %>%
-  #         # Layers control
-  #         addLayersControl(
-  #           baseGroups = c(
-  #             "OSM (default)",
-  #             "World Imagery (satellite)"
-  #           ),
-  #           overlayGroups = c("Sampling locations"),
-  #           options = layersControlOptions(collapsed = FALSE)
-  #         )
-  #
-  #   # Add rasters to map
-  #   if(nrow(raster_predicted_data() > 0)){
-  #
-  #     map <- map %>%
-  #       addTiles(
-  #         urlTemplate = paste(unique(raster_predicted_data()$tile_service_url)),
-  #         attribution = "© GlobalArchive",
-  #         group = paste("Predicted", unique(raster_predicted_data()$metric))
-  #       )%>%
-  #
-  #       addTiles(
-  #         urlTemplate = paste(unique(raster_error_data()$tile_service_url)),
-  #         attribution = "© GlobalArchive",
-  #         group = paste("Error", unique(raster_error_data()$metric))
-  #       )%>%
-  #
-  #       # Layers control
-  #       addLayersControl(
-  #         baseGroups = c(
-  #           "OSM (default)",
-  #           "World Imagery (satellite)"
-  #         ),
-  #         overlayGroups = c("Sampling locations",
-  #                           paste("Predicted", unique(raster_predicted_data()$metric)),
-  #                           paste("Error", unique(raster_predicted_data()$metric))
-  #                           ),
-  #         options = layersControlOptions(collapsed = FALSE)
-  #       )
-  #   }
-  #   map
-  #
-  # })
-
   output$australia_map <- renderLeaflet({
+    req(input$toggle, input$network, input$options)
+
     points <- metadata_filtered_data()
 
     if (nrow(points) == 0) {
@@ -379,67 +311,80 @@ server <- function(input, output, session) {
       )
     }
 
+    metric_title <- unique(raster_predicted_data()$metric)
+
     # Initial Leaflet map
     map <- leaflet(points) %>%
-      addTiles(group = "OSM (default)") %>%
-      addProviderTiles(providers$Esri.WorldImagery, group = "World Imagery (satellite)") %>%
+      addTiles() %>%
+      # addProviderTiles(providers$Esri.WorldImagery, group = "World Imagery (satellite)") %>%
       addMarkers(~longitude_dd, ~latitude_dd, group = "Sampling locations") %>%
       fitBounds(
         lng1 = min(points$longitude_dd), lat1 = min(points$latitude_dd),
         lng2 = max(points$longitude_dd), lat2 = max(points$latitude_dd)
       ) %>%
       addLayersControl(
-        baseGroups = c("OSM (default)", "World Imagery (satellite)"),
+        # baseGroups = c("OSM (default)", "World Imagery (satellite)"),
         overlayGroups = c("Sampling locations"),
         options = layersControlOptions(collapsed = FALSE)
       )
 
-    # Add the "Predicted" layer by default
-    map <- map %>%
-      addTiles(
-        urlTemplate = paste(unique(raster_predicted_data()$tile_service_url)),
-        attribution = "© GlobalArchive",
-        group = "Predicted"
-      ) %>%
 
-      addTiles(
-        urlTemplate = paste(unique(raster_error_data()$tile_service_url)),
-        attribution = "© GlobalArchive",
-        group = "Error"
-      ) %>%
+    # Add tiles only if raster_predicted_data() has valid data
+    if (!is.null(raster_predicted_data()) && nrow(raster_predicted_data()) > 0) {
+      map <- map %>%
+        addTiles(
+          urlTemplate = paste(unique(raster_predicted_data()$tile_service_url)),
+          attribution = "© GlobalArchive",
+          group = "Predicted"
+        )
+    }
 
-      hideGroup("Error")  # Ensure "Error" is hidden initially
+    # Add tiles only if raster_error_data() has valid data
+    if (!is.null(raster_error_data()) && nrow(raster_error_data()) > 0) {
+      map <- map %>%
+        addTiles(
+          urlTemplate = paste(unique(raster_error_data()$tile_service_url)),
+          attribution = "© GlobalArchive",
+          group = "Error"
+        ) %>%
+        hideGroup("Error")  # Ensure "Error" is hidden initially
+    }
 
-    # Add custom radio buttons as a control
+    # Add custom radio buttons with title as a control
     map %>%
       htmlwidgets::onRender(
-        "function(el, x) {
-         var map = this;
-         var customControl = L.control({position: 'topright'});  // Position of the control
+        glue::glue(
+          "function(el, x) {{
+           var map = this;
+           var customControl = L.control({{position: 'topright'}});  // Position of the control
 
-         customControl.onAdd = function(map) {
-           var div = L.DomUtil.create('div', 'leaflet-bar');
-           div.innerHTML = `
-             <form>
-               <label><input type='radio' name='layer' value='Predicted' checked> Predicted</label><br>
-               <label><input type='radio' name='layer' value='Error'> Error</label>
-             </form>`;
-           div.style.backgroundColor = 'white';
-           div.style.padding = '10px';
-           div.style.border = '2px solid gray';
-           return div;
-         };
+           customControl.onAdd = function(map) {{
+             var div = L.DomUtil.create('div', 'leaflet-bar');
+             div.innerHTML = `
+               <div style='text-align: center; margin-bottom: 8px; font-weight: bold;'>
+                 {metric_title}
+               </div>
+               <form>
+                 <label><input type='radio' name='layer' value='Predicted' checked> Predicted</label><br>
+                 <label><input type='radio' name='layer' value='Error'> Error</label>
+               </form>`;
+             div.style.backgroundColor = 'white';
+             div.style.padding = '10px';
+             div.style.border = '2px solid gray';
+             return div;
+           }};
 
-         customControl.addTo(map);
+           customControl.addTo(map);
 
-         // Listen for changes in the radio buttons
-         var radioButtons = document.querySelectorAll('input[name=\"layer\"]');
-         radioButtons.forEach(function(rb) {
-           rb.addEventListener('change', function(e) {
-             Shiny.setInputValue('layer_toggle', e.target.value, {priority: 'event'});  // Send selected value to Shiny
-           });
-         });
-       }"
+           // Listen for changes in the radio buttons
+           var radioButtons = document.querySelectorAll('input[name=\"layer\"]');
+           radioButtons.forEach(function(rb) {{
+             rb.addEventListener('change', function(e) {{
+               Shiny.setInputValue('layer_toggle', e.target.value, {{priority: 'event'}});  // Send selected value to Shiny
+             }});
+           }});
+         }}"
+        )
       )
   })
 
@@ -460,6 +405,4 @@ server <- function(input, output, session) {
         hideGroup("Predicted")
     }
   })
-
-
 }
