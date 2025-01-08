@@ -3,21 +3,20 @@ library(bslib)
 library(leaflet)
 library(dplyr)
 library(tibble)
+library(shinybusy)
+library(shinyjs)
 
 # Load the data
 # dropdown_data <- read.csv(here::here("data/dropdowns.csv"), stringsAsFactors = FALSE)
 
 thematic::thematic_shiny()
 
-# TODO - create a dataframe with all the plot details
-# TODO - create ui dynamically (1 row and 1 column)
-# TODO - adjust min_height based on the number of years in the plot (ningaloo has 3 years and is limiting facotr)
-# TODO - add the rasters back in, add them based off of the fitlers that are selected
-# Think that i might need to add number of years to the file info sheet and used that to get the height of the plot
+# TODO - change the markers on the leaflet map
 # TODO - add summary stats page (could show deployments on that page so it is less overwhelming)
 # TODO - add fishnclips page
-# TODO - work out why the images are not loading on server
-
+# TODO - improve the stlying of the temporal plot
+# TODO - add some metadata so the maps move to right place
+# TODO - add shapefiles for the marine areas
 
 # Define the theme using bslib ----
 theme <- bs_theme(
@@ -55,3 +54,47 @@ south_west <- networks_and_parks %>%
   dplyr::pull(park)
 
 # TODO fix coral sea
+
+
+
+# FISHNCLIPS
+dat <- readRDS("data/fishnclips/dat.RDS") %>%
+  dplyr::rename(latitude = latitude_dd, longitude = longitude_dd)
+
+commonwealth.mp <- readRDS("data/fishnclips/commonwealth.mp.RDS")
+state.mp <- readRDS("data/fishnclips/state.mp.RDS")
+ngari.mp <- readRDS("data/fishnclips/ngari.mp.RDS")
+
+state.pal <- colorFactor(c("#bfaf02", # conservation
+                           "#7bbc63", # sanctuary = National Park
+                           "#fdb930", # recreation
+                           "#b9e6fb", # general use
+                           '#ccc1d6' # special purpose
+), state.mp$zone)
+
+commonwealth.pal <- colorFactor(c("#f6c1d9", # Sanctuary
+                                  "#7bbc63", # National Park
+                                  "#fdb930", # Recreational Use
+                                  "#fff7a3", # Habitat Protection
+                                  '#b9e6fb', # Multiple Use
+                                  '#ccc1d6'# Special Purpose
+), commonwealth.mp$zone)
+
+# Make icon for images and videos----
+# html_legend <- "<div style='width: auto; height: 45px'> <div style='position: relative; display: inline-block; width: 36px; height: 45px' <img src='images/marker_red.png'> </div> <p style='position: relative; top: 15px; display: inline-block; ' > BRUV </p> </div>
+# <div style='width: auto; height: 45px'> <div style='position: relative; display: inline-block; width: 36px; height: 45px' <img src='images/marker_red.png'> </div> <p style='position: relative; top: 15px; display: inline-block; ' > BRUV </p> </div>
+# <div style='width: auto; height: 45px'> <div style='position: relative; display: inline-block; width: 36px; height: 45px' <img src='images/marker_red.png'> </div> <p style='position: relative; top: 15px; display: inline-block; ' > BRUV </p> </div>"
+
+html_legend <- "<div style='padding: 10px; padding-bottom: 10px;'><h4 style='padding-top:0; padding-bottom:10px; margin: 0;'> Marker Legend </h4><br/>
+
+<img src='https://github.com/UWAMEGFisheries/UWAMEGFisheries.github.io/blob/master/images/markers/marker_yellow.png?raw=true'
+style='width:30px;height:30px;'> Fish highlights <br/>
+
+<img src='https://github.com/UWAMEGFisheries/UWAMEGFisheries.github.io/blob/master/images/markers/marker_green.png?raw=true'
+style='width:30px;height:30px;'> Habitat imagery (stereo-BRUV)<br/>
+
+<img src='https://github.com/UWAMEGFisheries/UWAMEGFisheries.github.io/blob/master/images/markers/marker_pink.png?raw=true'
+style='width:30px;height:30px;'> Habitat imagery (BOSS)<br/>
+
+<img src='https://github.com/UWAMEGFisheries/UWAMEGFisheries.github.io/blob/master/images/markers/marker_purple.png?raw=true'
+style='width:30px;height:30px;'> 3D models"

@@ -1,6 +1,10 @@
 ui <- page_navbar(
   title = div(
-    "Australian Marine Parks Dashboard (this is a draft and contains fake data DO NOT USE FOR INTERPRETATION)",
+    HTML(paste0(
+                #<b>
+                  "Australian Marine Parks Dashboard <i>(this is a draft and contains fake data DO NOT USE FOR INTERPRETATION)</i>"
+                # </b>
+                )),
   ),
   nav_spacer(),
 
@@ -70,7 +74,10 @@ ui <- page_navbar(
             uiOutput("dynamic_options")
           ),
 
+          uiOutput("metric_name"),
+          # h6("Condition:"),
           uiOutput("condition_plot_ui"),
+          # h6("Temporal:"),
           uiOutput("temporal_plot_ui"),
         )
 
@@ -86,7 +93,8 @@ ui <- page_navbar(
     )
   ),
   nav_panel(
-    title = "FishNClips"),
+    title = "FishNClips",
+    leafletOutput("fishnclips", height = "85%")),
   nav_panel(
     title = "Summary Statistics"),
 

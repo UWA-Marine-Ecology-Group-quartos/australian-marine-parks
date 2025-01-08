@@ -1,5 +1,7 @@
 server <- function(input, output, session) {
 
+  # bs_themer() # Turn this on if want to see real-time theming
+
   # Dynamic dropdown for Ecosystem Component
   output$dynamic_ecosystem_subcomponent <- renderUI({
     req(input$metric)
@@ -30,24 +32,21 @@ server <- function(input, output, session) {
   output$marinepark_name <- renderUI({
     req(input$toggle, input$network, input$marine_park)
 
-    h3(input$marine_park)
+    h3(HTML(paste0("<b>", input$marine_park)))
   })
 
   output$network_name <- renderUI({
     req(input$toggle, input$network, input$marine_park)
 
-    h3(paste(input$network, "Network"))
+    h3(HTML(paste0("<b>", input$network, " Network")))
   })
 
-  # Helper function to create safe IDs by replacing spaces with underscores
-  make_safe_id <- function(name) {
-    gsub(" ", "_", name)
-  }
+  output$metric_name <- renderUI({
+    req(input$options)
 
-  # bs_themer() # Turn this on if want to see real-time theming
+    h5(HTML(paste0("<i>", input$options)))
 
-  # Update the parks choices based on the selected network
-
+  })
 
   # Reset marine park input when switching toggle
   observeEvent(input$toggle, {
@@ -84,68 +83,6 @@ server <- function(input, output, session) {
     updateRadioButtons(session, "marine_park", choices = c(parks), selected = parks[1])
   })
 
-
-  # # Render the Leaflet map for Demersal fish
-  # output$demersal_fish_map <- renderLeaflet({
-  #
-  #   points <- all_data$metadata
-  #
-  #   leaflet(points) %>%
-  #     # Base groups
-  #     addTiles(group = "OSM (default)") %>%
-  #     addProviderTiles(providers$Esri.WorldImagery, group = "World Imagery (satellite)") %>%
-  #     # Add the raster tile layer using the provided URL
-  #     addTiles(
-  #       urlTemplate = "https://dev.globalarchive.org/cog/tiles/{z}/{x}/{y}.png?file_path=synthesis_14/p_cti.fit_predicted.tif&colormap_name=viridis",
-  #       attribution = "© GlobalArchive",
-  #       group = "Predicted CTI"
-  #     ) %>%
-  #
-  #     addTiles(
-  #       urlTemplate = "https://dev.globalarchive.org/cog/tiles/{z}/{x}/{y}.png?file_path=synthesis_14/p_mature.fit_predicted.tif&colormap_name=viridis",
-  #       attribution = "© GlobalArchive",
-  #       group = "Predicted larger Lm large-bodied generalist carnivores"
-  #     ) %>%
-  #
-  #     addTiles(
-  #       urlTemplate = "https://dev.globalarchive.org/cog/tiles/{z}/{x}/{y}.png?file_path=synthesis_14/p_pinkies.fit_predicted.tif&colormap_name=viridis",
-  #       attribution = "© GlobalArchive",
-  #       group = "Predicted smaller Lm Pink Snapper"
-  #     ) %>%
-  #
-  #     addTiles(
-  #       urlTemplate = "https://dev.globalarchive.org/cog/tiles/{z}/{x}/{y}.png?file_path=synthesis_14/p_richness.fit_predicted.tif&colormap_name=viridis",
-  #       attribution = "© GlobalArchive",
-  #       group = "Predicted Species Richness"
-  #     ) %>%
-  #
-  #     addMarkers(
-  #       ~longitude_dd, ~latitude_dd,  # Coordinates for the markers
-  #       # label = ~label,  # Add labels to the markers
-  #       # popup = ~label,  # Popup text for markers
-  #       group = "Sampling locations",
-  #       icon = makeAwesomeIcon(icon = 'info-circle', markerColor = 'blue')  # Nice-looking icons
-  #     ) %>%
-  #     fitBounds(
-  #       lng1 = min(points$longitude_dd), lat1 = min(points$latitude_dd),
-  #       lng2 = max(points$longitude_dd), lat2 = max(points$latitude_dd)  # Set bounds to the extent of the points
-  #     ) %>%
-  #
-  #     # Layers control
-  #     addLayersControl(
-  #       baseGroups = c(
-  #         "OSM (default)",
-  #         "World Imagery (satellite)"
-  #       ),
-  #       overlayGroups = c("Sampling locations",
-  #                         "Predicted CTI",
-  #                         "Predicted Species Richness",
-  #                         "Predicted larger Lm large-bodied generalist carnivores",
-  #                         "Predicted smaller Lm Pink Snapper"),
-  #       options = layersControlOptions(collapsed = FALSE)
-  #     )
-  # })
-
   # Reactive to handle the condition filtered dataset
   condition_filtered_data <- reactive({
     req(input$toggle, input$network)
@@ -171,7 +108,7 @@ server <- function(input, output, session) {
     req(condition_filtered_data())
 
     chosen_plot <- condition_filtered_data()
-    validate(need(nrow(chosen_plot) > 0, "No data available for the selected filters."))
+    validate(need(nrow(chosen_plot) > 0, "No condition data available for the selected filters."))
 
     chosen_file <- readRDS(here::here(unique(chosen_plot$file)))
     plot(chosen_file)
@@ -183,11 +120,24 @@ server <- function(input, output, session) {
     req(condition_filtered_data())
 
     chosen_plot <- condition_filtered_data()
+
     if (nrow(chosen_plot) > 0) {
+
       num_years <- as.numeric(unique(chosen_plot$years))
-      height <- 50 + num_years * 160
+
+      if(num_years == 1){
+
+        height <- 160
+
+      } else {
+
+        height <- #50 +
+          num_years * 150
+
+      }
+
     } else {
-      height <- 200  # Default height if no data
+      height <- 50  # Default height if no data
     }
     return(height)
   })
@@ -196,15 +146,14 @@ server <- function(input, output, session) {
 
     req(input$toggle, input$network)
 
-    print(paste("plot height", condition_plot_height()))
+    # print(paste("plot height", condition_plot_height()))
 
     plotOutput("condition_plot", height = paste0(condition_plot_height(), "px"))
 
   })
 
-
-  output$temporal_plot <- renderPlot({
-
+  # Temporal plot filtered data ----
+  temporal_filtered_data <- reactive({
     req(input$toggle, input$network)
 
     plot_list <- all_data$temporal_file_info
@@ -223,26 +172,57 @@ server <- function(input, output, session) {
         dplyr::filter(marine_park %in% paste(input$network, "Network")) %>%
         dplyr::filter(metric %in% input$options)
     }
+  })
 
-    # print(unique(chosen_plot$file))
-    if (nrow(chosen_plot) > 0) {
-    chosen_file <- readRDS(here::here(paste(unique(chosen_plot$file))))
-    plot(chosen_file)
-    } else {
 
-      return(NULL)
-    }
+  output$temporal_plot <- renderPlot({
+
+      req(temporal_filtered_data())
+
+      chosen_plot <- temporal_filtered_data()
+      validate(need(nrow(chosen_plot) > 0, "No temporal data available for the selected filters."))
+
+      chosen_file <- readRDS(here::here(unique(chosen_plot$file)))
+      plot(chosen_file)
 
   })
 
+  # Reactive height for the plot
+  temporal_plot_height <- reactive({
+    req(temporal_filtered_data())
+
+    chosen_plot <- temporal_filtered_data()
+
+    if (nrow(chosen_plot) > 0) {
+
+      num_depths <- as.numeric(unique(chosen_plot$depth_classes))
+
+      if(num_depths == 1){
+
+        height <- 250
+
+      } else {
+
+        height <- num_depths * 250
+
+      }
+
+    } else {
+      height <- 50  # Default height if no data
+    }
+
+    return(height)
+  })
+
+  # UI for temporal plot ----
   output$temporal_plot_ui <- renderUI({
 
     req(input$toggle, input$network)
+    plotOutput("temporal_plot", height = paste0(temporal_plot_height(), "px"))
 
-    plotOutput("temporal_plot")
   })
 
-
+  # Create filtered metadata ----
   metadata_filtered_data <- reactive({
     req(input$toggle, input$network)
 
@@ -259,6 +239,7 @@ server <- function(input, output, session) {
     }
   })
 
+  # Create filtered predicted rasters ----
   raster_predicted_data <- reactive({
     req(input$toggle, input$network, input$options)
 
@@ -279,6 +260,7 @@ server <- function(input, output, session) {
     }
   })
 
+  # Create filtered error rasters ----
   raster_error_data <- reactive({
     req(input$toggle, input$network, input$options)
 
@@ -299,6 +281,7 @@ server <- function(input, output, session) {
     }
   })
 
+  # Create map for Dashboard ----
   output$australia_map <- renderLeaflet({
     req(input$toggle, input$network, input$options)
 
@@ -313,7 +296,7 @@ server <- function(input, output, session) {
 
     metric_title <- unique(raster_predicted_data()$metric)
 
-    # Initial Leaflet map
+    # Initial Leaflet map ----
     map <- leaflet(points) %>%
       addTiles() %>%
       # addProviderTiles(providers$Esri.WorldImagery, group = "World Imagery (satellite)") %>%
@@ -322,14 +305,46 @@ server <- function(input, output, session) {
         lng1 = min(points$longitude_dd), lat1 = min(points$latitude_dd),
         lng2 = max(points$longitude_dd), lat2 = max(points$latitude_dd)
       ) %>%
+
+      # Ngari Capes Marine Parks
+      addPolygons(data = ngari.mp, weight = 1, color = "black",
+                  fillOpacity = 0.8, fillColor = "#7bbc63",
+                  group = "State Marine Parks", label=ngari.mp$Name) %>%
+
+      # State Marine Parks
+      addPolygons(data = state.mp, weight = 1, color = "black",
+                  fillOpacity = 0.8, fillColor = ~state.pal(zone),
+                  group = "State Marine Parks", label=state.mp$COMMENTS) %>%
+
+      # Add a legend
+      addLegend(pal = state.pal, values = state.mp$zone, opacity = 1,
+                title="State Zones",
+                position = "bottomright", group = "State Marine Parks") %>%
+
+      # Commonwealth Marine Parks
+      addPolygons(data = commonwealth.mp, weight = 1, color = "black",
+                  fillOpacity = 0.8, fillColor = ~commonwealth.pal(zone),
+                  group = "Australian Marine Parks", label=commonwealth.mp$ZoneName) %>%
+
+      # Add a legend
+      addLegend(pal = commonwealth.pal, values = commonwealth.mp$zone, opacity = 1,
+                title="Australian Marine Park Zones",
+                position = "bottomright", group = "Australian Marine Parks") %>%
+
       addLayersControl(
         # baseGroups = c("OSM (default)", "World Imagery (satellite)"),
-        overlayGroups = c("Sampling locations"),
-        options = layersControlOptions(collapsed = FALSE)
-      )
+        overlayGroups = c("Australian Marine Parks",
+                          "State Marine Parks",
+                          "Sampling locations"),
+        options = layersControlOptions(collapsed = FALSE),
+        position = "bottomright"
+      ) %>%
+      hideGroup("State Marine Parks") %>%
+      hideGroup("Australian Marine Parks")  %>%
+      hideGroup("Sampling locations")
 
 
-    # Add tiles only if raster_predicted_data() has valid data
+    # Add tiles only if raster_predicted_data() has valid data ----
     if (!is.null(raster_predicted_data()) && nrow(raster_predicted_data()) > 0) {
       map <- map %>%
         addTiles(
@@ -339,7 +354,7 @@ server <- function(input, output, session) {
         )
     }
 
-    # Add tiles only if raster_error_data() has valid data
+    # Add tiles only if raster_error_data() has valid data ----
     if (!is.null(raster_error_data()) && nrow(raster_error_data()) > 0) {
       map <- map %>%
         addTiles(
@@ -350,7 +365,7 @@ server <- function(input, output, session) {
         hideGroup("Error")  # Ensure "Error" is hidden initially
     }
 
-    # Add custom radio buttons with title as a control
+    # Add custom radio buttons with title as a control ----
     map %>%
       htmlwidgets::onRender(
         glue::glue(
@@ -388,7 +403,9 @@ server <- function(input, output, session) {
       )
   })
 
-  # Observe the radio button input and update the map
+
+
+  # Observe the radio button input and update the map ----
   observe({
     req(input$layer_toggle)  # Ensure toggle input is available
 
@@ -405,4 +422,140 @@ server <- function(input, output, session) {
         hideGroup("Predicted")
     }
   })
+
+
+
+  output$fishnclips <- renderLeaflet({
+
+      # map.dat <- map.dat() # call in filtered data
+      map.dat <- dat
+
+      boss.habitat.highlights.popups <- filter(map.dat, source %in% c("boss.habitat.highlights"))
+      bruv.habitat.highlights.popups <- filter(map.dat, source %in% c("bruv.habitat.highlights"))
+      fish.highlights.popups <- filter(map.dat, source %in% c("fish.highlights"))
+      threed.model.popups <- filter(map.dat, source %in% c("3d.model"))
+      image.popups <- filter(map.dat, source %in% c('image'))
+
+      # Having this in the global.R script breaks now - make icons on server side
+      icon.bruv.habitat <- iconList(blue = makeIcon("images/marker_green.png", iconWidth = 40, iconHeight =40))
+      icon.boss.habitat <- iconList(blue = makeIcon("images/marker_pink.png", iconWidth = 40, iconHeight =40))
+      icon.fish <- iconList(blue = makeIcon("images/marker_yellow.png", iconWidth = 40, iconHeight =40))
+      icon.models <- iconList(blue = makeIcon("images/marker_purple.png", iconWidth = 40, iconHeight =40))
+
+      lng1 <- min(map.dat$longitude)
+      lat1 <- min(map.dat$latitude)
+      lng2 <- max(map.dat$longitude)
+      lat2 <- max(map.dat$latitude)
+
+      leaflet <- leaflet() %>%
+        addProviderTiles('Esri.WorldImagery', group = "World Imagery") %>%
+        addTiles(group = "Open Street Map")%>%
+        addControl(html = html_legend, position = "bottomleft") %>%
+        # flyToBounds(lng1, lat1, lng2, lat2)%>%
+        fitBounds(lng1, lat1, lng2, lat2)%>%
+
+        # stereo-BRUV habitat videos
+        addMarkers(data=bruv.habitat.highlights.popups,
+                   icon = icon.bruv.habitat,
+                   popup = bruv.habitat.highlights.popups$popup,
+                   #label = bruv.habitat.highlights.popups$sample,
+                   clusterOptions = markerClusterOptions(iconCreateFunction =
+                                                           JS("
+                                          function(cluster) {
+                                             return new L.DivIcon({
+                                               html: '<div style=\"background-color:rgba(124, 248, 193, 0.9)\"><span>' + cluster.getChildCount() + '</div><span>',
+                                               className: 'marker-cluster'
+                                             });
+                                           }")),
+                   group="BRUV Habitat imagery",
+                   popupOptions=c(closeButton = TRUE,minWidth = 0,maxWidth = 700))%>%
+
+        # BOSS habitat videos
+        addMarkers(data=boss.habitat.highlights.popups,
+                   icon = icon.boss.habitat,
+                   popup = boss.habitat.highlights.popups$popup,
+                   #label = boss.habitat.highlights.popups$sample,
+                   clusterOptions = markerClusterOptions(iconCreateFunction =
+                                                           JS("
+                                          function(cluster) {
+                                             return new L.DivIcon({
+                                               html: '<div style=\"background-color:rgba(248, 124, 179, 0.9)\"><span>' + cluster.getChildCount() + '</div><span>',
+                                               className: 'marker-cluster'
+                                             });
+                                           }")),
+                   group="BOSS Habitat imagery",
+                   popupOptions=c(closeButton = TRUE,minWidth = 0,maxWidth = 700))%>%
+
+        # stereo-BRUV fish videos
+        addMarkers(data=fish.highlights.popups,
+                   icon = icon.fish,
+                   popup = fish.highlights.popups$popup,
+                   clusterOptions = markerClusterOptions(iconCreateFunction =
+                                                           JS("
+                                          function(cluster) {
+                                             return new L.DivIcon({
+                                               html: '<div style=\"background-color:rgba(241, 248, 124,0.9)\"><span>' + cluster.getChildCount() + '</div><span>',
+                                               className: 'marker-cluster'
+                                             });
+                                           }")),
+                   group="Fish highlights",
+                   popupOptions=c(closeButton = TRUE,minWidth = 0,maxWidth = 700))%>%
+
+        # 3D models
+        addMarkers(data=threed.model.popups,
+                   icon = icon.models,
+                   popup = threed.model.popups$popup,
+                   clusterOptions = markerClusterOptions(iconCreateFunction =
+                                                           JS("
+                                          function(cluster) {
+                                             return new L.DivIcon({
+                                               html: '<div style=\"background-color:rgba(131, 124, 248,0.9)\"><span>' + cluster.getChildCount() + '</div><span>',
+                                               className: 'marker-cluster'
+                                             });
+                                           }")),
+                   group="3D models",
+                   popupOptions=c(closeButton = TRUE, minWidth = 0,maxWidth = 700)
+        )%>%
+
+
+        # Ngari Capes Marine Parks
+        addPolygons(data = ngari.mp, weight = 1, color = "black",
+                    fillOpacity = 0.8, fillColor = "#7bbc63",
+                    group = "State Marine Parks", label=ngari.mp$Name)%>%
+
+        # State Marine Parks
+        addPolygons(data = state.mp, weight = 1, color = "black",
+                    fillOpacity = 0.8, fillColor = ~state.pal(zone),
+                    group = "State Marine Parks", label=state.mp$COMMENTS)%>%
+
+        # Add a legend
+        addLegend(pal = state.pal, values = state.mp$zone, opacity = 1,
+                  title="State Zones",
+                  position = "bottomright", group = "State Marine Parks")%>%
+
+        # Commonwealth Marine Parks
+        addPolygons(data = commonwealth.mp, weight = 1, color = "black",
+                    fillOpacity = 0.8, fillColor = ~commonwealth.pal(zone),
+                    group = "Australian Marine Parks", label=commonwealth.mp$ZoneName)%>%
+
+        # Add a legend
+        addLegend(pal = commonwealth.pal, values = commonwealth.mp$zone, opacity = 1,
+                  title="Australian Marine Park Zones",
+                  position = "bottomright", group = "Australian Marine Parks")%>%
+
+        addLayersControl(
+          baseGroups = c("World Imagery","Open Street Map"),
+          overlayGroups = c("Fish highlights",
+                            "BRUV Habitat imagery","BOSS Habitat imagery",
+                            "3D models",
+                            "State Marine Parks",
+                            "Australian Marine Parks"), options = layersControlOptions(collapsed = FALSE)) #%>%
+
+      # hideGroup("Australian Marine Parks") %>%
+      # hideGroup("State Marine Parks")
+
+      return(leaflet)
+
+    })
+  # End of server ----
 }

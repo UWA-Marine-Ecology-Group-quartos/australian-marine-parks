@@ -4,6 +4,7 @@ library(dplyr)
 library(ggforce)
 library(patchwork)
 library(ggimage) # for adding icons
+library(stringr)
 
 # Define the function
 create_plots <- function(data, output_dir = "plots/") {
@@ -182,8 +183,8 @@ create_plots <- function(data, output_dir = "plots/") {
     final_plot <- year_legend + plot_condition +
       plot_layout(widths = c(2, 10))+
       plot_annotation(
-        title = dynamic_title,
-        subtitle = combination$metric,
+        # title = dynamic_title,
+        # subtitle = combination$metric,
         theme = theme(
           plot.title = element_text(size = 18, face = "bold"),  # Adjust title size and style
           plot.subtitle = element_text(size = 16, face = "italic")  # Adjust subtitle size and style
