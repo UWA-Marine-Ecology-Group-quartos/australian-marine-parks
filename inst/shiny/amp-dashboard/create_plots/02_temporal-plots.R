@@ -2,6 +2,7 @@ library(dplyr)
 library(ggplot2)
 library(googlesheets4)
 library(patchwork)
+library(cowplot)
 
 # read in dummy temporal data ----
 # TODO - replace this with real data
@@ -135,7 +136,9 @@ for (i in seq_len(nrow(combinations))) {
       ) +
       labs(x = "Year", y = str_wrap(unique(depth_data$metric), 30)) +
       theme_bw() +
-      theme(axis.title = element_text(size = 16), # Larger axis titles
+      theme(#axis.title.y = element_blank(), # Remove y-axis labels for individual plots
+            legend.position = "none",      # Suppress individual legends
+            axis.title = element_text(size = 16), # Larger axis titles
             axis.text = element_text(size = 14), # Larger axis text
             legend.title = element_text(size = 16), # Larger legend title
             legend.text = element_text(size = 14), # Larger legend text
@@ -150,18 +153,53 @@ for (i in seq_len(nrow(combinations))) {
     depth_plots[[depth]] <- p
   }
 
+  # # Combine all depth plots into a single stacked plot
+  # final_plot <- wrap_plots(depth_plots, ncol = 1) +
+  #   plot_annotation(
+  #     # title = unique(filtered_data$marine_park),
+  #     # subtitle = unique(filtered_data$metric),
+  #     theme = theme(
+  #       plot.title = element_text(size = 18, face = "bold"),
+  #       plot.subtitle = element_text(size = 16, face = "italic")
+  #     )
+  #   )
+  #
+  # # Define file name
+  # file_prefix <- paste(
+  #   unique(filtered_data$network),
+  #   unique(filtered_data$marine_park),
+  #   unique(filtered_data$metric),
+  #   length(depth_classes),
+  #   sep = "_"
+  # )
+  #
+
   # Combine all depth plots into a single stacked plot
-  final_plot <- wrap_plots(depth_plots, ncol = 1) +
+  combined_plot <- wrap_plots(depth_plots, ncol = 1) #&
+    #theme(plot.margin = unit(c(1, 1, 1, 4), "lines")) # Adjust margin for shared y-axis
+
+  # Add shared legend and y-axis label
+  final_plot <- combined_plot +
+    plot_layout(guides = "collect") + # Collect legends into one
     plot_annotation(
-      # title = unique(filtered_data$marine_park),
-      # subtitle = unique(filtered_data$metric),
+      title = unique(filtered_data$marine_park),
       theme = theme(
         plot.title = element_text(size = 18, face = "bold"),
         plot.subtitle = element_text(size = 16, face = "italic")
       )
+    ) &
+    # labs(
+    #   y = unique(filtered_data$metric) # Shared y-axis label
+    # ) &
+    theme(
+      legend.position = "top", # Position legend at the bottom
+      legend.title = element_text(size = 16),
+      legend.text = element_text(size = 14)#,
+      # axis.title.y = element_text(size = 16)
     )
 
-  # Define file name
+
+  # Save the plot as RDS
   file_prefix <- paste(
     unique(filtered_data$network),
     unique(filtered_data$marine_park),
@@ -170,7 +208,11 @@ for (i in seq_len(nrow(combinations))) {
     sep = "_"
   )
 
-  # Save the plot as RDS
   saveRDS(final_plot, file = paste0("plots/temporal/", file_prefix, ".rds"))
   saveRDS(final_plot, file = paste0("inst/shiny/amp-dashboard/plots/temporal/", file_prefix, ".rds"))
+#
+#   # Save the plot as RDS
+#   saveRDS(final_plot, file = paste0("plots/temporal/", file_prefix, ".rds"))
+#   saveRDS(final_plot, file = paste0("inst/shiny/amp-dashboard/plots/temporal/", file_prefix, ".rds"))
 }
+

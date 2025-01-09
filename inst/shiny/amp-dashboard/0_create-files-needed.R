@@ -21,27 +21,27 @@ meg_labsheets_bruvs <- read_sheet("https://docs.google.com/spreadsheets/d/1ZfW-X
   dplyr::filter(!is.na(network)) %>%
   dplyr::select(campaignid, network, marine_park)
 
-temp_metadata <- data.frame()
-
-for(campaign in unique(meg_labsheets_bruvs$campaignid)){
-
-  print(campaign)
-
-  campaign_metadata <- read_sheet("https://docs.google.com/spreadsheets/d/1ZfW-XJKP0BmY2UXPNquTxnO5-iHnG9Kw3UuJbALCcrs/edit?usp=sharing",
-                              sheet = campaign) %>%
-    mutate(across(everything(), as.character)) %>%
-    dplyr::mutate(campaignid = campaign)
-
-  temp_metadata <- bind_rows(temp_metadata, campaign_metadata)
-
-}
-
-metadata <- temp_metadata %>%
-  dplyr::select(campaignid, opcode, latitude_dd, longitude_dd, depth_m, date_time) %>%
-  dplyr::left_join(meg_labsheets_bruvs) %>%
-  dplyr::mutate(latitude_dd = as.numeric(latitude_dd),
-                longitude_dd = as.numeric(longitude_dd)) %>%
-  dplyr::filter(!is.na(latitude_dd))
+# temp_metadata <- data.frame()
+#
+# for(campaign in unique(meg_labsheets_bruvs$campaignid)){
+#
+#   print(campaign)
+#
+#   campaign_metadata <- read_sheet("https://docs.google.com/spreadsheets/d/1ZfW-XJKP0BmY2UXPNquTxnO5-iHnG9Kw3UuJbALCcrs/edit?usp=sharing",
+#                               sheet = campaign) %>%
+#     mutate(across(everything(), as.character)) %>%
+#     dplyr::mutate(campaignid = campaign)
+#
+#   temp_metadata <- bind_rows(temp_metadata, campaign_metadata)
+#
+# }
+#
+# metadata <- temp_metadata %>%
+#   dplyr::select(campaignid, opcode, latitude_dd, longitude_dd, depth_m, date_time) %>%
+#   dplyr::left_join(meg_labsheets_bruvs) %>%
+#   dplyr::mutate(latitude_dd = as.numeric(latitude_dd),
+#                 longitude_dd = as.numeric(longitude_dd)) %>%
+#   dplyr::filter(!is.na(latitude_dd))
 
 # read in condition plot information ----
 # Define the folder path containing the .rds files for the condition plots
@@ -119,3 +119,4 @@ all_data <- structure(
 # Save ----
 save(all_data, file = here::here("data/all_data.Rdata"))
 save(all_data, file = here::here("inst/shiny/amp-dashboard/data/all_data.Rdata")) #I'm not actually sure which ones of these works
+

@@ -17,6 +17,8 @@ thematic::thematic_shiny()
 # - remove the legend from each plot
 # - remove the y axis title from each plot, and just have one overarching
 
+# TODO - change the way that the habitat is plotted in the dropdowns - need one selectionfor each habitat type, because can't display them all on a map due to the prediction and error
+
 # Define the theme using bslib ----
 theme <- bs_theme(
   bg = "#FFFFFF",  # Background color
