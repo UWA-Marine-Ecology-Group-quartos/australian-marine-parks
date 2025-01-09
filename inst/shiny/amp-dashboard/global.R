@@ -13,10 +13,9 @@ library(viridisLite)
 
 thematic::thematic_shiny()
 
-# TODO - improve the stlying of the temporal plot
+# TODO - maybe improve the stlying of the temporal plot
 # - remove the legend from each plot
 # - remove the y axis title from each plot, and just have one overarching
-# TODO - add some metadata so the maps move to right place
 
 # Define the theme using bslib ----
 theme <- bs_theme(

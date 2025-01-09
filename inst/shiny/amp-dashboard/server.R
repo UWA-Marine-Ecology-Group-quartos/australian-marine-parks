@@ -523,6 +523,8 @@ server <- function(input, output, session) {
     # map.dat <- map.dat() # call in filtered data
     map.dat <- dat
 
+    points <- metadata_filtered_data()
+
     boss.habitat.highlights.popups <- filter(map.dat, source %in% c("boss.habitat.highlights"))
     bruv.habitat.highlights.popups <- filter(map.dat, source %in% c("bruv.habitat.highlights"))
     fish.highlights.popups <- filter(map.dat, source %in% c("fish.highlights"))
@@ -535,17 +537,20 @@ server <- function(input, output, session) {
     icon.fish <- iconList(blue = makeIcon("images/marker_yellow.png", iconWidth = 40, iconHeight =40))
     icon.models <- iconList(blue = makeIcon("images/marker_purple.png", iconWidth = 40, iconHeight =40))
 
-    lng1 <- min(map.dat$longitude)
-    lat1 <- min(map.dat$latitude)
-    lng2 <- max(map.dat$longitude)
-    lat2 <- max(map.dat$latitude)
+    # lng1 <- min(map.dat$longitude)
+    # lat1 <- min(map.dat$latitude)
+    # lng2 <- max(map.dat$longitude)
+    # lat2 <- max(map.dat$latitude)
 
     leaflet <- leaflet() %>%
       addProviderTiles('Esri.WorldImagery', group = "World Imagery") %>%
       addTiles(group = "Open Street Map")%>%
       addControl(html = html_legend, position = "bottomleft") %>%
       # flyToBounds(lng1, lat1, lng2, lat2)%>%
-      fitBounds(lng1, lat1, lng2, lat2)%>%
+      fitBounds(
+        lng1 = min(points$longitude_dd), lat1 = min(points$latitude_dd),
+        lng2 = max(points$longitude_dd), lat2 = max(points$latitude_dd)
+      ) %>%
 
       # stereo-BRUV habitat videos
       addMarkers(data=bruv.habitat.highlights.popups,
