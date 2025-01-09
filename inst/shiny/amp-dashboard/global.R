@@ -6,6 +6,7 @@ library(dplyr)
 library(tibble)
 library(shinybusy)
 library(shinyjs)
+library(viridisLite)
 
 # Load the data
 # dropdown_data <- read.csv(here::here("data/dropdowns.csv"), stringsAsFactors = FALSE)

@@ -146,8 +146,8 @@ ui <- page_navbar(
           theme = "primary",
           value = textOutput("bruvs_deployed"),
           showcase = img(src = "stereo-BRUV_filled_transparent.png",
-                         height = "100px",
-                         style = "margin-left: 23px;" # Adjust the value as needed)
+                         height = "80px",
+                         style = "margin-left: 15px;" # Adjust the value as needed)
         )
         ))),
 
