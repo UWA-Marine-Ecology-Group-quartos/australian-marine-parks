@@ -2,6 +2,16 @@ server <- function(input, output, session) {
 
   # bs_themer() # Turn this on if want to see real-time theming
 
+  observe({
+    active_panel <- input$navbar_id %>% glimpse
+
+    # if (active_panel == "Summary Statistics") {
+    #   shinyjs::hide("main_sidebar")
+    # } else {
+    #   shinyjs::show("main_sidebar")
+    # }
+  })
+
   # Dynamic dropdown for Ecosystem Component
   output$dynamic_ecosystem_subcomponent <- renderUI({
     req(input$metric)
@@ -29,17 +39,21 @@ server <- function(input, output, session) {
     }
   })
 
-  output$marinepark_name <- renderUI({
+  render_marinepark_name <- function() {
     req(input$toggle, input$network, input$marine_park)
-
     h3(HTML(paste0("<b>", input$marine_park)))
-  })
+  }
 
-  output$network_name <- renderUI({
+  output$marinepark_name_1 <- renderUI(render_marinepark_name())
+  output$marinepark_name_2 <- renderUI(render_marinepark_name())
+
+  render_network_name <- function() {
     req(input$toggle, input$network, input$marine_park)
-
     h3(HTML(paste0("<b>", input$network, " Network")))
-  })
+  }
+
+  output$network_name_1 <- renderUI(render_network_name())
+  output$network_name_2 <- renderUI(render_network_name())
 
   output$metric_name <- renderUI({
     req(input$options)
@@ -296,11 +310,30 @@ server <- function(input, output, session) {
 
     metric_title <- unique(raster_predicted_data()$metric)
 
+    icon <- iconList(blue = makeIcon("images/marker_green.png", iconWidth = 40, iconHeight =40))
+
     # Initial Leaflet map ----
     map <- leaflet(points) %>%
       addTiles() %>%
       # addProviderTiles(providers$Esri.WorldImagery, group = "World Imagery (satellite)") %>%
-      addMarkers(~longitude_dd, ~latitude_dd, group = "Sampling locations") %>%
+      #addMarkers(~longitude_dd, ~latitude_dd, group = "Sampling locations") %>%
+
+      addMarkers(data = points, ~longitude_dd, ~latitude_dd,
+                 icon = icon,
+                 # popup = bruv.habitat.highlights.popups$popup,
+                 clusterOptions = markerClusterOptions(iconCreateFunction =
+                                                         JS("
+                                          function(cluster) {
+                                             return new L.DivIcon({
+                                               html: '<div style=\"background-color:rgba(124, 248, 193, 0.9)\"><span>' + cluster.getChildCount() + '</div><span>',
+                                               className: 'marker-cluster'
+                                             });
+                                           }")),
+                 group = "Sampling locations"#,
+                 #popupOptions=c(closeButton = TRUE,minWidth = 0,maxWidth = 700)
+                 )%>%
+
+
       fitBounds(
         lng1 = min(points$longitude_dd), lat1 = min(points$latitude_dd),
         lng2 = max(points$longitude_dd), lat2 = max(points$latitude_dd)
@@ -340,8 +373,8 @@ server <- function(input, output, session) {
         position = "bottomright"
       ) %>%
       hideGroup("State Marine Parks") %>%
-      hideGroup("Australian Marine Parks")  %>%
-      hideGroup("Sampling locations")
+      hideGroup("Australian Marine Parks") # %>%
+      #hideGroup("Sampling locations")
 
 
     # Add tiles only if raster_predicted_data() has valid data ----
@@ -557,5 +590,70 @@ server <- function(input, output, session) {
       return(leaflet)
 
     })
+
+
+  # Fish images ----
+  # Network image
+  output$ui_network <- renderUI({
+
+    req(input$network)
+    network <- stringr::str_replace_all(tolower(input$network), c(" " = ".", "-" = "."))
+
+
+    img(src = paste0("networks/", network, ".jpg"), align = "right", width = "100%", style = "margin-bottom: 10px;")
+  })
+
+  # Park image
+  output$ui_marine_park <- renderUI({
+
+    req(input$marine_park)
+
+    park <- stringr::str_replace_all(tolower(input$marine_park), c(" marine park" = "", " " = ".", "-" = ".")) %>%
+      glimpse
+
+    img(src = paste0("parks/", park, ".jpg"), align = "right", width = "100%", style = "margin-bottom: 10px;")
+  })
+
+  # Valuebox text
+
+  summary_data <- reactive({
+    req(input$toggle, input$network)
+
+    raster_list <- all_data$summary_data
+
+    if (input$toggle == "Marine Park") {
+      req(input$marine_park)  # Ensure marine_park input is selected
+      raster_list %>%
+        dplyr::filter(network %in% input$network) %>%
+        dplyr::filter(marine_park %in% input$marine_park)
+    } else {
+      raster_list %>%
+        dplyr::filter(network %in% input$network) %>%
+        dplyr::filter(marine_park %in% paste(input$network, "Network"))
+    }
+  })
+
+  output$fish_counted <- renderText({
+
+    data <- summary_data() %>% filter(metric %in% "fish_counted")
+
+    unique(data$value)
+  })
+
+  output$fish_species <- renderText({
+    6
+  })
+
+  output$hours_watched <- renderText({
+    15
+  })
+
+  output$bruvs_deployed <- renderText({
+    20
+  })
+
+
+
+
   # End of server ----
 }

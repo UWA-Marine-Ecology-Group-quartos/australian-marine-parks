@@ -1,6 +1,7 @@
 library(readr)
 library(dplyr)
 library(googlesheets4)
+library(stringr)
 
 # Read in dropdown information ----
 dropdown_data <- read_sheet("https://docs.google.com/spreadsheets/d/1Iplohv6mM-CnpE6uYBi4uQnuhCyZMNpCRMSJFFnJxjM/edit?usp=sharing",
@@ -8,6 +9,10 @@ dropdown_data <- read_sheet("https://docs.google.com/spreadsheets/d/1Iplohv6mM-C
 
 # Read in network information ----
 networks_and_parks <- read_csv("inst/shiny/amp-dashboard/data/networks-and-parks.csv")
+
+# Read in summary data (temp) ----
+summary_data <- read_sheet("https://docs.google.com/spreadsheets/d/1Iplohv6mM-CnpE6uYBi4uQnuhCyZMNpCRMSJFFnJxjM/edit?usp=sharing",
+                            sheet = "summary_data")
 
 # read in condition plot information ----
 # Define the folder path containing the .rds files for the condition plots
@@ -57,6 +62,15 @@ metadata <- readRDS("data/geographe/tidy/GeographeAMP_metadata-bathymetry-deriva
   dplyr::mutate(network = "South-west") %>%
   dplyr::mutate(marine_park = "Geographe Marine Park")
 
+
+
+
+
+
+
+
+
+
 # Read in rasters and tags ----
 raster_data <- read_sheet("https://docs.google.com/spreadsheets/d/1BJLDy9pCjXSdFIJ-xczRC9Wj3kBkYLYnHnPczWoX9Eo/edit?usp=sharing",
                             sheet = "raster_tags") %>%
@@ -76,7 +90,8 @@ all_data <- structure(
     temporal_file_info = temporal_file_info,
     metadata = metadata,
     dropdown_data = dropdown_data,
-    raster_data = raster_data
+    raster_data = raster_data,
+    summary_data = summary_data
   ),
   class = "data"
 )

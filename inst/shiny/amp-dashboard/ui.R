@@ -1,15 +1,17 @@
 ui <- page_navbar(
+  id = "navbar_id", # Add an ID to track the active panel
   title = div(
     HTML(paste0(
-                #<b>
-                  "Australian Marine Parks Dashboard <i>(this is a draft and contains fake data DO NOT USE FOR INTERPRETATION)</i>"
-                # </b>
-                )),
+      #<b>
+      "Australian Marine Parks Dashboard <i>(this is a draft and contains fake data DO NOT USE FOR INTERPRETATION)</i>"
+      # </b>
+    )),
   ),
   nav_spacer(),
 
   # Sidebar with radio button and dropdowns
   sidebar = sidebar(
+    id = "main_sidebar", # Add an ID to the sidebar
     width = 300,
 
     radioButtons(
@@ -31,13 +33,15 @@ ui <- page_navbar(
 
       uiOutput("dynamic_marine_park")#,
 
-    #   # Radio button for selecting the park, initially set to 'south_west'
-    #   radioButtons("marine_park",
-    #                "Marine Park:",
-    #                choices = south_west)
+      #   # Radio button for selecting the park, initially set to 'south_west'
+      #   radioButtons("marine_park",
+      #                "Marine Park:",
+      #                choices = south_west)
     ),
 
   ),
+
+  useShinyjs(), # Enable shinyjs
 
   # Main panel with conditional content
   nav_panel(
@@ -50,12 +54,12 @@ ui <- page_navbar(
           # Conditional panels for name of the view ----
           conditionalPanel(
             condition = "input.toggle == 'Network'",
-            uiOutput("network_name")),
+            uiOutput("network_name_1")),
 
           conditionalPanel(
             condition = "input.toggle == 'Marine Park'",
 
-            uiOutput("marinepark_name")),
+            uiOutput("marinepark_name_1")),
 
 
           # Row of dropdowns -----
@@ -95,8 +99,75 @@ ui <- page_navbar(
   nav_panel(
     title = "FishNClips",
     leafletOutput("fishnclips", height = "85%")),
+
   nav_panel(
-    title = "Summary Statistics"),
+    title = "Summary Statistics",
+
+    # Conditional panels for name of the view ----
+    conditionalPanel(
+      condition = "input.toggle == 'Network'",
+
+      uiOutput("network_name_2")#,
+      # uiOutput("ui_network")
+    ),
+
+    conditionalPanel(
+      condition = "input.toggle == 'Marine Park'",
+
+      uiOutput("marinepark_name_2")#,
+      # uiOutput("ui_marine_park")
+    ),
+
+    page_fillable(
+      layout_column_wrap(
+        value_box(
+          title = "Fish counted",
+          theme = "primary",
+          value = textOutput("fish_counted"),
+          showcase = icon("fish")
+        ),
+
+        value_box(
+          title = "Fish species identified",
+          theme = "primary",
+          value = textOutput("fish_species"),
+          showcase = icon("fish")
+        ),
+
+        value_box(
+          title = "Total hours of video watched",
+          theme = "primary",
+          value = textOutput("hours_watched"),
+          showcase = bs_icon("clock")
+        ),
+
+        value_box(
+          title = "stereo-BRUVs deployed",
+          theme = "primary",
+          value = textOutput("bruvs_deployed"),
+          showcase = img(src = "stereo-BRUV_filled_transparent.png",
+                         height = "100px",
+                         style = "margin-left: 23px;" # Adjust the value as needed)
+        )
+        ))),
+
+    conditionalPanel(
+      condition = "input.toggle == 'Network'",
+
+      # uiOutput("network_name_2"),
+      uiOutput("ui_network")
+    ),
+
+    conditionalPanel(
+      condition = "input.toggle == 'Marine Park'",
+
+      # uiOutput("marinepark_name_2"),
+      uiOutput("ui_marine_park")
+    ),
+
+
+
+  ),
 
   nav_item(input_dark_mode()),
   nav_item(tags$img(src = "https://marineecology.io/images/meg_logo_and_title.png", height = "30px", style = "float: right;"))

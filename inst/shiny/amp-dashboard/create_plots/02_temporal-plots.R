@@ -139,7 +139,7 @@ for (i in seq_len(nrow(combinations))) {
             axis.text = element_text(size = 14), # Larger axis text
             legend.title = element_text(size = 16), # Larger legend title
             legend.text = element_text(size = 14), # Larger legend text
-            plot.title = element_text(size = 18, face = "bold"), # Larger plot title
+            plot.title = element_text(size = 18, face = "italic"), # Larger plot title
             strip.text = element_text(size = 16), # Larger facet strip text
             axis.line = element_line(colour = "black"),
             panel.grid.major = element_blank(),
