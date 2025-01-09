@@ -13,8 +13,6 @@ library(viridisLite)
 
 thematic::thematic_shiny()
 
-# TODO - change the markers on the leaflet map
-# TODO - add summary stats page (could show deployments on that page so it is less overwhelming)
 # TODO - improve the stlying of the temporal plot
 # - remove the legend from each plot
 # - remove the y axis title from each plot, and just have one overarching
@@ -54,10 +52,6 @@ networks_and_parks <- all_data$networks_and_parks %>%
 south_west <- networks_and_parks %>%
   dplyr::filter(network %in% "South-west") %>%
   dplyr::pull(park)
-
-# TODO fix coral sea
-
-
 
 # FISHNCLIPS
 dat <- readRDS("data/fishnclips/dat.RDS") %>%

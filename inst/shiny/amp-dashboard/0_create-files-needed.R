@@ -6,6 +6,7 @@ library(stringr)
 # Read in dropdown information ----
 dropdown_data <- read_sheet("https://docs.google.com/spreadsheets/d/1Iplohv6mM-CnpE6uYBi4uQnuhCyZMNpCRMSJFFnJxjM/edit?usp=sharing",
                    sheet = "dropdowns")
+2
 
 # Read in network information ----
 networks_and_parks <- read_csv("inst/shiny/amp-dashboard/data/networks-and-parks.csv")
@@ -13,6 +14,34 @@ networks_and_parks <- read_csv("inst/shiny/amp-dashboard/data/networks-and-parks
 # Read in summary data (temp) ----
 summary_data <- read_sheet("https://docs.google.com/spreadsheets/d/1Iplohv6mM-CnpE6uYBi4uQnuhCyZMNpCRMSJFFnJxjM/edit?usp=sharing",
                             sheet = "summary_data")
+
+# Read in metadata ----
+meg_labsheets_bruvs <- read_sheet("https://docs.google.com/spreadsheets/d/1ZfW-XJKP0BmY2UXPNquTxnO5-iHnG9Kw3UuJbALCcrs/edit?usp=sharing",
+                            sheet = "BRUVs CampaignTrack") %>%
+  dplyr::filter(!is.na(network)) %>%
+  dplyr::select(campaignid, network, marine_park)
+
+temp_metadata <- data.frame()
+
+for(campaign in unique(meg_labsheets_bruvs$campaignid)){
+
+  print(campaign)
+
+  campaign_metadata <- read_sheet("https://docs.google.com/spreadsheets/d/1ZfW-XJKP0BmY2UXPNquTxnO5-iHnG9Kw3UuJbALCcrs/edit?usp=sharing",
+                              sheet = campaign) %>%
+    mutate(across(everything(), as.character)) %>%
+    dplyr::mutate(campaignid = campaign)
+
+  temp_metadata <- bind_rows(temp_metadata, campaign_metadata)
+
+}
+
+metadata <- temp_metadata %>%
+  dplyr::select(campaignid, opcode, latitude_dd, longitude_dd, depth_m, date_time) %>%
+  dplyr::left_join(meg_labsheets_bruvs) %>%
+  dplyr::mutate(latitude_dd = as.numeric(latitude_dd),
+                longitude_dd = as.numeric(longitude_dd)) %>%
+  dplyr::filter(!is.na(latitude_dd))
 
 # read in condition plot information ----
 # Define the folder path containing the .rds files for the condition plots
@@ -57,19 +86,10 @@ temporal_file_info <- do.call(rbind, lapply(rds_files, function(f) {
 })) %>%
   dplyr::mutate(file = stringr::str_replace_all(file, "inst/shiny/amp-dashboard/",""))
 
-# Read in example metadata for Geographe ----
-metadata <- readRDS("data/geographe/tidy/GeographeAMP_metadata-bathymetry-derivatives.rds") %>%
-  dplyr::mutate(network = "South-west") %>%
-  dplyr::mutate(marine_park = "Geographe Marine Park")
-
-
-
-
-
-
-
-
-
+# # Read in example metadata for Geographe ----
+# metadata <- readRDS("data/geographe/tidy/GeographeAMP_metadata-bathymetry-derivatives.rds") %>%
+#   dplyr::mutate(network = "South-west") %>%
+#   dplyr::mutate(marine_park = "Geographe Marine Park")
 
 # Read in rasters and tags ----
 raster_data <- read_sheet("https://docs.google.com/spreadsheets/d/1BJLDy9pCjXSdFIJ-xczRC9Wj3kBkYLYnHnPczWoX9Eo/edit?usp=sharing",

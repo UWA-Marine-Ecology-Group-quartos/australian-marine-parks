@@ -119,7 +119,7 @@ ui <- page_navbar(
     ),
 
     page_fillable(
-      layout_column_wrap(
+      layout_column_wrap(height = 200, fill = FALSE,
         value_box(
           title = "Fish counted",
           theme = "primary",

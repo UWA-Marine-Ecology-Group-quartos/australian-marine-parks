@@ -394,7 +394,11 @@ server <- function(input, output, session) {
           pal = colorNumeric(palette = viridisLite::viridis(256, direction = -1),  #(reverse here)
                              domain = c(raster_predicted_data()$min, raster_predicted_data()$max)
           ),
-          values = c(raster_predicted_data()$min, raster_predicted_data()$max),  # Reverse values
+          values = seq(
+            from = raster_predicted_data()$min,
+            to = raster_predicted_data()$max,
+            length.out = 5
+          ),  # Define 5 fixed values for the legend
           title = "Predicted",
           labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE)),
           opacity = 1,
@@ -481,7 +485,11 @@ server <- function(input, output, session) {
           position = "bottomright",
           pal = colorNumeric(palette = viridisLite::viridis(256, direction = -1),
                              domain = c(raster_predicted_data()$min, raster_predicted_data()$max)),
-          values = c(raster_predicted_data()$min, raster_predicted_data()$max),
+          values = seq(
+            from = raster_predicted_data()$min,
+            to = raster_predicted_data()$max,
+            length.out = 5
+          ),  # Define 5 fixed values for the legend
           title = "Predicted",
           labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE)),
           opacity = 1
@@ -495,7 +503,12 @@ server <- function(input, output, session) {
           position = "bottomright",
           pal = colorNumeric(palette = viridisLite::plasma(256, direction = -1),
                              domain = c(raster_error_data()$min, raster_error_data()$max)),
-          values = c(raster_error_data()$min, raster_error_data()$max),
+          # values = c(, ),
+          values = seq(
+            from = raster_error_data()$min,
+            to = raster_error_data()$max,
+            length.out = 5
+          ),  # Define 5 fixed values for the legend
           title = "Error",
           labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE)),
           opacity = 1
@@ -683,20 +696,23 @@ server <- function(input, output, session) {
   output$fish_counted <- renderText({
 
     data <- summary_data() %>% filter(metric %in% "fish_counted")
-
     unique(data$value)
+
   })
 
   output$fish_species <- renderText({
-    6
+    data <- summary_data() %>% filter(metric %in% "fish_species")
+    unique(data$value)
   })
 
   output$hours_watched <- renderText({
-    15
+    data <- summary_data() %>% filter(metric %in% "hours_watched")
+    unique(data$value)
   })
 
   output$bruvs_deployed <- renderText({
-    20
+    data <- summary_data() %>% filter(metric %in% "bruvs_deployed")
+    unique(data$value)
   })
 
 
