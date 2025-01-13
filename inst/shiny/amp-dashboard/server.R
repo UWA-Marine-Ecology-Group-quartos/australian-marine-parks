@@ -69,6 +69,7 @@ server <- function(input, output, session) {
     }
   })
 
+
   output$dynamic_marine_park <- renderUI({
     req(input$toggle, input$network)
 
@@ -164,6 +165,26 @@ server <- function(input, output, session) {
 
     plotOutput("condition_plot", height = paste0(condition_plot_height(), "px"))
 
+  })
+
+  output$dynamic_text <- renderUI({
+    req(input$toggle, input$network)
+
+
+    if (input$toggle == "Marine Park") {
+      req(input$marine_park)  # Ensure marine_park input is selected
+      text <- all_data$text_data %>%
+        dplyr::filter(network %in% input$network) %>%
+        dplyr::filter(marine_park %in% input$marine_park) %>%
+        dplyr::filter(metric %in% input$options)
+    } else {
+      text <- all_data$text_data %>%
+        dplyr::filter(network %in% input$network) %>%
+        dplyr::filter(marine_park %in% paste(input$network, "Network")) %>%
+        dplyr::filter(metric %in% input$options)
+    }
+
+    h6(unique(text$text))
   })
 
   # Temporal plot filtered data ----

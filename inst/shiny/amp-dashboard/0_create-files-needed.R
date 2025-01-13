@@ -15,33 +15,37 @@ networks_and_parks <- read_csv("inst/shiny/amp-dashboard/data/networks-and-parks
 summary_data <- read_sheet("https://docs.google.com/spreadsheets/d/1Iplohv6mM-CnpE6uYBi4uQnuhCyZMNpCRMSJFFnJxjM/edit?usp=sharing",
                             sheet = "summary_data")
 
+# Read in data for text ----
+text_data <- read_sheet("https://docs.google.com/spreadsheets/d/1Iplohv6mM-CnpE6uYBi4uQnuhCyZMNpCRMSJFFnJxjM/edit?usp=sharing",
+                        sheet = "text_data")
+
 # Read in metadata ----
 meg_labsheets_bruvs <- read_sheet("https://docs.google.com/spreadsheets/d/1ZfW-XJKP0BmY2UXPNquTxnO5-iHnG9Kw3UuJbALCcrs/edit?usp=sharing",
                             sheet = "BRUVs CampaignTrack") %>%
   dplyr::filter(!is.na(network)) %>%
   dplyr::select(campaignid, network, marine_park)
 
-# temp_metadata <- data.frame()
-#
-# for(campaign in unique(meg_labsheets_bruvs$campaignid)){
-#
-#   print(campaign)
-#
-#   campaign_metadata <- read_sheet("https://docs.google.com/spreadsheets/d/1ZfW-XJKP0BmY2UXPNquTxnO5-iHnG9Kw3UuJbALCcrs/edit?usp=sharing",
-#                               sheet = campaign) %>%
-#     mutate(across(everything(), as.character)) %>%
-#     dplyr::mutate(campaignid = campaign)
-#
-#   temp_metadata <- bind_rows(temp_metadata, campaign_metadata)
-#
-# }
-#
-# metadata <- temp_metadata %>%
-#   dplyr::select(campaignid, opcode, latitude_dd, longitude_dd, depth_m, date_time) %>%
-#   dplyr::left_join(meg_labsheets_bruvs) %>%
-#   dplyr::mutate(latitude_dd = as.numeric(latitude_dd),
-#                 longitude_dd = as.numeric(longitude_dd)) %>%
-#   dplyr::filter(!is.na(latitude_dd))
+temp_metadata <- data.frame()
+
+for(campaign in unique(meg_labsheets_bruvs$campaignid)){
+
+  print(campaign)
+
+  campaign_metadata <- read_sheet("https://docs.google.com/spreadsheets/d/1ZfW-XJKP0BmY2UXPNquTxnO5-iHnG9Kw3UuJbALCcrs/edit?usp=sharing",
+                              sheet = campaign) %>%
+    mutate(across(everything(), as.character)) %>%
+    dplyr::mutate(campaignid = campaign)
+
+  temp_metadata <- bind_rows(temp_metadata, campaign_metadata)
+
+}
+
+metadata <- temp_metadata %>%
+  dplyr::select(campaignid, opcode, latitude_dd, longitude_dd, depth_m, date_time) %>%
+  dplyr::left_join(meg_labsheets_bruvs) %>%
+  dplyr::mutate(latitude_dd = as.numeric(latitude_dd),
+                longitude_dd = as.numeric(longitude_dd)) %>%
+  dplyr::filter(!is.na(latitude_dd))
 
 # read in condition plot information ----
 # Define the folder path containing the .rds files for the condition plots
@@ -111,7 +115,8 @@ all_data <- structure(
     metadata = metadata,
     dropdown_data = dropdown_data,
     raster_data = raster_data,
-    summary_data = summary_data
+    summary_data = summary_data,
+    text_data = text_data
   ),
   class = "data"
 )

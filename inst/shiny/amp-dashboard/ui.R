@@ -81,6 +81,8 @@ ui <- page_navbar(
           uiOutput("metric_name"),
           # h6("Condition:"),
           uiOutput("condition_plot_ui"),
+
+          uiOutput("dynamic_text"),
           # h6("Temporal:"),
           uiOutput("temporal_plot_ui"),
         )
@@ -88,11 +90,14 @@ ui <- page_navbar(
       ),
       column(
         width = 5,
-        div(
+        # div(
+          card(full_screen = TRUE, max_height = "100%",
           id = "map-container",
-          style = "position: sticky; top: 0; height: 100vh;",
-          leafletOutput("australia_map", height = "85%")
-        )
+          # style = "position: sticky; top: 0; height: 100vh;",
+          style = "height: 85vh;",
+          leafletOutput("australia_map"
+                        ))
+        # )
       )
     )
   ),
