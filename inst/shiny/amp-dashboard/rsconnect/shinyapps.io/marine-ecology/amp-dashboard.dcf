@@ -5,7 +5,7 @@ account: marine-ecology
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 12519363
-bundleId: 9625785
+bundleId: 9641162
 url: https://marine-ecology.shinyapps.io/amp-dashboard/
 version: 1
 asMultiple: FALSE

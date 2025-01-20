@@ -13,10 +13,6 @@ library(viridisLite)
 
 thematic::thematic_shiny()
 
-# TODO - maybe improve the stlying of the temporal plot
-# - remove the legend from each plot
-# - remove the y axis title from each plot, and just have one overarching
-
 # TODO - change the way that the habitat is plotted in the dropdowns - need one selectionfor each habitat type, because can't display them all on a map due to the prediction and error
 
 # Define the theme using bslib ----
