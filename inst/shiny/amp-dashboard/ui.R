@@ -65,7 +65,7 @@ ui <- page_navbar(
           # Row of dropdowns -----
           layout_columns(
 
-            col_widths = c(3, 3, 6),
+            col_widths = c(6, 6),
 
             selectInput(
               inputId = "metric",
@@ -74,14 +74,17 @@ ui <- page_navbar(
               selected = unique(all_data$dropdown_data$metric)[1]
             ),
 
-            uiOutput("dynamic_ecosystem_subcomponent"),
-            uiOutput("dynamic_options")
+            uiOutput("dynamic_ecosystem_subcomponent")
+
           ),
 
           uiOutput("metric_name"),
           # h6("Condition:"),
           uiOutput("condition_plot_ui"),
 
+
+
+          uiOutput("dynamic_options"),
           uiOutput("dynamic_text"),
           # h6("Temporal:"),
           uiOutput("temporal_plot_ui"),

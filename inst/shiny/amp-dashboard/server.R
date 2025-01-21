@@ -20,7 +20,8 @@ server <- function(input, output, session) {
       inputId = "ecosystemsubcomponent",
       label = "Ecosystem sub-component:",
       choices = components,
-      selected = components[1]
+      selected = components[1],
+      width = "100%"
     )
   })
 
