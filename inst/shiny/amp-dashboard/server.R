@@ -56,6 +56,13 @@ server <- function(input, output, session) {
   output$network_name_1 <- renderUI(render_network_name())
   output$network_name_2 <- renderUI(render_network_name())
 
+  output$ecosystem_subcomponent_name <- renderUI({
+    req(input$ecosystemsubcomponent)
+
+    h5(HTML(paste0("<i>", input$ecosystemsubcomponent)))
+
+  })
+
   output$metric_name <- renderUI({
     req(input$options)
 
@@ -107,15 +114,23 @@ server <- function(input, output, session) {
 
     if (input$toggle == "Marine Park") {
       req(input$marine_park)  # Ensure marine_park input is selected
+
+      message("view conditional data marine park")
+
       plot_list %>%
         dplyr::filter(network %in% input$network) %>%
         dplyr::filter(marine_park %in% input$marine_park) %>%
-        dplyr::filter(metric %in% input$ecosystemsubcomponent)
+        dplyr::filter(metric %in% input$ecosystemsubcomponent) %>%
+        glimpse
     } else {
+
+      message("view conditional data network")
+
       plot_list %>%
         dplyr::filter(network %in% input$network) %>%
         dplyr::filter(marine_park %in% paste(input$network, "Network")) %>%
-        dplyr::filter(metric %in% input$ecosystemsubcomponent)
+        dplyr::filter(metric %in% input$ecosystemsubcomponent) %>%
+        glimpse
     }
   })
 
@@ -123,11 +138,34 @@ server <- function(input, output, session) {
 
     req(condition_filtered_data())
 
-    chosen_plot <- condition_filtered_data()
-    validate(need(nrow(chosen_plot) > 0, "No condition data available for the selected filters."))
+    message("chosen condition plot")
+
+    chosen_plot <- condition_filtered_data() %>%
+      glimpse
+
+    # Debug chosen_plot
+    message("Chosen plot: ", ifelse(is.null(chosen_plot), "NULL", paste(nrow(chosen_plot), "rows")))
+
+    # # Validate that the filtered data has rows
+    # validate(
+    #   need(!is.null(chosen_plot) && nrow(chosen_plot) > 0,
+    #        "No condition data available for the selected filters.")
+    # )
+    #
+    # # Ensure the 'file' column is present and unique before proceeding
+    # validate(
+    #   need("file" %in% colnames(chosen_plot), "'file' column is missing in the filtered data.")
+    # )
+
+    # Fallback if validate fails
+    if (is.null(chosen_plot) || nrow(chosen_plot) == 0 || !"file" %in% colnames(chosen_plot)) {
+      plot(1, 1, main = "No condition data available for the selected filters.")
+      #return(NULL)
+    } else {
 
     chosen_file <- readRDS(here::here(unique(chosen_plot$file)))
     plot(chosen_file)
+    }
 
   })
 
@@ -137,25 +175,40 @@ server <- function(input, output, session) {
 
     chosen_plot <- condition_filtered_data()
 
-    if (nrow(chosen_plot) > 0) {
+    if (!is.null(chosen_plot) && nrow(chosen_plot) > 0) {
+      num_years <- as.numeric(unique(chosen_plot$years) ) # Use length instead of coercing to numeric
 
-      num_years <- as.numeric(unique(chosen_plot$years))
-
-      if(num_years == 1){
-
-        height <- 160
-
+      if (num_years == 1) {
+        height <- 170
       } else {
-
-        height <- #50 +
-          num_years * 150
-
+        height <- num_years * 160  # Adjust the calculation as needed
       }
-
     } else {
-      height <- 50  # Default height if no data
+      height <- 200  # Default height if no data
     }
+
+    message("Dynamic plot height: ", height)
     return(height)
+
+    # if (nrow(chosen_plot) > 0) {
+    #
+    #   num_years <- as.numeric(unique(chosen_plot$years))
+    #
+    #   if(num_years == 1){
+    #
+    #     height <- 160
+    #
+    #   } else {
+    #
+    #     height <- #50 +
+    #       num_years * 150
+    #
+    #   }
+    #
+    # } else {
+    #   height <- 100  # Default height if no data
+    # }
+    # return(height)
   })
 
   output$condition_plot_ui <- renderUI({
@@ -173,12 +226,12 @@ server <- function(input, output, session) {
       text <- all_data$text_data %>%
         dplyr::filter(network %in% input$network) %>%
         dplyr::filter(marine_park %in% input$marine_park) %>%
-        dplyr::filter(metric %in% input$options)
+        dplyr::filter(ecosystem_condition %in% input$ecosystemsubcomponent)
     } else {
       text <- all_data$text_data %>%
         dplyr::filter(network %in% input$network) %>%
         dplyr::filter(marine_park %in% paste(input$network, "Network")) %>%
-        dplyr::filter(metric %in% input$options)
+        dplyr::filter(ecosystem_condition %in% input$ecosystemsubcomponent)
     }
 
     h6(unique(text$text))
@@ -212,7 +265,7 @@ server <- function(input, output, session) {
     req(temporal_filtered_data())
 
     chosen_plot <- temporal_filtered_data()
-    validate(need(nrow(chosen_plot) > 0, "No temporal data available for the selected filters."))
+    # validate(need(nrow(chosen_plot) > 0, "No temporal data available for the selected filters."))
 
     chosen_file <- readRDS(here::here(unique(chosen_plot$file)))
     plot(chosen_file)

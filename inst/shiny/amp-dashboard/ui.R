@@ -78,6 +78,8 @@ ui <- page_navbar(
 
           ),
 
+          uiOutput("ecosystem_subcomponent_name"),
+
           uiOutput("condition_plot_ui"),
           uiOutput("dynamic_text"),
 
