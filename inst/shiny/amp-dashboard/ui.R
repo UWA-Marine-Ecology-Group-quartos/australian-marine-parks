@@ -78,15 +78,12 @@ ui <- page_navbar(
 
           ),
 
-          uiOutput("metric_name"),
-          # h6("Condition:"),
           uiOutput("condition_plot_ui"),
-
+          uiOutput("dynamic_text"),
 
 
           uiOutput("dynamic_options"),
-          uiOutput("dynamic_text"),
-          # h6("Temporal:"),
+          uiOutput("metric_name"),
           uiOutput("temporal_plot_ui"),
         )
 

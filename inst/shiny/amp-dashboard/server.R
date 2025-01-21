@@ -110,12 +110,12 @@ server <- function(input, output, session) {
       plot_list %>%
         dplyr::filter(network %in% input$network) %>%
         dplyr::filter(marine_park %in% input$marine_park) %>%
-        dplyr::filter(metric %in% input$options)
+        dplyr::filter(metric %in% input$ecosystemsubcomponent)
     } else {
       plot_list %>%
         dplyr::filter(network %in% input$network) %>%
         dplyr::filter(marine_park %in% paste(input$network, "Network")) %>%
-        dplyr::filter(metric %in% input$options)
+        dplyr::filter(metric %in% input$ecosystemsubcomponent)
     }
   })
 
@@ -161,16 +161,12 @@ server <- function(input, output, session) {
   output$condition_plot_ui <- renderUI({
 
     req(input$toggle, input$network)
-
-    # print(paste("plot height", condition_plot_height()))
-
     plotOutput("condition_plot", height = paste0(condition_plot_height(), "px"))
 
   })
 
   output$dynamic_text <- renderUI({
     req(input$toggle, input$network)
-
 
     if (input$toggle == "Marine Park") {
       req(input$marine_park)  # Ensure marine_park input is selected

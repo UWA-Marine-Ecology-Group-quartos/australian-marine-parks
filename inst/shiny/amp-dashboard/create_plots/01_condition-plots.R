@@ -196,7 +196,7 @@ create_plots <- function(data, output_dir = "plots/") {
 
   # Loop through each unique combination of network, marine_park_or_area, and metric
   unique_combinations <- data %>%
-    distinct(network, marine_park_or_area, metric
+    distinct(network, marine_park_or_area, ecosystem_condition
              #, depth_m
              )
 
@@ -207,7 +207,7 @@ create_plots <- function(data, output_dir = "plots/") {
     sub_data <- data %>%
       filter(network == combination$network,
              marine_park_or_area == combination$marine_park_or_area,
-             metric == combination$metric#,
+             ecosystem_condition == combination$ecosystem_condition#,
              #depth_m == combination$depth_m
              ) %>% glimpse()
 
@@ -220,7 +220,7 @@ create_plots <- function(data, output_dir = "plots/") {
     plot_height <- 2 + nrow(sub_data) * 0.5
 
     # Define file names for saving
-    file_prefix <- paste(combination$network, combination$marine_park_or_area, combination$metric, num_years
+    file_prefix <- paste(combination$network, combination$marine_park_or_area, combination$ecosystem_condition, num_years
                          #, combination$depth_m
                          , sep = "_")
 
@@ -234,10 +234,10 @@ create_plots <- function(data, output_dir = "plots/") {
            plot = plot, width = 10, height = plot_height, units = "in", dpi = 300)
 
     # Save the plot as RDS
-    saveRDS(plot, file = paste0("plots/condition/", tidy_ecosystem, "/", file_prefix, ".rds"))
+    saveRDS(plot, file = paste0("plots/condition", tidy_ecosystem, "/", file_prefix, ".rds"))
 
     # Save the plot as PNG
-    ggsave(filename = paste0("plots/condition/", tidy_ecosystem, "/", file_prefix, ".png"),
+    ggsave(filename = paste0("plots/condition", tidy_ecosystem, "/", file_prefix, ".png"),
            plot = plot, width = 10, height = plot_height, units = "in", dpi = 300)
   }
 }
@@ -248,6 +248,6 @@ create_plots <- function(data, output_dir = "plots/") {
 library(googlesheets4)
 
 data <- read_sheet("https://docs.google.com/spreadsheets/d/1Iplohv6mM-CnpE6uYBi4uQnuhCyZMNpCRMSJFFnJxjM/edit?usp=sharing",
-                   sheet = "dummy_data")
+                   sheet = "simplified_dummy_data")
 
 create_plots(data, output_dir = "inst/shiny/amp-dashboard/plots/condition/")

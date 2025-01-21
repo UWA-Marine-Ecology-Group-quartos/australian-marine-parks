@@ -25,20 +25,20 @@ meg_labsheets_bruvs <- read_sheet("https://docs.google.com/spreadsheets/d/1ZfW-X
   dplyr::filter(!is.na(network)) %>%
   dplyr::select(campaignid, network, marine_park)
 
-temp_metadata <- data.frame()
-
-for(campaign in unique(meg_labsheets_bruvs$campaignid)){
-
-  print(campaign)
-
-  campaign_metadata <- read_sheet("https://docs.google.com/spreadsheets/d/1ZfW-XJKP0BmY2UXPNquTxnO5-iHnG9Kw3UuJbALCcrs/edit?usp=sharing",
-                              sheet = campaign) %>%
-    mutate(across(everything(), as.character)) %>%
-    dplyr::mutate(campaignid = campaign)
-
-  temp_metadata <- bind_rows(temp_metadata, campaign_metadata)
-
-}
+# temp_metadata <- data.frame()
+#
+# for(campaign in unique(meg_labsheets_bruvs$campaignid)){
+#
+#   print(campaign)
+#
+#   campaign_metadata <- read_sheet("https://docs.google.com/spreadsheets/d/1ZfW-XJKP0BmY2UXPNquTxnO5-iHnG9Kw3UuJbALCcrs/edit?usp=sharing",
+#                               sheet = campaign) %>%
+#     mutate(across(everything(), as.character)) %>%
+#     dplyr::mutate(campaignid = campaign)
+#
+#   temp_metadata <- bind_rows(temp_metadata, campaign_metadata)
+#
+# }
 
 metadata <- temp_metadata %>%
   dplyr::select(campaignid, opcode, latitude_dd, longitude_dd, depth_m, date_time) %>%
@@ -49,10 +49,10 @@ metadata <- temp_metadata %>%
 
 # read in condition plot information ----
 # Define the folder path containing the .rds files for the condition plots
-folder_path <- "inst/shiny/amp-dashboard/plots/condition/demersal_fish"
+folder_path <- "inst/shiny/amp-dashboard/plots/condition"
 
 # Get the list of .rds files in the folder
-rds_files <- list.files(folder_path, pattern = "\\.rds$", full.names = TRUE)
+rds_files <- list.files(folder_path, pattern = "\\.rds$", full.names = TRUE, recursive = TRUE)
 
 # Function to extract "marine-park", "metric", and "years" from filename
 extract_file_info <- function(filename) {
