@@ -80,6 +80,20 @@ ui <- page_navbar(
 
           uiOutput("ecosystem_subcomponent_name"),
 
+          # card(
+            # column(
+              # width = 12,  # Full-width column
+              conditionalPanel(
+                condition = "input.metric == 'Natural Values'",
+
+                h6("Methods used for data collection:"),
+                uiOutput("ui_method_button"),
+              ),
+            # )
+          # ),
+
+
+
           uiOutput("condition_plot_ui"),
           uiOutput("dynamic_text"),
 
@@ -90,17 +104,46 @@ ui <- page_navbar(
         )
 
       ),
-      column(
-        width = 5,
-        # div(
-          card(full_screen = TRUE, max_height = "100%",
-          id = "map-container",
-          # style = "position: sticky; top: 0; height: 100vh;",
-          style = "height: 85vh;",
-          leafletOutput("australia_map"
-                        ))
-        # )
-      )
+
+      tags$head(
+        tags$style(HTML("
+      .fishnclips-legend {
+        background-color: rgba(255, 255, 255, 0.8); /* white background with transparency */
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* optional shadow */
+      }
+    "))
+      ),
+
+    column(
+      width = 5,
+      # div(
+      card(full_screen = TRUE, max_height = "100%",
+           id = "map-container",
+           # style = "position: sticky; top: 0; height: 100vh;",
+           style = "height: 85vh;",
+           leafletOutput("australia_map"
+           )),
+
+      tags$head(
+        tags$style(HTML("
+
+
+      .custom-button {
+      background-color: #black !important;
+      }
+
+      .custom-button:hover {
+        background-color: #007BC2 !important;
+        color: white !important;
+      }
+    ")) # 263F6B navy hover colour
+      ),
+
+    uiOutput("ui_open_ga_button", width = "100%")
+    # )
+    )
     )
   ),
   nav_panel(
@@ -127,36 +170,36 @@ ui <- page_navbar(
 
     page_fillable(
       layout_column_wrap(height = 200, fill = FALSE,
-        value_box(
-          title = "Fish counted",
-          theme = "primary",
-          value = textOutput("fish_counted"),
-          showcase = icon("fish")
-        ),
+                         value_box(
+                           title = "Fish counted",
+                           theme = "primary",
+                           value = textOutput("fish_counted"),
+                           showcase = icon("fish")
+                         ),
 
-        value_box(
-          title = "Fish species identified",
-          theme = "primary",
-          value = textOutput("fish_species"),
-          showcase = icon("fish")
-        ),
+                         value_box(
+                           title = "Fish species identified",
+                           theme = "primary",
+                           value = textOutput("fish_species"),
+                           showcase = icon("fish")
+                         ),
 
-        value_box(
-          title = "Total hours of video watched",
-          theme = "primary",
-          value = textOutput("hours_watched"),
-          showcase = bs_icon("clock")
-        ),
+                         value_box(
+                           title = "Total hours of video watched",
+                           theme = "primary",
+                           value = textOutput("hours_watched"),
+                           showcase = bs_icon("clock")
+                         ),
 
-        value_box(
-          title = "stereo-BRUVs deployed",
-          theme = "primary",
-          value = textOutput("bruvs_deployed"),
-          showcase = img(src = "stereo-BRUV_filled_transparent.png",
-                         height = "80px",
-                         style = "margin-left: 15px;" # Adjust the value as needed)
-        )
-        ))),
+                         value_box(
+                           title = "stereo-BRUVs deployed",
+                           theme = "primary",
+                           value = textOutput("bruvs_deployed"),
+                           showcase = img(src = "stereo-BRUV_filled_transparent.png",
+                                          height = "80px",
+                                          style = "margin-left: 15px;" # Adjust the value as needed)
+                           )
+                         ))),
 
     conditionalPanel(
       condition = "input.toggle == 'Network'",

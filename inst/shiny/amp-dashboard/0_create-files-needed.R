@@ -10,6 +10,11 @@ dropdown_data <- read_sheet("https://docs.google.com/spreadsheets/d/1Iplohv6mM-C
                    sheet = "dropdowns")
 2
 
+# Get method data source----
+method_data <- read_sheet("https://docs.google.com/spreadsheets/d/1Iplohv6mM-CnpE6uYBi4uQnuhCyZMNpCRMSJFFnJxjM/edit?usp=sharing",
+                          sheet = "simplified_dummy_data") %>%
+  dplyr::distinct(ecosystem_condition, method, network, marine_park_or_area)
+
 # Read in network information ----
 networks_and_parks <- read_csv("inst/shiny/amp-dashboard/data/networks-and-parks.csv")
 
@@ -101,9 +106,7 @@ temporal_file_info <- do.call(rbind, lapply(rds_files, function(f) {
 raster_raw <- read_sheet("https://docs.google.com/spreadsheets/d/1BJLDy9pCjXSdFIJ-xczRC9Wj3kBkYLYnHnPczWoX9Eo/edit?usp=sharing",
                             sheet = "raster_tags") %>%
   dplyr::filter(!is.na(tile_service_url)) %>%
-  dplyr::mutate(metric = if_else((indicator_group %in% "Large-bodied carnivores"& indicator_class %in% "Greater than maturity"), "Abundance of large-bodied generalist carnivores greater than Lm", NA)) %>%
-  dplyr::mutate(metric = if_else(indicator_metric %in% "Community temperature index", "Community Temperature Index", metric)) %>%
-  dplyr::mutate(metric = if_else(ecosystem_component %in% "Functional reef", "Functional reef", metric))
+  dplyr::mutate(metric = dashboard_metric)
 
 # Get raster min and max values ----
 
@@ -139,7 +142,9 @@ raster_min_max <- parsed_data$results %>%
 
 raster_data <- left_join(raster_raw, raster_min_max) %>%
   dplyr::mutate(tile_service_url = if_else(estimate %in% "Error", str_replace_all(tile_service_url, "viridis", "plasma"), tile_service_url)) %>%
+  dplyr::mutate(tile_service_url = if_else(!estimate %in% "Error", str_replace_all(tile_service_url, "viridis", "jet"), tile_service_url)) %>%
   dplyr::rename(min = min_value, max = max_value) %>%
+  dplyr::filter(!is.na(min) | !is.na(max)) %>%
   glimpse
 
 # Combine all information together -----
@@ -153,7 +158,8 @@ all_data <- structure(
     dropdown_data = dropdown_data,
     raster_data = raster_data,
     summary_data = summary_data,
-    text_data = text_data
+    text_data = text_data,
+    method_data = method_data
   ),
   class = "data"
 )
@@ -161,4 +167,3 @@ all_data <- structure(
 # Save ----
 save(all_data, file = here::here("data/all_data.Rdata"))
 save(all_data, file = here::here("inst/shiny/amp-dashboard/data/all_data.Rdata")) #I'm not actually sure which ones of these works
-

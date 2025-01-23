@@ -115,57 +115,57 @@ server <- function(input, output, session) {
     if (input$toggle == "Marine Park") {
       req(input$marine_park)  # Ensure marine_park input is selected
 
-      message("view conditional data marine park")
+      # message("view conditional data marine park")
 
       plot_list %>%
         dplyr::filter(network %in% input$network) %>%
         dplyr::filter(marine_park %in% input$marine_park) %>%
-        dplyr::filter(metric %in% input$ecosystemsubcomponent) %>%
-        glimpse
+        dplyr::filter(metric %in% input$ecosystemsubcomponent) #%>% glimpse
     } else {
 
-      message("view conditional data network")
+      # message("view conditional data network")
 
       plot_list %>%
         dplyr::filter(network %in% input$network) %>%
         dplyr::filter(marine_park %in% paste(input$network, "Network")) %>%
-        dplyr::filter(metric %in% input$ecosystemsubcomponent) %>%
-        glimpse
+        dplyr::filter(metric %in% input$ecosystemsubcomponent) #%>% glimpse
     }
+  })
+
+  output$condition_plot_ui <- renderUI({
+    req(condition_filtered_data())
+
+    chosen_plot <- condition_filtered_data()
+
+    # Check if data is valid
+    # if (is.null(chosen_plot) || nrow(chosen_plot) == 0 || !"file" %in% colnames(chosen_plot)) {
+    # Fallback to plain text
+    # return(tags$p("No condition data available for the selected filters.", style = "font-size: 18px; color: gray; text-align: center;"))
+    # } else {
+    # Render the plot
+
+
+    validate(need(nrow(chosen_plot) > 0, "No condition data available for the selected filters."))
+    plotOutput("condition_plot", height = condition_plot_height())
+    # }
   })
 
   output$condition_plot <- renderPlot({
 
     req(condition_filtered_data())
 
-    message("chosen condition plot")
-
-    chosen_plot <- condition_filtered_data() %>%
-      glimpse
+    chosen_plot <- condition_filtered_data()
 
     # Debug chosen_plot
-    message("Chosen plot: ", ifelse(is.null(chosen_plot), "NULL", paste(nrow(chosen_plot), "rows")))
+    # message("Chosen plot: ", ifelse(is.null(chosen_plot), "NULL", paste(nrow(chosen_plot), "rows")))
 
-    # # Validate that the filtered data has rows
-    # validate(
-    #   need(!is.null(chosen_plot) && nrow(chosen_plot) > 0,
-    #        "No condition data available for the selected filters.")
-    # )
-    #
-    # # Ensure the 'file' column is present and unique before proceeding
-    # validate(
-    #   need("file" %in% colnames(chosen_plot), "'file' column is missing in the filtered data.")
-    # )
-
-    # Fallback if validate fails
-    if (is.null(chosen_plot) || nrow(chosen_plot) == 0 || !"file" %in% colnames(chosen_plot)) {
-      plot(1, 1, main = "No condition data available for the selected filters.")
-      #return(NULL)
-    } else {
-
-    chosen_file <- readRDS(here::here(unique(chosen_plot$file)))
-    plot(chosen_file)
+    # Safely read and plot
+    file_path <- here::here(unique(chosen_plot$file))
+    if (!file.exists(file_path)) {
+      stop("File does not exist: ", file_path)
     }
+    chosen_file <- readRDS(file_path)
+    plot(chosen_file)
 
   })
 
@@ -176,39 +176,19 @@ server <- function(input, output, session) {
     chosen_plot <- condition_filtered_data()
 
     if (!is.null(chosen_plot) && nrow(chosen_plot) > 0) {
-      num_years <- as.numeric(unique(chosen_plot$years) ) # Use length instead of coercing to numeric
+      num_years <- as.numeric(chosen_plot$years)
 
       if (num_years == 1) {
-        height <- 170
+        height <- 200
       } else {
-        height <- num_years * 160  # Adjust the calculation as needed
+        height <- num_years * 175  # Adjust the calculation as needed
       }
     } else {
-      height <- 200  # Default height if no data
+      height <- 100  # Default height if no data
     }
 
-    message("Dynamic plot height: ", height)
+    # message("Dynamic plot height: ", height)
     return(height)
-
-    # if (nrow(chosen_plot) > 0) {
-    #
-    #   num_years <- as.numeric(unique(chosen_plot$years))
-    #
-    #   if(num_years == 1){
-    #
-    #     height <- 160
-    #
-    #   } else {
-    #
-    #     height <- #50 +
-    #       num_years * 150
-    #
-    #   }
-    #
-    # } else {
-    #   height <- 100  # Default height if no data
-    # }
-    # return(height)
   })
 
   output$condition_plot_ui <- renderUI({
@@ -329,19 +309,21 @@ server <- function(input, output, session) {
     req(input$toggle, input$network, input$options)
 
     raster_list <- all_data$raster_data %>%
-      dplyr::filter(estimate %in% c("Probability"))
+      dplyr::filter(estimate %in% c("Probability", "Mean"))
+
+    # message("view chosen raster dataset")
 
     if (input$toggle == "Marine Park") {
       req(input$marine_park)  # Ensure marine_park input is selected
       raster_list %>%
         dplyr::filter(network %in% input$network) %>%
         dplyr::filter(marine_park %in% input$marine_park) %>%
-        dplyr::filter(metric %in% input$options)
+        dplyr::filter(metric %in% input$options) #%>% glimpse()
     } else {
       raster_list %>%
         dplyr::filter(network %in% input$network) %>%
         dplyr::filter(marine_park %in% paste(input$network, "Network")) %>%
-        dplyr::filter(metric %in% input$options)
+        dplyr::filter(metric %in% input$options) #%>% glimpse()
     }
   })
 
@@ -381,7 +363,21 @@ server <- function(input, output, session) {
 
     metric_title <- unique(raster_predicted_data()$metric)
 
-    icon <- iconList(blue = makeIcon("images/marker_green.png", iconWidth = 40, iconHeight =40))
+    icon <- iconList(blue = makeIcon("images/marker_blue.png", iconWidth = 40, iconHeight =40))
+
+    map.dat <- dat
+
+    boss.habitat.highlights.popups <- filter(map.dat, source %in% c("boss.habitat.highlights"))
+    bruv.habitat.highlights.popups <- filter(map.dat, source %in% c("bruv.habitat.highlights"))
+    fish.highlights.popups <- filter(map.dat, source %in% c("fish.highlights"))
+    threed.model.popups <- filter(map.dat, source %in% c("3d.model"))
+    image.popups <- filter(map.dat, source %in% c('image'))
+
+    # Having this in the global.R script breaks now - make icons on server side
+    icon.bruv.habitat <- iconList(blue = makeIcon("images/marker_green.png", iconWidth = 40, iconHeight =40))
+    icon.boss.habitat <- iconList(blue = makeIcon("images/marker_pink.png", iconWidth = 40, iconHeight =40))
+    icon.fish <- iconList(blue = makeIcon("images/marker_yellow.png", iconWidth = 40, iconHeight =40))
+    icon.models <- iconList(blue = makeIcon("images/marker_purple.png", iconWidth = 40, iconHeight =40))
 
     # Initial Leaflet map ----
     map <- leaflet(points) %>%
@@ -396,7 +392,7 @@ server <- function(input, output, session) {
                                                          JS("
                                           function(cluster) {
                                              return new L.DivIcon({
-                                               html: '<div style=\"background-color:rgba(124, 248, 193, 0.9)\"><span>' + cluster.getChildCount() + '</div><span>',
+                                               html: '<div style=\"background-color:rgba(0, 123, 255, 0.9)\"><span>' + cluster.getChildCount() + '</div><span>',
                                                className: 'marker-cluster'
                                              });
                                            }")),
@@ -435,23 +431,89 @@ server <- function(input, output, session) {
                 title="Australian Marine Park Zones",
                 position = "bottomright", group = "Australian Marine Parks") %>%
 
+      # stereo-BRUV habitat videos
+      addMarkers(data=bruv.habitat.highlights.popups,
+                 icon = icon.bruv.habitat,
+                 popup = bruv.habitat.highlights.popups$popup,
+                 #label = bruv.habitat.highlights.popups$sample,
+                 clusterOptions = markerClusterOptions(iconCreateFunction =
+                                                         JS("
+                                          function(cluster) {
+                                             return new L.DivIcon({
+                                               html: '<div style=\"background-color:rgba(124, 248, 193, 0.9)\"><span>' + cluster.getChildCount() + '</div><span>',
+                                               className: 'marker-cluster'
+                                             });
+                                           }")),
+                 group = "FishNClips",
+                 popupOptions=c(closeButton = TRUE,minWidth = 0,maxWidth = 700))%>%
+
+      # BOSS habitat videos
+      addMarkers(data=boss.habitat.highlights.popups,
+                 icon = icon.boss.habitat,
+                 popup = boss.habitat.highlights.popups$popup,
+                 #label = boss.habitat.highlights.popups$sample,
+                 clusterOptions = markerClusterOptions(iconCreateFunction =
+                                                         JS("
+                                          function(cluster) {
+                                             return new L.DivIcon({
+                                               html: '<div style=\"background-color:rgba(248, 124, 179, 0.9)\"><span>' + cluster.getChildCount() + '</div><span>',
+                                               className: 'marker-cluster'
+                                             });
+                                           }")),
+                 group = "FishNClips",
+                 popupOptions=c(closeButton = TRUE,minWidth = 0,maxWidth = 700))%>%
+
+      # stereo-BRUV fish videos
+      addMarkers(data=fish.highlights.popups,
+                 icon = icon.fish,
+                 popup = fish.highlights.popups$popup,
+                 clusterOptions = markerClusterOptions(iconCreateFunction =
+                                                         JS("
+                                          function(cluster) {
+                                             return new L.DivIcon({
+                                               html: '<div style=\"background-color:rgba(241, 248, 124,0.9)\"><span>' + cluster.getChildCount() + '</div><span>',
+                                               className: 'marker-cluster'
+                                             });
+                                           }")),
+                 group = "FishNClips",
+                 popupOptions=c(closeButton = TRUE,minWidth = 0,maxWidth = 700))%>%
+
+      # 3D models
+      addMarkers(data=threed.model.popups,
+                 icon = icon.models,
+                 popup = threed.model.popups$popup,
+                 clusterOptions = markerClusterOptions(iconCreateFunction =
+                                                         JS("
+                                          function(cluster) {
+                                             return new L.DivIcon({
+                                               html: '<div style=\"background-color:rgba(131, 124, 248,0.9)\"><span>' + cluster.getChildCount() + '</div><span>',
+                                               className: 'marker-cluster'
+                                             });
+                                           }")),
+                 group = "FishNClips",
+                 popupOptions=c(closeButton = TRUE, minWidth = 0,maxWidth = 700)
+      )%>%
+
+      addControl(html = html_legend, position = "bottomleft", className = "fishnclips-legend") %>%
+
       addLayersControl(
         # baseGroups = c("OSM (default)", "World Imagery (satellite)"),
         overlayGroups = c("Australian Marine Parks",
                           "State Marine Parks",
-                          "Sampling locations"),
+                          "Sampling locations",
+                          "FishNClips"),
         options = layersControlOptions(collapsed = FALSE),
         position = "bottomright"
       )  %>% # Ensure "Predicted" is hidden initially
       hideGroup("State Marine Parks") %>%
-      hideGroup("Australian Marine Parks")  #%>%
-    #hideGroup("Sampling locations") %>%
-
+      hideGroup("Australian Marine Parks")%>%
+      hideGroup("FishNClips")
 
 
     # Add tiles only if raster_predicted_data() has valid data ----
     if (!is.null(raster_predicted_data()) && nrow(raster_predicted_data()) > 0) {
 
+      # message(paste0("raster available:", unique(raster_predicted_data()$tile_service_url)))
       # Blue = low, yellow = high
 
       map <- map %>%
@@ -462,7 +524,7 @@ server <- function(input, output, session) {
         ) %>%
         addLegend(
           position = "bottomright",
-          pal = colorNumeric(palette = viridisLite::viridis(256, direction = -1),  #(reverse here)
+          pal = colorNumeric(palette = viridisLite::turbo(256, direction = -1),  #(reverse here)
                              domain = c(raster_predicted_data()$min, raster_predicted_data()$max)
           ),
           values = seq(
@@ -474,9 +536,7 @@ server <- function(input, output, session) {
           labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE)),
           opacity = 1,
           group = "Predicted"
-        )      # %>%
-
-        # hideGroup("Predicted")
+        )
     }
 
     # Add tiles only if raster_error_data() has valid data ----
@@ -487,16 +547,6 @@ server <- function(input, output, session) {
           attribution = "© GlobalArchive",
           group = "Error"
         ) %>%
-        # addLegend(
-        #   position = "bottomright",
-        #   pal = colorNumeric(palette = viridisLite::plasma(256),
-        #                      domain = c(raster_error_data()$min, raster_error_data()$max)),
-        #   values = c(raster_error_data()$min, raster_error_data()$max),
-        #   title = "Error",
-        #   labFormat = labelFormat(digits = 2),
-        #   opacity = 1,
-        #   group = "Error"
-        # ) %>%
         hideGroup("Error")  # Ensure "Error" is hidden initially
     }
 
@@ -538,6 +588,16 @@ server <- function(input, output, session) {
       )
   })
 
+  observe({
+    input$australia_map_groups
+    shinyjs::runjs(sprintf("
+      var isVisible = %s.includes('FishNClips');
+      var legend = document.querySelector('.fishnclips-legend');
+      if (legend) {
+        legend.style.display = isVisible ? 'block' : 'none';
+      }
+    ", jsonlite::toJSON(input$australia_map_groups)))
+  })
 
 
   # Observe the radio button input and update the map ----
@@ -554,7 +614,7 @@ server <- function(input, output, session) {
         clearControls() %>%  # Clear all existing controls
         addLegend(
           position = "bottomright",
-          pal = colorNumeric(palette = viridisLite::viridis(256, direction = -1),
+          pal = colorNumeric(palette = viridisLite::turbo(256, direction = -1),
                              domain = c(raster_predicted_data()$min, raster_predicted_data()$max)),
           values = seq(
             from = raster_predicted_data()$min,
@@ -791,7 +851,106 @@ server <- function(input, output, session) {
     unique(data$value)
   })
 
+  # TODO link this with GA when Nik has created links
+  output$ui_open_ga_button <- renderUI({
+    shiny::a(
+      h4(#icon("th"),
+        icon("globe"), # Changed icon to "globe"
+        paste0("View synthesis dataset on GlobalArchive"),
+        class = "custom-button btn btn-default action-button",
+        style = "font-weight:600"),
+      target = "_blank",
+      href = paste0("https://dev.globalarchive.org/ui/main/syntheses/"
+                    # ,input$slider # could put synthesis ID here
+      )
+    )
+  })
 
+  output$ui_method_button <- renderUI({
+
+    data <- all_data$method_data
+
+    if (input$toggle == "Marine Park") {
+
+      req(input$marine_park)  # Ensure marine_park input is selected
+
+      data <- data %>%
+        dplyr::filter(network %in% input$network) %>%
+        dplyr::filter(marine_park_or_area %in% input$marine_park) %>%
+        dplyr::filter(ecosystem_condition %in% input$ecosystemsubcomponent) %>%
+        glimpse
+
+    } else {
+
+      data <- data %>%
+        dplyr::filter(network %in% input$network) %>%
+        dplyr::filter(ecosystem_condition %in% input$ecosystemsubcomponent) %>%
+        dplyr::filter(marine_park_or_area %in% paste(input$network, "Network")) %>%
+        glimpse
+
+    }
+
+    # If data is empty or method is NA, return NULL
+    if (nrow(data) == 0 || is.na(data$method)) {
+      return(NULL)
+    }
+
+    # Extract methods
+    methods <- unique(unlist(strsplit(data$method, ", "))) %>% glimpse()
+
+    # Dynamically create buttons for each method
+    buttons <- list()
+
+    if ("stereo-BRUV" %in% methods) {
+
+      bruv_button <- shiny::a(
+        h2(img(src = "stereo-BRUV_filled_transparent_colour.png",
+               height = "100px"#,
+               #style = "margin-left: 15px;" # Adjust the value as needed)
+        ),
+        "stereo-BRUVs",
+        class = "custom-button btn btn-default action-button", # use primary for blue
+        style = "font-weight:600; width: 350px; text-align: center;"),
+        href = paste0("https://benthic-bruvs-field-manual.github.io/")
+      )
+    } else{
+
+      bruv_button <- ""
+    }
+
+    if ("stereo-BOSS" %in% methods) {
+      boss_button <- shiny::a(
+        h2(img(src = "frame_transparent.png",
+               height = "100px"#,
+               #style = "margin-left: 15px;" # Adjust the value as needed)
+        ),
+        "stereo-BOSS",
+        class = "custom-button btn btn-default action-button",
+        style = "font-weight:600; width: 350px; text-align: center;"),
+        target = "_blank",
+        href = paste0("https://drop-camera-field-manual.github.io/")
+      )
+    } else {
+
+      boss_button <- ""
+
+    }
+
+    addition <- NULL
+
+    print(length(methods))
+
+    if (length(methods) > 1) {
+
+      message("includes both")
+      addition <- h1("+")
+
+    }
+
+    # Wrap buttons in a div for proper alignment
+    tagList(div(width = "100%", style = "display: flex; gap: 25px; justify-content: center; align-items: center;", bruv_button, addition, boss_button))
+
+  })
 
 
   # End of server ----
