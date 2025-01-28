@@ -94,7 +94,7 @@ ui <- page_navbar(
 
 
 
-          uiOutput("condition_plot_ui"),
+          # uiOutput("condition_plot_ui"),
           uiOutput("dynamic_text"),
 
 
