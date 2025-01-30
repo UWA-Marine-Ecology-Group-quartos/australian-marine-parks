@@ -23,6 +23,8 @@ library(CheckEM)
 tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %>%
   glimpse()
 
+cor(tidy_maxn$geoscience_depth, tidy_maxn$geoscience_detrended)
+
 # # Re-set the predictors for modeling----
 names(tidy_maxn)
 pred.vars = c("reef", "geoscience_depth", "geoscience_aspect",
@@ -61,7 +63,7 @@ for(i in 1:length(resp.vars)){
                                   cyclic.vars = "geoscience_aspect",
                                   k = 3,
                                   factor.smooth.interactions = F,
-                                  max.predictors = 5
+                                  max.predictors = 3
   )
   out.list <- fit.model.set(model.set,
                             max.models = 600,
@@ -133,7 +135,7 @@ for(i in 1:length(resp.vars)){
                                   cyclic.vars = "aspect",
                                   k = 3,
                                   factor.smooth.interactions = F,
-                                  max.predictors = 5
+                                  max.predictors = 3
   )
   out.list=fit.model.set(model.set,
                          max.models=600,
@@ -322,12 +324,21 @@ buffer <- sites %>%
   vect()
 
 remove <- st_read("data/dampier/spatial/shapefiles/remove-shipping-channel.shp")
+channel <- st_read("data/dampier/spatial/shapefiles/port-walcott_shipping-channel.shp")
+spoil   <- st_read("data/dampier/spatial/shapefiles/port-walcott_spoil-grounds.shp")
 
 predfish <- rast(preddf_m, crs = "epsg:4326") %>%
   mask(buffer) %>%
   mask(remove, inverse = T) %>%
+  mask(spoil, inverse = T) %>%
   trim()
 plot(predfish)
+
+ggplot() +
+  geom_spatraster(data = predfish, aes(fill = p_mature.fit)) +
+  geom_sf(data = channel) +
+  geom_sf(data = spoil) +
+  coord_sf()
 
 preddf_m <- as.data.frame(predfish, xy = T)
 
