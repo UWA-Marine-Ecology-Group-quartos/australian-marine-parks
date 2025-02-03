@@ -18,6 +18,7 @@ library(leaflet)
 library(googlesheets4)
 library(terra)
 library(tidyterra)
+library(plotly)
 
 # Set the study name
 name <- "DampierAMP"
@@ -162,4 +163,35 @@ ggplot() +
   theme_classic() +
   coord_sf(crs = 4326)
 
+# Convert the raster data to a dataframe for use in Plotly
+preds_df <- as.data.frame(preds, xy = TRUE, na.rm = TRUE)
+
+# Create an interactive plot using Plotly
+fig <- plot_ly() %>%
+  # Add raster layer as a heatmap
+  add_trace(
+    data = preds_df,
+    x = ~x, y = ~y, z = ~geoscience_depth,
+    type = "heatmap",
+    colors = colorRamp(c("white", "blue"))
+  ) %>%
+  # Add points with hover text showing the "number" column
+  add_trace(
+    data = dplyr::filter(tidy_length, response %in% "smaller than Lm carnivores"),
+    x = ~longitude_dd, y = ~latitude_dd,
+    type = 'scatter',
+    mode = 'markers',
+    marker = list(size = ~number, color = ~if_else(number == 0, "white", "darkblue")),
+    text = ~sample,
+    hoverinfo = "text"
+  ) %>%
+  layout(
+    title = "Interactive Plot with Raster and Points",
+    xaxis = list(title = "Longitude"),
+    yaxis = list(title = "Latitude")
+  )
+
+fig
+
 saveRDS(tidy_length, file = paste0("data/", park, "/tidy/", name, "_tidy-length.rds"))
+

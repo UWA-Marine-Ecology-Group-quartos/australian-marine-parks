@@ -29,6 +29,8 @@ metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_me
 habi <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) %>%
   left_join(metadata_bathy_derivatives) %>%
   dplyr::filter(!is.na(latitude_dd)) %>% # Check this
+  rowwise() %>%
+  # mutate(reef = ifelse(total_pts > 0, sample(0:total_pts, 1), 0)) %>% # Change reef values for a test
   glimpse()
 
 model_dat <- habi %>%
@@ -56,6 +58,8 @@ for(i in 1:length(unique.vars)){
 
 unique.vars.use                                                                 # Not enough macroalgae or rock to model
 
+cor((habi$reef/habi$total_pts), (habi$sand/habi$total_pts))
+
 # Run the full subset model selection----
 outdir    <- paste0("output/model-output/", park, "/habitat/")
 use.dat   <- model_dat[model_dat$response %in% c(unique.vars.use), ]
@@ -77,7 +81,7 @@ for(i in 1:length(resp.vars)){
                                   pred.vars.cont = pred.vars,
                                   cyclic.vars = c("aspect"),
                                   k = 5,
-                                  cov.cutoff = 0.7,
+                                  cov.cutoff = 0.4,
                                   max.predictors = 3
   )
   out.list <- fit.model.set(model.set,
@@ -114,8 +118,8 @@ names(out.all) <- resp.vars
 names(var.imp) <- resp.vars
 all.mod.fits <- list_rbind(out.all, names_to = "response")
 all.var.imp  <- do.call("rbind", var.imp)
-write.csv(all.mod.fits[ , -2], file = paste0(outdir, name, "_abiotic_all.mod.fits.csv"))
-write.csv(all.var.imp,         file = paste0(outdir, name, "_abiotic_all.var.imp.csv"))
+write.csv(all.mod.fits[ , -2], file = paste0(outdir, name, "_all.mod.fits.csv"))
+write.csv(all.var.imp,         file = paste0(outdir, name, "_all.var.imp.csv"))
 
 # Sand
 m_sand <- gam(cbind(sand, total_pts - sand) ~
@@ -206,8 +210,14 @@ buffer <- sites %>%
   st_transform(4326) %>%
   vect()
 
+remove <- st_read("data/dampier/spatial/shapefiles/remove-shipping-channel.shp")
+channel <- st_read("data/dampier/spatial/shapefiles/port-walcott_shipping-channel.shp")
+spoil   <- st_read("data/dampier/spatial/shapefiles/port-walcott_spoil-grounds.shp")
+
 predhab <- preddf_m %>%
   mask(buffer) %>%
+  mask(remove, inverse = T) %>%
+  mask(spoil, inverse = T) %>%
   trim()
 plot(predhab)
 
