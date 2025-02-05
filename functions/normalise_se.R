@@ -29,5 +29,11 @@ normalise_se <- function(data) {
                       (max(p_inverts.se.fit, na.rm = TRUE) - min(p_inverts.se.fit, na.rm = TRUE)))
   }
 
+  if ("p_black.se.fit" %in% colnames(data)) {
+    data <- data %>%
+      dplyr::mutate(p_black.alpha = 1 - (p_black.se.fit - min(p_black.se.fit, na.rm = TRUE)) /
+                      (max(p_black.se.fit, na.rm = TRUE) - min(p_black.se.fit, na.rm = TRUE)))
+  }
+
   return(data)
 }

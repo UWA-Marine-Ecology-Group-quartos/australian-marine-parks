@@ -34,15 +34,16 @@ benthos <- bind_rows(benthosboss, benthosbruv) %>%
   dplyr::mutate(habitat = case_when(level_2 %in% "Macroalgae" ~ "macroalgae",
                                     level_3 %in% "Unconsolidated (soft)" ~ "sand",
                                     level_3 %in% "Consolidated (hard)" ~ "rock",
-                                    level_2 %in% "Cnidaria" ~ "sessile_invertebrates",
+                                    level_2 %in% "Cnidaria" ~ "black_octocorals",
                                     level_2 %in% "Sessile invertebrates" ~ "sessile_invertebrates",
                                     level_2 %in% "Sponges" ~ "sessile_invertebrates")) %>%
   dplyr::group_by(campaignid, sample, habitat) %>%
   summarise(count = sum(count)) %>%
   ungroup() %>%
   pivot_wider(names_from = habitat, values_from = count, values_fill = 0) %>%
-  dplyr::mutate(total_pts = rowSums(.[3:ncol(.)], na.rm = T),
-                reef = macroalgae + rock + sessile_invertebrates) %>%
+  dplyr::mutate(total_pts = rowSums(.[c("sand", "sessile_invertebrates", "rock", "macroalgae", "black_octocorals")], na.rm = T),
+                reef = macroalgae + rock + sessile_invertebrates + black_octocorals,
+                sessile_invertebrates_all = sessile_invertebrates + black_octocorals) %>%
   glimpse()
 
 length(unique(benthos$sample))

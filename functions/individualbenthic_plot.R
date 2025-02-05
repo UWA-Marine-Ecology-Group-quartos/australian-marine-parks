@@ -12,5 +12,5 @@ individualbenthic_plot <- function(prediction_limits) {
     labs(x = NULL, y = NULL, fill = "Probability",
          colour = NULL) +
     theme_minimal() +
-    facet_wrap(~lyr)
+    facet_wrap(~lyr, ncol = 2)
 }
