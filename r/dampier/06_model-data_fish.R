@@ -23,8 +23,6 @@ library(CheckEM)
 tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %>%
   glimpse()
 
-cor(tidy_maxn$geoscience_depth, tidy_maxn$geoscience_detrended)
-
 # # Re-set the predictors for modeling----
 names(tidy_maxn)
 pred.vars = c("reef", "geoscience_depth", "geoscience_aspect",
@@ -222,7 +220,15 @@ m_richness <- gam(number ~ s(geoscience_detrended, k = 3, bs = "cr") +
                   data = fabund %>% dplyr::filter(response %in% "species_richness"),
                   family = gaussian(link = "identity"))
 summary(m_richness)
+AICc(m_richness)
 plot(m_richness)
+
+m_richnessas <- gam(number ~ s(geoscience_detrended, k = 3, bs = "cr") +
+                    s(reef, k = 3, bs = "cr") +s(geoscience_aspect, bs = "cc"),
+                  data = fabund %>% dplyr::filter(response %in% "species_richness"),
+                  family = gaussian(link = "identity"))
+summary(m_richnessas)
+AICc(m_richnessas)
 
 # CTI
 m_cti <- gam(number ~ s(geoscience_depth, k = 3, bs = "cr"),
@@ -244,7 +250,14 @@ m_immature <- gam(number ~ s(geoscience_detrended, k = 3, bs = "cr") +
                   data = fabund %>% dplyr::filter(response %in% "smaller than Lm carnivores"),
                   family = tw())
 summary(m_immature)
+AICc(m_immature)
 
+m_immatureas <- gam(number ~ s(geoscience_detrended, k = 3, bs = "cr") + s(geoscience_aspect, bs = "cc") +
+                    status,
+                  data = fabund %>% dplyr::filter(response %in% "smaller than Lm carnivores"),
+                  family = tw())
+summary(m_immatureas)
+AICc(m_immatureas)
 # Predict
 
 predicted_fish <- cbind(preddf,
@@ -256,6 +269,19 @@ predicted_fish <- cbind(preddf,
                                                     se.fit = T),
                         "p_richness" = mgcv::predict.gam(m_richness, preddf, type = "response",
                                                          se.fit = T))
+
+test <- predicted_fish %>%
+  dplyr::select(status, p_immature.fit) %>%
+  dplyr::group_by(status) %>%
+  summarise(mean = mean(p_immature.fit, na.rm = T))
+
+test <- predicted_fish %>%
+  dplyr::select(geoscience_depth, p_mature.fit) %>%
+  dplyr::mutate(depth = if_else(geoscience_depth < -20, "deep", "shallow")) %>%
+  dplyr::filter(!is.na(p_mature.fit)) %>%
+  dplyr::group_by(depth) %>%
+  summarise(mean = mean(p_mature.fit, na.rm = T))
+  glimpse()
 
 prasts <- rast(predicted_fish %>% dplyr::select(x, y, starts_with("p_")),
                crs = "epsg:4326")

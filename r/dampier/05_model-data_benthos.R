@@ -110,7 +110,7 @@ for(i in 1:length(resp.vars)){
   model.set <- generate.model.set(use.dat = use.dat,
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
-                                  cyclic.vars = c("aspect"),
+                                  cyclic.vars = "geoscience_aspect",
                                   k = 5,
                                   cov.cutoff = 0.4,
                                   max.predictors = 3

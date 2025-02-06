@@ -1,8 +1,8 @@
 "","modname","AICc","BIC","r2.vals","r2.vals.unique","edf","edf.less.1","delta.AICc","delta.BIC","wi.AICc","wi.BIC","reef","geoscience_depth","geoscience_aspect","geoscience_roughness","geoscience_detrended","status","cumsum.wi"
 "greater than Lm carnivores.reef+status","reef+status",573.324950909098,585.881107783681,0.26311,NA,3,0,0,1.156,0.259,0.203,1,0,0,0,0,1,0.259
-"greater than Lm carnivores.geoscience_aspect+reef+status","geoscience_aspect+reef+status",573.328003155022,585.889332607036,0.26314,NA,4,1,0.003,1.164,0.259,0.202,1,0,1,0,0,1,0.518
+"greater than Lm carnivores.geoscience_aspect+reef+status","geoscience_aspect+reef+status",573.328003144223,585.889332578413,0.26314,NA,4,1,0.003,1.164,0.259,0.202,1,0,1,0,0,1,0.518
 "greater than Lm carnivores.reef","reef",574.592982025604,584.725378005711,0.26209,NA,2,0,1.268,0,0.138,0.361,1,0,0,0,0,0,0.656
 "greater than Lm carnivores.geoscience_aspect+reef","geoscience_aspect+reef",575.13700275269,586.522601057382,0.26763,NA,3,0,1.812,1.797,0.105,0.147,1,0,1,0,0,0,0.761
-"smaller than Lm carnivores.geoscience_detrended+status","geoscience_detrended+status",257.973305003572,272.854970854869,0.06419,NA,3.85,0,0,0.542,0.284,0.174,0,0,0,0,1,1,0.284
-"smaller than Lm carnivores.geoscience_aspect+geoscience_detrended+status","geoscience_aspect+geoscience_detrended+status",257.973871228871,272.856264164871,0.06419,NA,4.85,1,0.001,0.543,0.284,0.174,0,0,1,0,1,1,0.568
-"smaller than Lm carnivores.geoscience_detrended+reef+status","geoscience_detrended+reef+status",259.387988707288,276.600003482306,0.06193,NA,4.85,0,1.415,4.287,0.14,0.027,1,0,0,0,1,1,0.708
+"smaller than Lm carnivores.geoscience_detrended+status","geoscience_detrended+status",257.973291711101,272.854964168529,0.06419,NA,3.85,0,0,0.542,0.284,0.174,0,0,0,0,1,1,0.284
+"smaller than Lm carnivores.geoscience_aspect+geoscience_detrended+status","geoscience_aspect+geoscience_detrended+status",257.973950906538,272.856442560171,0.06419,NA,4.85,1,0.001,0.543,0.284,0.174,0,0,1,0,1,1,0.568
+"smaller than Lm carnivores.geoscience_detrended+reef+status","geoscience_detrended+reef+status",259.387988707214,276.600003482141,0.06193,NA,4.85,0,1.415,4.287,0.14,0.027,1,0,0,0,1,1,0.708
