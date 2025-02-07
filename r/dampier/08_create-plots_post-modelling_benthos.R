@@ -43,7 +43,8 @@ ind_class <- pred_class %>%
     habitat %in% "p_rock.fit" ~ "Rock",
     habitat %in% "p_sand.fit" ~ "Sand",
     habitat %in% "p_seagrass.fit" ~ "Seagrass",
-    habitat %in% "p_reef.fit" ~ "Reef"
+    habitat %in% "p_reef.fit" ~ "Reef",
+    habitat %in% "p_black.fit" ~ "Black & Octocorals"
   )) %>%
   dplyr::filter(!is.na(habitat)) %>%
   dplyr::filter(!habitat %in% "Reef") %>%
@@ -96,7 +97,8 @@ ggsave(filename = paste0("plots/", park, "/habitat/", name, "_predicted-dominant
 pred_rast <- subset(dat, str_detect(names(dat), "(?<!se).fit") & # String don't contain "fit" preceded by "se"
                       str_detect(names(dat), "^(?!.*reef).*$")) # Strings don't contain "reef"
 names(pred_rast)
-names(pred_rast) <- c("Sand", "Sessile invertebrates") # Set the names - make sure this matches the order
+names(pred_rast) <- c("Sand", "Sessile invertebrates", "Black & Octocorals") # Set the names - make sure this matches the order
+pred_rast <- pred_rast[[c(1, 2)]]
 plot(pred_rast)
 
 # Create the plot - same x and y limits
@@ -104,7 +106,22 @@ individualbenthic_plot(prediction_limits)
 
 # Save the plot
 ggsave(filename = paste0("plots/", park, "/habitat/", name, "_predicted-individual-habitat.png"),
-       height = 3.5, width = 8, dpi = 900, units = "in", bg = "white")
+       height = 3, width = 8, dpi = 900, units = "in", bg = "white")
+
+# Subset the spatraster data to remove reef and standard error
+pred_rast <- subset(dat, str_detect(names(dat), "(?<!se).fit") & # String don't contain "fit" preceded by "se"
+                      str_detect(names(dat), "^(?!.*reef).*$")) # Strings don't contain "reef"
+names(pred_rast)
+names(pred_rast) <- c("Sand", "Sessile invertebrates", "Black & Octocorals") # Set the names - make sure this matches the order
+pred_rast <- pred_rast[[c(3)]]
+plot(pred_rast)
+
+# Create the plot - same x and y limits
+individualbenthic_plot(prediction_limits)
+
+# Save the plot
+ggsave(filename = paste0("plots/", park, "/habitat/", name, "_predicted-black-octocorals.png"),
+       height = 4, width = 8, dpi = 900, units = "in", bg = "white")
 
 # Create the data (makes a dataframe for each ecosystem depth contour)
 controldata_benthos(year = 2023, amp_abbrv = "DMP", state_abbrv = NA)

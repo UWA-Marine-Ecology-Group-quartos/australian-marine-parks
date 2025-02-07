@@ -99,15 +99,19 @@ detrended <- ggplot() +
   theme_minimal() +
   theme(panel.grid = element_blank())
 
+detrended
+ggsave("plots/dampier/spatial/DampierAMP_detrended.png",
+       height = 6, width = 11, dpi = 300, bg = "white")
+
 # Combine plots
-(depth + aspect)/(roughness + detrended)
+(depth + aspect)/(roughness + plot_spacer())
 
 ggsave("plots/dampier/spatial/DampierAMP_bathymetry-derivatives.png",
        height = 6, width = 11, dpi = 300, bg = "white")
 
-mb_depth <- ggplot() +
-  geom_spatraster(data = mb, aes(fill = mb_depth)) +
-  scale_fill_viridis_c(na.value = NA, option = "viridis", name = "Depth (multibeam)") +
+depth <- ggplot() +
+  geom_spatraster(data = preds, aes(fill = geoscience_depth)) +
+  scale_fill_viridis_c(na.value = NA, option = "viridis", name = "Depth (250m res)") +
   geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
   new_scale_fill() +
   geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, alpha = 0.8, linewidth = 1, show.legend = F) +
@@ -120,6 +124,22 @@ mb_depth <- ggplot() +
   theme_minimal() +
   theme(panel.grid = element_blank())
 
-depth / mb_depth + plot_annotation(tag_levels = "a")
+mb_depth <- ggplot() +
+  geom_spatraster(data = mb, aes(fill = mb_depth)) +
+  scale_fill_viridis_c(na.value = NA, option = "viridis", name = "Depth (30m res)") +
+  geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
+  new_scale_fill() +
+  geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, alpha = 0.8, linewidth = 1, show.legend = F) +
+  scale_colour_manual(name = "Australian Marine Parks", guide = "legend",
+                      values = with(marine_parks_amp, setNames(colour, zone))) +
+  new_scale_fill() +
+  labs(x = NULL, y = NULL) +
+  new_scale_fill() +
+  coord_sf(xlim = c(site_limits[1], site_limits[2]), ylim = c(site_limits[3], site_limits[4]), crs = 4326) +
+  theme_minimal() +
+  theme(panel.grid = element_blank())
+
+depth / mb_depth + plot_annotation(tag_levels = "a") &
+  theme(legend.justification = "left")
 ggsave("plots/dampier/spatial/DampierAMP_multibeam-comparison.png",
        height = 6, width = 6, dpi = 300, bg = "white")

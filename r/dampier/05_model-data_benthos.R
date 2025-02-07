@@ -26,15 +26,48 @@ metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_me
   glimpse()
 
 # Bring in and format the data----
+
 habi <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) %>%
   left_join(metadata_bathy_derivatives) %>%
   dplyr::filter(!is.na(latitude_dd)) %>% # Check this
-  rowwise() %>%
-  # mutate(reef = ifelse(total_pts > 0, sample(0:total_pts, 1), 0)) %>% # Change reef values for a test
+  dplyr::select(-sessile_invertebrates) %>%
   glimpse()
 
+# benthosboss <- readRDS(paste0("data/", park, "/raw/", name, "_BOSS_benthos.RDS")) %>%
+#   dplyr::rename(sample = period)
+# benthosbruv <- readRDS(paste0("data/", park, "/raw/", name, "_BRUVs_benthos.RDS")) %>%
+#   dplyr::rename(sample = opcode)
+#
+# habi <- bind_rows(benthosboss, benthosbruv) %>%
+#   dplyr::select(campaignid, sample, level_2, level_3, count) %>%
+#   dplyr::mutate(habitat = case_when(level_2 %in% "Substrate" ~ level_3,
+#                                     level_2 %in% "Sessile invertebrates" ~ level_2,
+#                                     level_2 %in% "Sponges" ~ level_2,
+#                                     level_3 %in% "Corals" ~ "Black & Octocorals",
+#                                     level_2 %in% "Macroalgae" ~ level_2,
+#                                     level_3 %in% "Hydroids" ~ level_3,
+#                                     level_3 %in% "True anemones" ~ "Sessile invertebrates",
+#                                     level_3 %in% "Hydrocorals" ~ "Sessile invertebrates")) %>%
+#   dplyr::group_by(campaignid, sample) %>%
+#   dplyr::mutate(total_pts = sum(count)) %>%
+#   ungroup() %>%
+#   pivot_wider(names_from = habitat, values_from = count, values_fill = 0) %>%
+#   left_join(metadata_bathy_derivatives) %>%
+#   clean_names() %>%
+#   dplyr::mutate(sessile_invertebrates = black_octocorals + sessile_invertebrates +
+#                   sponges + hydroids,
+#                 reef = sessile_invertebrates + macroalgae + consolidated_hard) %>%
+#   dplyr::rename(sand = unconsolidated_soft, rock = consolidated_hard) %>%
+#   dplyr::filter(!is.na(longitude_dd)) %>%
+#   # dplyr::mutate(total_pts = sand + sessile_invertebrates + rock + macroalgae) %>%
+#   glimpse()
+
+# model_dat <- habi %>%
+#   pivot_longer(cols = c(macroalgae, sand, rock, sessile_invertebrates_all, reef),
+#                names_to = "response", values_to = "number")
+
 model_dat <- habi %>%
-  pivot_longer(cols = c(macroalgae, sand, rock, sessile_invertebrates, reef),
+  pivot_longer(cols = c(macroalgae, sand, rock, black_octocorals, sessile_invertebrates_all, reef),
                names_to = "response", values_to = "number")
 
 # Set predictor variables---
@@ -52,13 +85,11 @@ unique.vars = unique(as.character(model_dat$response))
 unique.vars.use = character()
 for(i in 1:length(unique.vars)){
   temp.dat = model_dat[which(model_dat$response == unique.vars[i]),]
-  if(length(which(temp.dat$number == 0))/nrow(temp.dat)< 0.9){
+  if(length(which(temp.dat$number == 0))/nrow(temp.dat)< 0.8){
     unique.vars.use = c(unique.vars.use, unique.vars[i])}
 }
 
 unique.vars.use                                                                 # Not enough macroalgae or rock to model
-
-cor((habi$reef/habi$total_pts), (habi$sand/habi$total_pts))
 
 # Run the full subset model selection----
 outdir    <- paste0("output/model-output/", park, "/habitat/")
@@ -79,7 +110,7 @@ for(i in 1:length(resp.vars)){
   model.set <- generate.model.set(use.dat = use.dat,
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
-                                  cyclic.vars = c("aspect"),
+                                  cyclic.vars = "geoscience_aspect",
                                   k = 5,
                                   cov.cutoff = 0.4,
                                   max.predictors = 3
@@ -135,8 +166,8 @@ summary(m_sand)
 
 # Seagrass - not in the dataset
 
-# Inverts
-m_inverts <- gam(cbind(sessile_invertebrates, total_pts - sessile_invertebrates) ~
+# All sessile invertebrates (including black and octocorals)
+m_inverts <- gam(cbind(sessile_invertebrates_all, total_pts - sessile_invertebrates_all) ~
                    s(geoscience_aspect,     k = 5, bs = "cc")  +
                    s(geoscience_depth, k = 5, bs = "cr") +
                    s(geoscience_roughness, k = 5, bs = "cr"),
@@ -151,6 +182,14 @@ m_reef <- gam(cbind(reef, total_pts - reef) ~
               data = habi, method = "REML", family = binomial("logit"))
 summary(m_reef)
 
+# Black & Octocorals
+m_black <- gam(cbind(black_octocorals, total_pts - black_octocorals) ~
+                s(geoscience_aspect,     k = 5, bs = "cr")  +
+                s(geoscience_depth, k = 5, bs = "cr") +
+                s(geoscience_roughness, k = 5, bs = "cr"),
+              data = habi, method = "REML", family = binomial("logit"))
+summary(m_black)
+
 preds <- readRDS(paste0("data/", park, "/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
 preddf <- preds %>%
   as.data.frame(xy = T, na.rm = T)
@@ -159,7 +198,8 @@ preddf <- preds %>%
 predhab <- cbind(preddf,
                 "p_sand"     = predict(m_sand, preddf, type = "response", se.fit = T),
                 "p_inverts"  = predict(m_inverts, preddf, type = "response", se.fit = T),
-                "p_reef"     = predict(m_reef, preddf, type = "response", se.fit = T)) %>%
+                "p_reef"     = predict(m_reef, preddf, type = "response", se.fit = T),
+                "p_black"     = predict(m_black, preddf, type = "response", se.fit = T)) %>%
   glimpse()
 
 prasts <- rast(predhab %>% dplyr::select(x, y, starts_with("p_")),
@@ -175,7 +215,7 @@ xy <- habi %>%
                 y = as.numeric(y)) %>%
   glimpse()
 
-resp.vars <- c("p_sand", "p_inverts", "p_reef")
+resp.vars <- c("p_sand", "p_inverts", "p_reef", "p_black")
 
 for(i in 1:length(resp.vars)) {
   print(resp.vars[i])
