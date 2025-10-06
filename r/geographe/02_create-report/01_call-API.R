@@ -14,6 +14,7 @@ library(RJSONIO)
 library(devtools)
 # devtools::install_github("GlobalArchiveManual/CheckEM") # If there has been any updates to the package then CheckEM will install
 library(CheckEM)
+library(arrow)
 
 name <- "GeographeAMP"
 
