@@ -38,7 +38,7 @@ benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) 
 
 # Maturity data from WA sheet - should this just get included in the life history?
 maturity_mean <- CheckEM::maturity %>%
-  dplyr::filter(!marine_region %in% c("NW", "N")) %>% # Change here for each marine park
+  dplyr::filter(!marine_region %in% c("NW", "N")) %>% # Change here for each marine park (exclude regions)
   dplyr::group_by(family, genus, species, sex) %>%
   dplyr::slice(which.min(l50_mm)) %>%
   ungroup() %>%
@@ -83,7 +83,7 @@ cti <- CheckEM::create_cti(data = count) %>%
   glimpse()
 
 tidy_maxn <- bind_rows(ta.sr, cti) %>%
-  dplyr::select(-c(log_count, w_sti, CTI)) %>%
+  dplyr::select(-c(log_count, w_sti)) %>%
   dplyr::left_join(benthos) %>%
   dplyr::left_join(metadata) %>% # To join samples without valid bathymetry derivatives
   dplyr::left_join(metadata_bathy_derivatives) %>%
@@ -175,7 +175,7 @@ tidy_length <- bind_rows(big_carn, small_carn, small_snap) %>% # Removed snapper
   glimpse()
 
 # Visualise spatial patterns
-preds <- readRDS(paste0("data/{", park, "/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
+preds <- readRDS(paste0("data/", park, "/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
 plot(preds)
 names(preds)
 
