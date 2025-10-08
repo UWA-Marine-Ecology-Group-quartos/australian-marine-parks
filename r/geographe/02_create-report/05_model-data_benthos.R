@@ -16,6 +16,7 @@ library(FSSgam)
 library(patchwork)
 library(foreach)
 library(doParallel)
+library(terra)
 
 # Set the study name
 name <- "GeographeAMP"
@@ -214,5 +215,5 @@ for(i in 1:length(resp.vars)) {
 
 saveRDS(preddf_m, paste0("output/model-output/", park, "/habitat/", name, "_predicted-habitat.rds"))      # Ignored
 
-writeRaster(predhab, paste0("output/model-output/", park, "/habitat/", names(predhab), "_predicted.tif"),
+writeRaster(preddf_m, paste0("output/model-output/", park, "/habitat/", names(preddf_m), "_predicted.tif"),
             overwrite = TRUE)
