@@ -1,21 +1,19 @@
 "","modname","AICc","BIC","r2.vals","r2.vals.unique","edf","edf.less.1","delta.AICc","delta.BIC","wi.AICc","wi.BIC","reef","geoscience_depth","geoscience_aspect","geoscience_roughness","geoscience_detrended","status","cumsum.wi"
-"greater than Lm carnivores.geoscience_detrended+geoscience_roughness+reef","geoscience_detrended+geoscience_roughness+reef",264.794079898591,289.562102311107,0.04011,NA,5.49,0,0,7.093,0.201,0.015,1,0,0,1,1,0,0.201
-"greater than Lm carnivores.geoscience_aspect+geoscience_detrended+geoscience_roughness+reef","geoscience_aspect+geoscience_detrended+geoscience_roughness+reef",265.318664843329,291.686357374904,0.04097,NA,6.49,0,0.525,9.217,0.155,0.005,1,0,1,1,1,0,0.356
-"greater than Lm carnivores.geoscience_detrended+geoscience_roughness","geoscience_detrended+geoscience_roughness",265.380103674842,284.266928896233,0.03612,NA,3.79,0,0.586,1.798,0.15,0.213,0,0,0,1,1,0,0.506
-"greater than Lm carnivores.geoscience_aspect+geoscience_detrended+geoscience_roughness","geoscience_aspect+geoscience_detrended+geoscience_roughness",265.954762046214,287.00335790189,0.0374,NA,4.8,0,1.161,4.534,0.113,0.054,0,0,1,1,1,0,0.619
-"smaller than Lm carnivores.geoscience_roughness","geoscience_roughness",538.29140120286,553.186912384657,0.01884,NA,2.43,0,0,3.994,0.075,0.038,0,0,0,1,0,0,0.075
-"smaller than Lm carnivores.geoscience_aspect+geoscience_roughness","geoscience_aspect+geoscience_roughness",538.292332256941,553.188391108227,0.01884,NA,3.43,1,0.001,3.995,0.075,0.038,0,0,1,1,0,0,0.15
-"smaller than Lm carnivores.geoscience_roughness+status","geoscience_roughness+status",539.276607553174,557.240474289184,0.02076,NA,3.42,0,0.985,8.048,0.046,0.005,0,0,0,1,0,1,0.196
-"smaller than Lm carnivores.geoscience_aspect+geoscience_roughness+status","geoscience_aspect+geoscience_roughness+status",539.277661044405,557.243235300064,0.02076,NA,4.42,1,0.986,8.05,0.046,0.005,0,0,1,1,0,1,0.242
-"smaller than Lm carnivores.geoscience_roughness+reef","geoscience_roughness+reef",539.370355903584,556.880483290631,0.02232,NA,3.3,0,1.079,7.688,0.044,0.006,1,0,0,1,0,0,0.286
-"smaller than Lm carnivores.geoscience_aspect+geoscience_roughness+reef","geoscience_aspect+geoscience_roughness+reef",539.370957213186,556.882339239071,0.02232,NA,4.3,1,1.08,7.689,0.044,0.006,1,0,1,1,0,0,0.33
-"smaller than Lm carnivores.reef","reef",539.521758815512,552.295432929369,0.00936,NA,2,0,1.23,3.102,0.041,0.059,1,0,0,0,0,0,0.371
-"smaller than Lm carnivores.geoscience_aspect+reef","geoscience_aspect+reef",539.521760577849,552.295248533394,0.00936,NA,3,1,1.23,3.102,0.041,0.059,1,0,1,0,0,0,0.412
-"smaller than Lm carnivores.null","null",539.580931594874,549.192971553291,0,NA,1,0,1.29,0,0.04,0.277,0,0,0,0,0,0,0.452
-"smaller than Lm carnivores.geoscience_aspect","geoscience_aspect",539.581731609694,549.195001351607,1e-04,NA,2,1,1.29,0.002,0.04,0.277,0,0,1,0,0,0,0.492
-"smaller than Lm carnivores.geoscience_detrended+geoscience_roughness","geoscience_detrended+geoscience_roughness",539.814080506505,560.610266693396,0.02902,NA,4.11,0,1.523,11.417,0.035,0.001,0,0,0,1,1,0,0.527
-"smaller than Lm carnivores.geoscience_aspect+geoscience_detrended+geoscience_roughness","geoscience_aspect+geoscience_detrended+geoscience_roughness",539.815177263449,560.613136232647,0.02902,NA,5.11,1,1.524,11.42,0.035,0.001,0,0,1,1,1,0,0.562
-"smaller than Lm Pink snapper.geoscience_aspect+geoscience_depth+status","geoscience_aspect+geoscience_depth+status",382.809726499055,398.719549543861,0.00731,NA,4,1,0,1.659,0.169,0.094,0,1,1,0,0,1,0.169
-"smaller than Lm Pink snapper.geoscience_depth+status","geoscience_depth+status",382.855876446009,398.834229166212,0.00763,NA,3.01,0,0.046,1.774,0.165,0.089,0,1,0,0,0,1,0.334
-"smaller than Lm Pink snapper.geoscience_depth","geoscience_depth",384.287544076505,397.060690886681,0.02682,NA,2,0,1.478,0,0.081,0.215,0,1,0,0,0,0,0.415
-"smaller than Lm Pink snapper.geoscience_aspect+geoscience_depth","geoscience_aspect+geoscience_depth",384.288502621393,397.063343398626,0.02682,NA,3,1,1.479,0.003,0.081,0.215,0,1,1,0,0,0,0.496
+"greater than Lm carnivores.geoscience_aspect+geoscience_roughness+reef","geoscience_aspect+geoscience_roughness+reef",439.583445109043,459.739156003305,0.07886,NA,4.94,1,0,0,0.334,0.455,1,0,1,1,0,0,0.334
+"greater than Lm carnivores.geoscience_roughness+reef","geoscience_roughness+reef",439.583605834489,459.739472573052,0.07886,NA,3.94,0,0,0,0.334,0.455,1,0,0,1,0,0,0.668
+"greater than Lm carnivores.geoscience_aspect+geoscience_roughness+reef+status","geoscience_aspect+geoscience_roughness+reef+status",440.984586541234,464.436316669146,0.07956,NA,5.94,1,1.401,4.697,0.166,0.043,1,0,1,1,0,1,0.834
+"greater than Lm carnivores.geoscience_roughness+reef+status","geoscience_roughness+reef+status",440.98471618704,464.436548813915,0.07956,NA,4.94,0,1.401,4.697,0.166,0.043,1,0,0,1,0,1,1
+"smaller than Lm carnivores.geoscience_roughness+reef","geoscience_roughness+reef",583.192957324357,602.624385935359,0.0421,NA,3.53,0,0,2.23,0.142,0.049,1,0,0,1,0,0,0.142
+"smaller than Lm carnivores.geoscience_aspect+geoscience_roughness+reef","geoscience_aspect+geoscience_roughness+reef",583.193356209387,602.625329616745,0.0421,NA,4.53,1,0,2.231,0.142,0.049,1,0,1,1,0,0,0.284
+"smaller than Lm carnivores.geoscience_roughness+reef+status","geoscience_roughness+reef+status",584.009573529119,606.795157633199,0.04265,NA,4.55,0,0.817,6.401,0.094,0.006,1,0,0,1,0,1,0.378
+"smaller than Lm carnivores.geoscience_aspect+geoscience_roughness+reef+status","geoscience_aspect+geoscience_roughness+reef+status",584.010027795842,606.796367851685,0.04265,NA,5.55,1,0.817,6.402,0.094,0.006,1,0,1,1,0,1,0.472
+"smaller than Lm carnivores.geoscience_roughness","geoscience_roughness",584.313233388614,600.757509508989,0.02977,NA,2.65,0,1.12,0.363,0.081,0.125,0,0,0,1,0,0,0.553
+"smaller than Lm carnivores.geoscience_aspect+geoscience_roughness","geoscience_aspect+geoscience_roughness",584.3142154733,600.76035874408,0.02977,NA,3.65,1,1.121,0.366,0.081,0.125,0,0,1,1,0,0,0.634
+"smaller than Lm carnivores.geoscience_roughness+status","geoscience_roughness+status",584.701053937251,604.478612286643,0.03191,NA,3.66,0,1.508,4.085,0.067,0.019,0,0,0,1,0,1,0.701
+"smaller than Lm carnivores.geoscience_aspect+geoscience_roughness+status","geoscience_aspect+geoscience_roughness+status",584.702044431705,604.481487392301,0.03192,NA,4.66,1,1.509,4.087,0.067,0.019,0,0,1,1,0,1,0.768
+"smaller than Lm Pink snapper.geoscience_aspect+geoscience_depth+status","geoscience_aspect+geoscience_depth+status",415.392508387299,432.248262718232,0.00612,NA,4,1,0,1.914,0.137,0.086,0,1,1,0,0,1,0.137
+"smaller than Lm Pink snapper.geoscience_depth+status","geoscience_depth+status",415.39378927041,432.253091950929,0.00614,NA,3,0,0.001,1.919,0.137,0.086,0,1,0,0,0,1,0.274
+"smaller than Lm Pink snapper.geoscience_aspect+geoscience_depth","geoscience_aspect+geoscience_depth",416.807801192223,430.334525870002,0.02472,NA,3,1,1.415,0,0.067,0.225,0,1,1,0,0,0,0.341
+"smaller than Lm Pink snapper.geoscience_depth","geoscience_depth",416.810208243967,430.344131349763,0.02472,NA,2,0,1.418,0.01,0.067,0.224,0,1,0,0,0,0,0.408
+"smaller than Lm Pink snapper.geoscience_depth+geoscience_detrended+status","geoscience_depth+geoscience_detrended+status",416.880674350835,439.20524279618,0.00606,NA,4.41,0,1.488,8.871,0.065,0.003,0,1,0,0,1,1,0.473
+"smaller than Lm Pink snapper.geoscience_aspect+geoscience_depth+geoscience_detrended+status","geoscience_aspect+geoscience_depth+geoscience_detrended+status",416.88083846665,439.205657345282,0.00629,NA,5.41,1,1.488,8.871,0.065,0.003,0,1,1,0,1,1,0.538
