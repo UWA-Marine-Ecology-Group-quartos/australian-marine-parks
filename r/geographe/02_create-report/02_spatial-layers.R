@@ -108,7 +108,7 @@ for (month in unique(month(time(rast_sst)))) {
     mean(na.rm = T) %>%
     app(fun = function(i) {i - 273.15})
   names(monthly_rast) <- month.abb[month]
-  if (month == 3) {
+  if (month == 3) { ##HE might need to change this for other data (make blank list before loop)
     sst <- monthly_rast
   }
   else {

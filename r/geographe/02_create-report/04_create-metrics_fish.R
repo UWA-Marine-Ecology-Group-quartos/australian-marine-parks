@@ -36,7 +36,7 @@ benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) 
   dplyr::mutate(reef = reef/total_pts) %>% # Model reef as proportion for fish prediction
   glimpse()
 
-# Maturity data from WA sheet - should this just get included in the life history?
+# Maturity data from WA sheet
 maturity_mean <- CheckEM::maturity %>%
   dplyr::filter(!marine_region %in% c("NW", "N")) %>% # Change here for each marine park (exclude regions)
   dplyr::group_by(family, genus, species, sex) %>%
@@ -151,7 +151,7 @@ big_snap <- length %>%
   left_join(benthos) %>%
   dplyr::glimpse()
 # Check number of samples that are > 0
-nrow(filter(big_snap, number > 0))/nrow(big_snap) # This won't run
+nrow(filter(big_snap, number > 0))/nrow(big_snap) # This won't run in model
 
 small_snap <- length %>%
   dplyr::filter(species %in% "auratus",

@@ -29,8 +29,8 @@ metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_me
 # Bring in and format the data----
 habi <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) %>%
   left_join(metadata_bathy_derivatives) %>%
-  dplyr::filter(!is.na(longitude_dd), # Remove this later - metadata issue
-                !geoscience_roughness > 3) %>% # Filter outliers - check later when more data is added
+  dplyr::filter(!is.na(geoscience_roughness)) %>%
+  dplyr::filter(!geoscience_roughness > 3) %>% # Filter outliers - check later when more data is added
   glimpse()
 
 model_dat <- habi %>%
@@ -78,7 +78,7 @@ for(i in 1:length(resp.vars)){
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
                                   cyclic.vars = c("aspect"),
-                                  k = 5,
+                                  k = 5, ##HE usually k=3 for fish
                                   cov.cutoff = 0.7,
                                   max.predictors = 3
   )
@@ -146,12 +146,12 @@ m_seagrass <- gam(cbind(seagrasses, total_pts - seagrasses) ~
 summary(m_seagrass)
 
 # Inverts
-m_inverts <- gam(cbind(sessile_invertebrates, total_pts - sessile_invertebrates) ~
-                   s(geoscience_aspect,     k = 5, bs = "cc")  +
-                   s(geoscience_depth, k = 5, bs = "cr") +
-                   s(geoscience_detrended, k = 5, bs = "cr"),
-                 data = habi, method = "REML", family = binomial("logit"))
-summary(m_inverts)
+# m_inverts <- gam(cbind(sessile_invertebrates, total_pts - sessile_invertebrates) ~
+#                    s(geoscience_aspect,     k = 5, bs = "cc")  +
+#                    s(geoscience_depth, k = 5, bs = "cr") +
+#                    s(geoscience_detrended, k = 5, bs = "cr"),
+#                  data = habi, method = "REML", family = binomial("logit"))
+# summary(m_inverts)
 
 # Reef
 m_reef <- gam(cbind(reef, total_pts - reef) ~
@@ -170,7 +170,7 @@ predhab <- cbind(preddf,
                 "p_macro"    = predict(m_macro, preddf, type = "response", se.fit = T),
                 "p_sand"     = predict(m_sand, preddf, type = "response", se.fit = T),
                 "p_seagrass" = predict(m_seagrass, preddf, type = "response", se.fit = T),
-                "p_inverts"  = predict(m_inverts, preddf, type = "response", se.fit = T),
+                # "p_inverts"  = predict(m_inverts, preddf, type = "response", se.fit = T),
                 "p_reef"     = predict(m_reef, preddf, type = "response", se.fit = T)) %>%
   glimpse()
 
@@ -186,7 +186,7 @@ xy <- habi %>%
   glimpse()
 
 resp.vars <- c("p_sand", "p_macro",
-               "p_seagrass", "p_inverts", "p_reef")
+               "p_seagrass", "p_reef")
 
 for(i in 1:length(resp.vars)) {
   print(resp.vars[i])

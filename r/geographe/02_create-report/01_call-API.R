@@ -37,6 +37,5 @@ CheckEM::ga_api_all_data(synthesis_id = "14", # Synthesis ID changes between pro
 tidy_habitat <- benthos_summarised %>%
   left_join(metadata) %>% # Successful habitat columns not filled for this synthesis/campaign
   glimpse()
-unique(tidy_habitat$level_2)
 
 saveRDS(tidy_habitat, paste0("data/geographe/raw/", name, "_benthos.RDS"))
