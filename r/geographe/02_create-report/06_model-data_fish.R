@@ -21,7 +21,7 @@ library(FSSgam)
 library(CheckEM)
 
 tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %>%
-  dplyr::filter(!sample %in% "779",
+  dplyr::filter(!sample %in% "779", ##HE what was 779?
                 !number > 200, # Remove some outliers
                 geoscience_roughness < 4) %>% # Remove outliers in roughness
   glimpse()
@@ -68,7 +68,8 @@ for(i in 1:length(resp.vars)){
   )
   out.list <- fit.model.set(model.set,
                             max.models = 600,
-                            parallel = T)
+                            parallel = T,
+                            r2.type = "dev")
   names(out.list)
 
   out.list$failed.models # examine the list of failed models
@@ -112,7 +113,7 @@ resp.vars <- character()
 for(i in 1:length(unique.vars)){
   temp.dat <- tidy_length[which(tidy_length$response == unique.vars[i]), ]
   if(length(which(temp.dat$number == 0)) / nrow(temp.dat) < 0.8){
-    resp.vars <- c(resp.vars, unique.vars[i])}
+    resp.vars <- c(resp.vars, unique.vars[i])} ##HE what is it actually doing?
 }
 resp.vars
 
@@ -134,14 +135,15 @@ for(i in 1:length(resp.vars)){
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
                                   pred.vars.fact = factor.vars,
-                                  cyclic.vars = "aspect",
+                                  cyclic.vars = "aspect", ##HE why not geoscience_aspect?
                                   k = 3,
                                   factor.smooth.interactions = F,
                                   max.predictors = 5
   )
   out.list=fit.model.set(model.set,
                          max.models=600,
-                         parallel=T)
+                         parallel=T,
+                         r2.type = "dev")
   names(out.list)
 
   out.list$failed.models # examine the list of failed models
@@ -191,6 +193,7 @@ preddf <- preds %>%
 # Predicted reef
 pred_reef <- readRDS(paste0("output/model-output/geographe/habitat/",
                             name, "_predicted-habitat.rds")) %>%
+  as.data.frame(xy = T) %>%
   dplyr::rename(reef = p_reef.fit) %>%
   dplyr::select(x, y, reef) %>%
   rast(type = "xyz", crs = "epsg:4326")
@@ -311,7 +314,7 @@ saveRDS(preddf_m, paste0("output/model-output/geographe/fish/", name,
                          "_predicted-fish.RDS"))
 
 predfish <- rast(preddf_m, crs = "epsg:4326")
-plot(predfish)
+plot(predfish) ##HE spatial exclusions differ because the explanatory variables used were different for each model?
 
 writeRaster(predfish, paste0("output/model-output/geographe/fish/", names(predfish), "_predicted.tif"),
             overwrite = TRUE)

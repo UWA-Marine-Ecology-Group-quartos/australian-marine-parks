@@ -84,7 +84,8 @@ for(i in 1:length(resp.vars)){
   )
   out.list <- fit.model.set(model.set,
                             max.models = 600,
-                            parallel = T)
+                            parallel = T,
+                            r2.type = "dev")
   names(out.list)
 
   out.list$failed.models # examine the list of failed models
@@ -123,7 +124,7 @@ write.csv(all.var.imp,         file = paste0(outdir, name, "_abiotic_all.var.imp
 m_sand <- gam(cbind(sand, total_pts - sand) ~
                 s(geoscience_aspect,     k = 5, bs = "cc")  +
                 s(geoscience_depth, k = 5, bs = "cr") +
-                s(geoscience_roughness, k = 5, bs = "cr"),
+                s(geoscience_detrended, k = 5, bs = "cr"),
               data = habi, method = "REML", family = binomial("logit"))
 summary(m_sand)
 
@@ -131,7 +132,7 @@ summary(m_sand)
 
 # Macroalgae
 m_macro <- gam(cbind(macroalgae, total_pts - macroalgae) ~
-                 s(geoscience_depth,     k = 5, bs = "cr")  +
+                 s(geoscience_aspect,     k = 5, bs = "cc")  +
                  s(geoscience_detrended, k = 5, bs = "cr") +
                  s(geoscience_roughness, k = 5, bs = "cr"),
                data = habi, method = "REML", family = binomial("logit"))
@@ -155,7 +156,7 @@ summary(m_seagrass)
 
 # Reef
 m_reef <- gam(cbind(reef, total_pts - reef) ~
-                s(geoscience_depth,     k = 5, bs = "cr")  +
+                s(geoscience_aspect,     k = 5, bs = "cc")  +
                 s(geoscience_detrended, k = 5, bs = "cr") +
                 s(geoscience_roughness, k = 5, bs = "cr"),
               data = habi, method = "REML", family = binomial("logit"))
