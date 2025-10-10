@@ -21,8 +21,8 @@ library(FSSgam)
 library(CheckEM)
 
 tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %>%
-  dplyr::filter(!sample %in% "779", ##HE what was 779?
-                !number > 200, # Remove some outliers
+  dplyr::filter(!number > 200, # Remove some outliers
+                # !sample %in% "779", ##HE what was 779?
                 geoscience_roughness < 4) %>% # Remove outliers in roughness
   glimpse()
 

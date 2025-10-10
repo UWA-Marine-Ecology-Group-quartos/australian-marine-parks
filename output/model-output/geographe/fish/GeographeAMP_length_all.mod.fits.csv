@@ -1,15 +1,15 @@
 "","modname","AICc","BIC","r2.vals","r2.vals.unique","edf","edf.less.1","delta.AICc","delta.BIC","wi.AICc","wi.BIC","reef","geoscience_depth","geoscience_aspect","geoscience_roughness","geoscience_detrended","status","cumsum.wi"
-"greater than Lm carnivores.geoscience_aspect+geoscience_roughness+reef","geoscience_aspect+geoscience_roughness+reef",439.583445109043,459.739156003306,0.21779,NA,4.94,1,0,0,0.334,0.455,1,0,1,1,0,0,0.334
+"greater than Lm carnivores.geoscience_aspect+geoscience_roughness+reef","geoscience_aspect+geoscience_roughness+reef",439.583445249828,459.739156393437,0.21779,NA,4.94,1,0,0,0.334,0.455,1,0,1,1,0,0,0.334
 "greater than Lm carnivores.geoscience_roughness+reef","geoscience_roughness+reef",439.583609271089,459.739481380546,0.21779,NA,3.94,0,0,0,0.334,0.455,1,0,0,1,0,0,0.668
-"greater than Lm carnivores.geoscience_aspect+geoscience_roughness+reef+status","geoscience_aspect+geoscience_roughness+reef+status",440.984586829885,464.436317465117,0.22108,NA,5.94,1,1.401,4.697,0.166,0.043,1,0,1,1,0,1,0.834
-"greater than Lm carnivores.geoscience_roughness+reef+status","geoscience_roughness+reef+status",440.984716187039,464.436548813911,0.22108,NA,4.94,0,1.401,4.697,0.166,0.043,1,0,0,1,0,1,1
+"greater than Lm carnivores.geoscience_aspect+geoscience_roughness+reef+status","geoscience_aspect+geoscience_roughness+reef+status",440.984586686041,464.436317067804,0.22108,NA,5.94,1,1.401,4.697,0.166,0.043,1,0,1,1,0,1,0.834
+"greater than Lm carnivores.geoscience_roughness+reef+status","geoscience_roughness+reef+status",440.98471618704,464.436548813915,0.22108,NA,4.94,0,1.401,4.697,0.166,0.043,1,0,0,1,0,1,1
 "smaller than Lm carnivores.geoscience_roughness+reef","geoscience_roughness+reef",583.192957324357,602.624385935359,0.06062,NA,3.53,0,0,2.23,0.142,0.049,1,0,0,1,0,0,0.142
-"smaller than Lm carnivores.geoscience_aspect+geoscience_roughness+reef","geoscience_aspect+geoscience_roughness+reef",583.193356209387,602.625329616744,0.06062,NA,4.53,1,0,2.231,0.142,0.049,1,0,1,1,0,0,0.284
+"smaller than Lm carnivores.geoscience_aspect+geoscience_roughness+reef","geoscience_aspect+geoscience_roughness+reef",583.19335631363,602.625329949232,0.06062,NA,4.53,1,0,2.231,0.142,0.049,1,0,1,1,0,0,0.284
 "smaller than Lm carnivores.geoscience_roughness+reef+status","geoscience_roughness+reef+status",584.009573529119,606.795157633199,0.06684,NA,4.55,0,0.817,6.401,0.094,0.006,1,0,0,1,0,1,0.378
-"smaller than Lm carnivores.geoscience_aspect+geoscience_roughness+reef+status","geoscience_aspect+geoscience_roughness+reef+status",584.010027795842,606.796367851685,0.06684,NA,5.55,1,0.817,6.402,0.094,0.006,1,0,1,1,0,1,0.472
+"smaller than Lm carnivores.geoscience_aspect+geoscience_roughness+reef+status","geoscience_aspect+geoscience_roughness+reef+status",584.010019049167,606.796341173952,0.06684,NA,5.55,1,0.817,6.402,0.094,0.006,1,0,1,1,0,1,0.472
 "smaller than Lm carnivores.geoscience_roughness","geoscience_roughness",584.313233388614,600.757509508989,0.04663,NA,2.65,0,1.12,0.363,0.081,0.125,0,0,0,1,0,0,0.553
 "smaller than Lm carnivores.geoscience_aspect+geoscience_roughness","geoscience_aspect+geoscience_roughness",584.3142154733,600.76035874408,0.04663,NA,3.65,1,1.121,0.366,0.081,0.125,0,0,1,1,0,0,0.634
-"smaller than Lm carnivores.geoscience_roughness+status","geoscience_roughness+status",584.701053937251,604.478612286642,0.0547,NA,3.66,0,1.508,4.085,0.067,0.019,0,0,0,1,0,1,0.701
+"smaller than Lm carnivores.geoscience_roughness+status","geoscience_roughness+status",584.701053937861,604.478612284694,0.0547,NA,3.66,0,1.508,4.085,0.067,0.019,0,0,0,1,0,1,0.701
 "smaller than Lm carnivores.geoscience_aspect+geoscience_roughness+status","geoscience_aspect+geoscience_roughness+status",584.702044431706,604.481487392301,0.0547,NA,4.66,1,1.509,4.087,0.067,0.019,0,0,1,1,0,1,0.768
 "smaller than Lm Pink snapper.geoscience_aspect+geoscience_depth+status","geoscience_aspect+geoscience_depth+status",415.392508387299,432.248262718232,0.06884,NA,4,1,0,1.912,0.137,0.086,0,1,1,0,0,1,0.137
 "smaller than Lm Pink snapper.geoscience_depth+status","geoscience_depth+status",415.393789267218,432.253091940536,0.06808,NA,3,0,0.001,1.917,0.137,0.086,0,1,0,0,0,1,0.274
