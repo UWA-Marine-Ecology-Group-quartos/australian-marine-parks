@@ -8,32 +8,31 @@ location_plot <- function(plot_limits, study_limits, annotation_labels) {
     geom_spatraster_contour_filled(data = bathy,
                                    breaks = c(0, -30, -70, -200, - 700, -2000 , -4000, -6000),
                                    colour = NA, show.legend = F) +
-    # scale_fill_grey(start = 1, end = 0.5, guide = "none") +
     scale_fill_manual(values = c("#FFFFFF", "#EFEFEF", "#DEDEDE", "#CCCCCC", "#B6B6B6", "#9E9E9E", "#808080")) +
     new_scale_fill() +
-    geom_spatraster_contour(data = bathy,
-                            breaks = c(-30, -70, -200, - 700, -2000 , -4000, -6000), colour = "white",
-                            alpha = 3/5, linewidth = 0.1, show.legend = F) +
-    geom_sf(data = ausc, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
-    geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
-    terr_fills +
-    new_scale_fill() +
-    geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.4) +
-    scale_fill_manual(name = "State Marine Parks", guide = "legend",
-                      values = with(marine_parks_state, setNames(colour, zone))) +
-    new_scale_fill() +
-    geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
-    scale_fill_manual(name = "Australian Marine Parks", guide = "legend",
-                      values = with(marine_parks_amp, setNames(colour, zone))) +
-    new_scale_fill() +
-    geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.4, lineend = "round") +
-    labs(x = NULL, y = NULL) +
-    annotate("text", x = annotation_labels$x,
-             y = annotation_labels$y,
-             label = annotation_labels$label, size = 1.65,
-             fontface = "italic") +
-    annotate("rect", xmin = study_limits[1], xmax = study_limits[2], ymin = study_limits[3], ymax = study_limits[4],
-             fill = NA, colour = "goldenrod2", linewidth = 0.4) +
+    # geom_spatraster_contour(data = bathy,
+    #                         breaks = c(-30, -70, -200, - 700, -2000 , -4000, -6000), colour = "white",
+    #                         alpha = 3/5, linewidth = 0.1, show.legend = F) +
+    # geom_sf(data = ausc, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
+    # geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
+    # terr_fills +
+    # new_scale_fill() +
+    # geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.4) +
+    # scale_fill_manual(name = "State Marine Parks", guide = "legend",
+    #                   values = with(marine_parks_state, setNames(colour, zone))) +
+    # new_scale_fill() +
+    # geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
+    # scale_fill_manual(name = "Australian Marine Parks", guide = "legend",
+    #                   values = with(marine_parks_amp, setNames(colour, zone))) +
+    # new_scale_fill() +
+    # geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.4, lineend = "round") +
+    # labs(x = NULL, y = NULL) +
+    # annotate("text", x = annotation_labels$x,
+    #          y = annotation_labels$y,
+    #          label = annotation_labels$label, size = 1.65,
+    #          fontface = "italic") +
+    # annotate("rect", xmin = study_limits[1], xmax = study_limits[2], ymin = study_limits[3], ymax = study_limits[4],
+    #          fill = NA, colour = "goldenrod2", linewidth = 0.4) +
     coord_sf(xlim = c(plot_limits[1], plot_limits[2]), ylim = c(plot_limits[3], plot_limits[4]), crs = 4326) +
     theme_minimal()
 
