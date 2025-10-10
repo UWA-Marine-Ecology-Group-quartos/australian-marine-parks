@@ -193,10 +193,8 @@ preddf <- preds %>%
 # Predicted reef
 pred_reef <- readRDS(paste0("output/model-output/geographe/habitat/",
                             name, "_predicted-habitat.rds")) %>%
-  as.data.frame(xy = T) %>%
-  dplyr::rename(reef = p_reef.fit) %>%
-  dplyr::select(x, y, reef) %>%
-  rast(type = "xyz", crs = "epsg:4326")
+  terra::subset("p_reef.fit")
+names(pred_reef) <- "reef"
 plot(pred_reef)
 
 # Add predicted reef on for fish modelling

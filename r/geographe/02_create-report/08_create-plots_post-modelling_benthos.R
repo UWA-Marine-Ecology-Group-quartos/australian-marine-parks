@@ -95,7 +95,7 @@ ggsave(filename = paste0("plots/", park, "/habitat/", name, "_predicted-dominant
 pred_rast <- subset(dat, str_detect(names(dat), "(?<!se).fit") & # String don't contain "fit" preceded by "se"
                       str_detect(names(dat), "^(?!.*reef).*$")) # Strings don't contain "reef"
 names(pred_rast)
-names(pred_rast) <- c("Sand", "Macroalgae", "Seagrasses", "Sessile invertebrates") # Set the names - make sure this matches the order
+names(pred_rast) <- c("Sand", "Macroalgae", "Seagrasses") # Set the names - make sure this matches the order
 plot(pred_rast)
 
 # Create the plot - same x and y limits
