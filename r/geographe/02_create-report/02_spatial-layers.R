@@ -22,6 +22,7 @@ library(tidyverse)
 library(tidyterra)
 library(patchwork)
 library(RNetCDF)
+library(rerddap)
 
 # Set the extent of the study
 e <- ext(115.05, 115.592, -33.67, -33.347) ##HE expanded extent as 8 samples were getting cut out
@@ -34,6 +35,7 @@ bathy <- rast("data/south-west network/spatial/rasters/Australian_Bathymetry_and
 plot(bathy)
 
 # Create terrain metrics (bathymetry derivatives)
+##HE Does roughness get undervalued because of the big node/blip/point in the middle of the map?
 preds <- terrain(bathy, neighbors = 8,
                  v = c("aspect", "roughness"),
                  unit = "degrees")
@@ -195,9 +197,9 @@ new_filename <- paste0("data/", park, "/spatial/oceanography/DHW.nc")
 
 # Only run the griddap function if the file doesn't exist
 if (!file.exists(new_filename)) {
-  response <- rerdapp::griddap("NOAA_DHW",
+  response <- rerddap::griddap("NOAA_DHW",
                       stride = 7,
-                      time = c('2015-01-01T12:00:00Z', '2024-09-30T12:00:00Z'),
+                      time = c('1992-03-18T12:00:00Z', '2015-01-01T12:00:00Z'),
                       latitude = c(-33.67, -33.347),
                       longitude = c(115.05, 115.592),
                       fields = "CRW_DHW",
