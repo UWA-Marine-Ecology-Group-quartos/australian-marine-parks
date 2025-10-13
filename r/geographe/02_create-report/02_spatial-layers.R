@@ -24,7 +24,7 @@ library(patchwork)
 library(RNetCDF)
 
 # Set the extent of the study
-e <- ext(115.05, 115.592, -33.67, -33.347)
+e <- ext(115.05, 115.592, -33.67, -33.347) ##HE expanded extent as 8 samples were getting cut out
 
 # Load the bathymetry data (GA 250m resolution)
 bathy <- rast("data/south-west network/spatial/rasters/Australian_Bathymetry_and_Topography_2023_250m_MSL_cog.tif") %>%
