@@ -87,7 +87,7 @@ saveRDS(metadata.bathy.derivatives, paste0("data/", park, "/tidy/", name, "_meta
 # Sea surface temperature
 nc_sst <- open.nc(paste0("data/", park, "/spatial/oceanography/SST.nc"), write = TRUE)
 print.nc(nc_sst) # shows you all the file details
-time_nc <- var.get.nc(nc_sst, 'time')  # NC_CHAR time:units = "days since 1981-01-01 00:00:00" ;
+time_nc <- var.get.nc(nc_sst, 'time')  # NC_CHAR time:units = "seconds since 1981-01-01 00:00:00" ;
 time_nc_sst <- utcal.nc("seconds since 1981-01-01 00:00:00", time_nc, type = "c")
 dates_sst <- as.Date(time_nc_sst)
 close.nc(nc_sst) # GDAL errors otherwise
@@ -100,7 +100,7 @@ plot(rast_sst)
 names(rast_sst) <- dates_sst
 time(rast_sst) <- dates_sst
 
-winter_sst_ts <- rast_sst[[names(rast_sst)[str_detect(names(rast_sst), "-06-|-07-|-08-")]]]
+winter_sst_ts <- rast_sst[[names(rast_sst)[str_detect(names(rast_sst), "-06-|-07-|-08-")]]] ##HE later months have colder water?
 
 for (month in unique(month(time(rast_sst)))) {
   print(month)
@@ -189,6 +189,35 @@ sla_tsdf <- terra::global(rast_sla, fun = "mean", na.rm = T) %>%
 saveRDS(sla_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_SLA_time-series.rds"))
 
 # Degree Heating Weeks
+# https://coastwatch.pfeg.noaa.gov/erddap/griddap/NOAA_DHW.html
+# Specify the new desired filename
+new_filename <- paste0("data/", park, "/spatial/oceanography/DHW.nc")
+
+# Only run the griddap function if the file doesn't exist
+if (!file.exists(new_filename)) {
+  response <- rerdapp::griddap("NOAA_DHW",
+                      stride = 7,
+                      time = c('2015-01-01T12:00:00Z', '2024-09-30T12:00:00Z'),
+                      latitude = c(-33.67, -33.347),
+                      longitude = c(115.05, 115.592),
+                      fields = "CRW_DHW",
+                      store = disk(path = paste0("data/", park, "/spatial/oceanography"),
+                                   overwrite = TRUE))
+
+  # Get the actual filename that was saved
+  downloaded_file <- str_replace_all(response$summary$filename, "\\\\", "/") %>%
+    str_remove_all(paste0(getwd(), "/"))
+
+  # Rename the file
+  file.rename(from = downloaded_file, to = new_filename)
+
+  # Clear the rerddap cache
+  rerddap::cache_list()
+  rerddap::cache_delete_all()
+} else {
+  message("File already exists: ", new_filename)
+}
+
 nc_dhw <- open.nc(paste0("data/", park, "/spatial/oceanography/DHW.nc"),
                   write = TRUE)
 print.nc(nc_dhw) # shows you all the file details
