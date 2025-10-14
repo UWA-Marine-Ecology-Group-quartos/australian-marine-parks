@@ -27,10 +27,21 @@ location_plot <- function(plot_limits, study_limits, annotation_labels) {
     new_scale_fill() +
     geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.4, lineend = "round") +
     labs(x = NULL, y = NULL) +
-    annotate("text", x = annotation_labels$x,
-             y = annotation_labels$y,
-             label = annotation_labels$label, size = 1.65,
-             fontface = "italic") +
+
+    # >>> NEW: X markers at annotation label coords <<<
+    geom_point(data = annotation_labels,
+               aes(x = x, y = y),
+               shape = 4,
+               size = 1,
+               stroke = 0.5,
+               colour = "black") +
+    geom_text(data = annotation_labels,
+              aes(x = x, y = y, label = label),
+              size = 1.65,
+              fontface = "italic",
+              nudge_y = -0.03) +
+    # <<< END NEW >>>
+
     annotate("rect", xmin = study_limits[1], xmax = study_limits[2], ymin = study_limits[3], ymax = study_limits[4],
              fill = NA, colour = "goldenrod2", linewidth = 0.4) +
     coord_sf(xlim = c(plot_limits[1], plot_limits[2]), ylim = c(plot_limits[3], plot_limits[4]), crs = 4326) +
@@ -41,7 +52,7 @@ location_plot <- function(plot_limits, study_limits, annotation_labels) {
     geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
     geom_sf(data = aus_marine_parks, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
     coord_sf(xlim = c(110, 125), ylim = c(-37, -13)) + # This is constant for all plots - its just a map of WA
-    annotate("rect", xmin = plot_limits[1], xmax = plot_limits[2], ymin = plot_limits[3], ymax = plot_limits[4],   # Change here
+    annotate("rect", xmin = plot_limits[1], xmax = plot_limits[2], ymin = plot_limits[3], ymax = plot_limits[4],
              colour = "grey25", fill = "white", alpha = 1/5, linewidth = 0.2) +
     theme_bw() +
     theme(axis.text = element_blank(),
