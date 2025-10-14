@@ -24,6 +24,7 @@ library(viridis)
 library(patchwork)
 library(tidyterra)
 library(png)
+library(lwgeom)
 
 # Load functions
 file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)

@@ -76,7 +76,7 @@ pred_plot <- normalise_se(data = pred_class)
 prediction_limits = c(115.0539, 115.5539, -33.64861, -33.35361)
 
 # Create the plot
-dominantbenthos_plot(prediction_limits) +
+dominantbenthos_plot(prediction_limits) + ##HE have to check exclusions in function
   theme( # Add theme items to sort out the legend
     legend.position = "bottom",
     legend.direction = "horizontal",

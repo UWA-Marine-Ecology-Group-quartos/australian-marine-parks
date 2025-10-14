@@ -142,3 +142,4 @@ ggplot(data = dplyr::filter(plotdat, subtitle %in% "Attitudes"), aes(x = year, y
 
 ggsave(filename = paste0("plots/", park, "/socio-economic/control-plots_attitudes.png"), dpi = 300,
        units = "in", height = 5.4, width = 7, bg = "white")
+

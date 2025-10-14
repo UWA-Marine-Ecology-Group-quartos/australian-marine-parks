@@ -15,7 +15,7 @@ name <- "GeographeAMP"
 park <- "geographe"
 
 # Set the extent of the study
-e <- ext(115.05, 115.558, -33.67, -33.349)
+e <- ext(115.05, 115.592, -33.67, -33.347) ##HE changed these to match script 02
 
 # Read in shapefile data for maps
 aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp")
@@ -29,7 +29,7 @@ names(sst)
 sst <- sst[[c("Jan", "Mar", "May", "Jul", "Sep", "Nov")]]
 names(sst)
 
-prediction_limits = c(115.0539, 115.5539, -33.64861, -33.35361)
+prediction_limits = c(115.05, 115.592, -33.67, -33.347) ##HE changed these to match script 02
 
 plot_sst(prediction_limits) +
   theme(axis.text = element_text(size = 6))
@@ -63,7 +63,7 @@ ggsave(paste0("plots/", park, "/spatial/", name, "_SLA.png"),
 dhw <- rast(paste0("data/", park, "/spatial/oceanography/", name, "_DHW_raster.rds"))
 names(dhw)
 
-plot_dhw(prediction_limits) +
+plot_dhw(prediction_limits) + ##HE needs fixing, pixels too large
   theme(axis.text = element_text(size = 6))
 
 ggsave(paste0("plots/", park, "/spatial/", name, "_DHW.png"),
