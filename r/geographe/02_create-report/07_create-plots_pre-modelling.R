@@ -125,10 +125,10 @@ metadata <- readRDS(paste0("data/", park, "/tidy/", name, "_metadata-bathymetry-
 # Set plot inputs
 site_limits = c(115.0, 115.67, -33.3, -33.65) # Plot limits for subsequent plots - tighter zoom
 # Create plot
-site_plot(site_limits, annotation_labels)
+site_plot(site_limits, annotation_labels) ##HE spot missing around HMAS Swan?
 # Save plot
 ggsave(filename = paste(paste0('plots/', park, '/spatial/', name) , 'sampling-locations.png',
-                        sep = "-"), plot = p2, units = "in", dpi = 600,
+                        sep = "-"), units = "in", dpi = 600,
        bg = "white",
        width = 8, height = 4)
 
