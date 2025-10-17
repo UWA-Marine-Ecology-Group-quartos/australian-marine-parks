@@ -61,7 +61,7 @@ large_bodied_carnivores <- CheckEM::australia_life_history %>%
   dplyr::select(family, genus, species, l50) %>%
   glimpse()
 
-count <- readRDS(paste0("data/", park, "/raw/", name, "_complete_count.RDS")) %>%
+count <- readRDS(paste0("data/raw/_count-with-zeros.RDS")) %>%
   dplyr::select(campaignid, sample, family, genus, species, count) %>%
   dplyr::mutate(scientific_name = paste(family, genus, species, sep = " ")) %>%
   glimpse()

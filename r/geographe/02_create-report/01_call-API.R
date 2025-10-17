@@ -11,8 +11,9 @@ rm(list = ls())
 library(httr)
 library(tidyverse)
 library(RJSONIO)
-library(devtools)
-# devtools::install_github("GlobalArchiveManual/CheckEM") # If there has been any updates to the package then CheckEM will install
+library('remotes')
+options(timeout=9999999)
+remotes::install_github("GlobalArchiveManual/CheckEM")
 library(CheckEM)
 library(arrow)
 
@@ -27,7 +28,7 @@ token <- readRDS("secrets/api_token.RDS")
 
 # Load the metadata, count and length ----
 # This way does not include the zeros where a species isn't present - it returns a much smaller dataframe
-CheckEM::ga_api_all_data(synthesis_id = "14", # Synthesis ID changes between projects
+CheckEM::ga_api_all_data(synthesis_id = "47", # Synthesis ID changes between projects
                          token = token,
                          dir = "data/raw/", # Check the directory
                          include_zeros = TRUE)

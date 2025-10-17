@@ -28,6 +28,7 @@ library(rerddap)
 e <- ext(115.05, 115.592, -33.67, -33.347) ##HE expanded extent as 8 samples were getting cut out
 
 # Load the bathymetry data (GA 250m resolution)
+##HE need to update bathy data
 bathy <- rast("data/south-west network/spatial/rasters/Australian_Bathymetry_and_Topography_2023_250m_MSL_cog.tif") %>%
   crop(e) %>%
   clamp(upper = 0, lower = -250, values = F) %>%
@@ -63,7 +64,7 @@ saveRDS(preds, file = paste0("data/", park, "/spatial/rasters/",
 #                 latitude_dd = as.numeric(latitude_dd)) %>%
 #   glimpse()
 
-metadata <- readRDS(paste0("data/", park, "/raw/", name, "_metadata.RDS")) %>%
+metadata <- readRDS(paste0("data/raw/metadata.RDS")) %>% ##HE 2014 was in "data/", park, "/raw/", name, "_metadata.RDS"
   dplyr::select(campaignid, sample, longitude_dd, latitude_dd, status) %>%
   glimpse()
 
