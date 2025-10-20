@@ -29,7 +29,7 @@ e <- ext(115.05, 115.592, -33.67, -33.347) ##HE expanded extent as 8 samples wer
 
 # Load the bathymetry data (GA 250m resolution)
 ##HE need to update bathy data
-bathy <- rast("data/south-west network/spatial/rasters/Australian_Bathymetry_and_Topography_2023_250m_MSL_cog.tif") %>%
+bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
   crop(e) %>%
   clamp(upper = 0, lower = -250, values = F) %>%
   trim()

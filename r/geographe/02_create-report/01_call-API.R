@@ -18,6 +18,7 @@ library(CheckEM)
 library(arrow)
 
 name <- "GeographeAMP"
+park <- "geographe"
 
 # CheckEM::ga_api_set_token() # Run this once and then turn it off
 
@@ -30,7 +31,7 @@ token <- readRDS("secrets/api_token.RDS")
 # This way does not include the zeros where a species isn't present - it returns a much smaller dataframe
 CheckEM::ga_api_all_data(synthesis_id = "47", # Synthesis ID changes between projects
                          token = token,
-                         dir = "data/raw/", # Check the directory
+                         dir = paste0("data/", park, "/raw/"), # Check the directory
                          include_zeros = TRUE)
 
 
