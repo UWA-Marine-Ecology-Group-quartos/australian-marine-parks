@@ -27,7 +27,7 @@ metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_me
   clean_names() %>%
   glimpse()
 
-metadata <- readRDS(paste0("data/", park, "/raw/", name, "_metadata.RDS"))
+metadata <- readRDS(paste0("data/", park, "/raw/metadata.RDS"))
 
 # This is formatted habitat from 03_create-metrics_habitat
 benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) %>%
@@ -61,7 +61,7 @@ large_bodied_carnivores <- CheckEM::australia_life_history %>%
   dplyr::select(family, genus, species, l50) %>%
   glimpse()
 
-count <- readRDS(paste0("data/raw/_count-with-zeros.RDS")) %>%
+count <- readRDS(paste0("data/", park, "/raw/_count-with-zeros.RDS")) %>%
   dplyr::select(campaignid, sample, family, genus, species, count) %>%
   dplyr::mutate(scientific_name = paste(family, genus, species, sep = " ")) %>%
   glimpse()
