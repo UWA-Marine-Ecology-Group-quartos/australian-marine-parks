@@ -25,7 +25,7 @@ library(RNetCDF)
 library(rerddap)
 
 # Set the extent of the study
-e <- ext(115.05, 115.592, -33.67, -33.347) ##HE expanded extent as 8 samples were getting cut out
+e <- ext(115.04, 115.60, -33.67, -33.346) ##HE expanded extent as 8 samples were getting cut out
 
 # Load the bathymetry data (GA 250m resolution)
 ##HE need to update bathy data
@@ -64,7 +64,7 @@ saveRDS(preds, file = paste0("data/", park, "/spatial/rasters/",
 #                 latitude_dd = as.numeric(latitude_dd)) %>%
 #   glimpse()
 
-metadata <- readRDS(paste0("data/raw/metadata.RDS")) %>% ##HE 2014 was in "data/", park, "/raw/", name, "_metadata.RDS"
+metadata <- readRDS(paste0("data/", park, "/raw/metadata.RDS")) %>% ##HE 2014 was in "data/", park, "/raw/", name, "_metadata.RDS"
   dplyr::select(campaignid, sample, longitude_dd, latitude_dd, status) %>%
   glimpse()
 
@@ -79,7 +79,7 @@ plot(metadata_sf, add = T)
 metadata.bathy.derivatives   <- cbind(metadata,
                                       terra::extract(preds, metadata_sf)) %>%
   filter_at(vars(geoscience_depth, geoscience_aspect, geoscience_roughness, geoscience_detrended),
-            all_vars(!is.na(.))) %>% # Removes samples missing bathymetry derivatives - check these!!
+            all_vars(!is.na(.))) %>% # Removes samples missing bathymetry derivatives - check these!! HE one removed - maybe too close to coast?
   dplyr::select(-ID) %>%
   glimpse()
 
@@ -200,7 +200,7 @@ new_filename <- paste0("data/", park, "/spatial/oceanography/DHW.nc")
 if (!file.exists(new_filename)) {
   response <- rerddap::griddap("NOAA_DHW",
                       stride = 7,
-                      time = c('1992-03-18T12:00:00Z', '2015-01-01T12:00:00Z'),
+                      time = c('1992-03-18T12:00:00Z', '2025-01-01T12:00:00Z'),
                       latitude = c(-33.67, -33.347),
                       longitude = c(115.05, 115.592),
                       fields = "CRW_DHW",

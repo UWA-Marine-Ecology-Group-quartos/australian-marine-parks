@@ -40,4 +40,4 @@ tidy_habitat <- benthos_summarised %>%
   left_join(metadata) %>% # Successful habitat columns not filled for this synthesis/campaign
   glimpse()
 
-saveRDS(tidy_habitat, paste0("data/geographe/raw/", name, "_benthos.RDS"))
+saveRDS(tidy_habitat, paste0("data/", park, "/raw/", name, "_benthos.RDS"))
