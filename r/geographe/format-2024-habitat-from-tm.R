@@ -2,6 +2,8 @@
 
 # https://globalarchivemanual.github.io/CheckEM/articles/r-workflows/check-habitat.html
 
+rm(list = ls())
+
 # install.packages('remotes')
 library('remotes')
 options(timeout=9999999)
@@ -17,7 +19,7 @@ library(here)
 library(tidyverse)
 
 park <- "geographe"
-name <- "GeographeAMP"
+name <- "GeographeAMP_2024"
 
 #Couldn't find the .csv so created this from fish api call
 metadata1 <- readRDS(paste0("data/", park, "/raw/metadata.RDS")) %>%
@@ -29,6 +31,9 @@ write.csv(metadata1, file = paste0("data/", park, "/raw/metadata.csv"))
 metadata <- read_metadata(here::here(paste0("data/", park, "/raw/"))) %>%
   dplyr::select(campaignid, sample, longitude_dd, latitude_dd, date_time, location, site, depth_m, successful_count, successful_length, successful_habitat_forward, successful_habitat_backward) %>%
   glimpse()
+
+metadata <- metadata %>%
+  mutate(campaignid = "2024-04_Geographe_stereo-BRUVs")
 
 saveRDS(metadata, file = here::here(paste0("data/", park, "/tidy/", name, "_metadata.rds")))
 
@@ -68,3 +73,43 @@ habitat.missing.metadata <- anti_join(habitat, metadata, by = c("campaignid", "s
 
 metadata.missing.habitat <- anti_join(metadata, habitat, by = c("campaignid", "sample")) %>%
   glimpse()
+
+catami_cols <- c("level_1" = NA,
+                 "level_2" = NA,
+                 "level_3" = NA,
+                 "level_4" = NA,
+                 "level_5" = NA,
+                 "level_6" = NA,
+                 "level_7" = NA,
+                 "level_8" = NA,
+                 "family" = NA,
+                 "genus" = NA,
+                 "species" = NA)
+
+tidy.habitat <- habitat %>%
+  dplyr::mutate(count = 1) %>%
+  add_column(!!!catami_cols[!names(catami_cols) %in% names(.)]) %>%
+  left_join(catami) %>%
+  dplyr::select(campaignid, sample, count, starts_with("level"), family, genus, species) %>%
+  dplyr::filter(!level_2 %in% c("","Unscorable", NA)) %>%
+  group_by(campaignid, sample, across(starts_with("level")), family, genus, species) %>%
+  dplyr::summarise(count = sum(count)) %>%
+  ungroup() %>%
+  dplyr::select(campaignid, sample, level_1, everything()) %>%
+  glimpse()
+
+saveRDS(tidy.habitat, file = here::here(paste0("data/", park, "/tidy/", name, "_habitat.rds")))
+write.csv(tidy.habitat, file = here::here(paste0("data/", park, "/tidy/", name, "_habitat.csv")))
+
+tidy.relief <- relief %>%
+  dplyr::select(campaignid, sample, starts_with("level"), scientific) %>%
+  dplyr::filter(!level_2 %in% c("","Unscorable", NA)) %>%
+  dplyr::mutate(count = 1) %>%
+  add_column(!!!catami_cols[!names(catami_cols) %in% names(.)]) %>%
+  left_join(catami) %>%
+  group_by(campaignid, sample, across(starts_with("level"))) %>%
+  dplyr::summarise(count = sum(count)) %>%
+  ungroup() %>%
+  glimpse()
+
+saveRDS(tidy.relief, file = here::here(paste0("data/", park, "/tidy/", name, "_relief.rds")))

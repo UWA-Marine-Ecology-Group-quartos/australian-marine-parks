@@ -1,0 +1,801 @@
+"","campaignid","sample","level_1","level_2","level_3","level_4","level_5","level_6","level_7","level_8","family","genus","species","count"
+"1","2024-04_Geographe_stereo-BRUVs","GB-BV-001",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"2","2024-04_Geographe_stereo-BRUVs","GB-BV-001",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,30
+"3","2024-04_Geographe_stereo-BRUVs","GB-BV-002",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"4","2024-04_Geographe_stereo-BRUVs","GB-BV-002",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,20
+"5","2024-04_Geographe_stereo-BRUVs","GB-BV-002",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,9
+"6","2024-04_Geographe_stereo-BRUVs","GB-BV-003",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,32
+"7","2024-04_Geographe_stereo-BRUVs","GB-BV-004",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,34
+"8","2024-04_Geographe_stereo-BRUVs","GB-BV-005",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"9","2024-04_Geographe_stereo-BRUVs","GB-BV-005",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"10","2024-04_Geographe_stereo-BRUVs","GB-BV-005",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"11","2024-04_Geographe_stereo-BRUVs","GB-BV-005",NA,"Substrate","Consolidated (hard)",NA,NA,NA,NA,NA,NA,NA,NA,2
+"12","2024-04_Geographe_stereo-BRUVs","GB-BV-005",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,19
+"13","2024-04_Geographe_stereo-BRUVs","GB-BV-006",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,25
+"14","2024-04_Geographe_stereo-BRUVs","GB-BV-006",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"15","2024-04_Geographe_stereo-BRUVs","GB-BV-007",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,1
+"16","2024-04_Geographe_stereo-BRUVs","GB-BV-007",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,28
+"17","2024-04_Geographe_stereo-BRUVs","GB-BV-008",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,35
+"18","2024-04_Geographe_stereo-BRUVs","GB-BV-009",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"19","2024-04_Geographe_stereo-BRUVs","GB-BV-009",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,10
+"20","2024-04_Geographe_stereo-BRUVs","GB-BV-009",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,17
+"21","2024-04_Geographe_stereo-BRUVs","GB-BV-010",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"22","2024-04_Geographe_stereo-BRUVs","GB-BV-010",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,33
+"23","2024-04_Geographe_stereo-BRUVs","GB-BV-011",NA,"Echinoderms",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"24","2024-04_Geographe_stereo-BRUVs","GB-BV-011",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"25","2024-04_Geographe_stereo-BRUVs","GB-BV-011",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"26","2024-04_Geographe_stereo-BRUVs","GB-BV-011",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,15
+"27","2024-04_Geographe_stereo-BRUVs","GB-BV-011",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,9
+"28","2024-04_Geographe_stereo-BRUVs","GB-BV-012",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,6
+"29","2024-04_Geographe_stereo-BRUVs","GB-BV-012",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,7
+"30","2024-04_Geographe_stereo-BRUVs","GB-BV-012",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,9
+"31","2024-04_Geographe_stereo-BRUVs","GB-BV-012",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"32","2024-04_Geographe_stereo-BRUVs","GB-BV-012",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"33","2024-04_Geographe_stereo-BRUVs","GB-BV-013",NA,"Fishes",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"34","2024-04_Geographe_stereo-BRUVs","GB-BV-013",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,5
+"35","2024-04_Geographe_stereo-BRUVs","GB-BV-013",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"36","2024-04_Geographe_stereo-BRUVs","GB-BV-013",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,11
+"37","2024-04_Geographe_stereo-BRUVs","GB-BV-014",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"38","2024-04_Geographe_stereo-BRUVs","GB-BV-014",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,33
+"39","2024-04_Geographe_stereo-BRUVs","GB-BV-015",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,6
+"40","2024-04_Geographe_stereo-BRUVs","GB-BV-015",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,23
+"41","2024-04_Geographe_stereo-BRUVs","GB-BV-015",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"42","2024-04_Geographe_stereo-BRUVs","GB-BV-015",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"43","2024-04_Geographe_stereo-BRUVs","GB-BV-016",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"44","2024-04_Geographe_stereo-BRUVs","GB-BV-016",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"45","2024-04_Geographe_stereo-BRUVs","GB-BV-016",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"46","2024-04_Geographe_stereo-BRUVs","GB-BV-016",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,10
+"47","2024-04_Geographe_stereo-BRUVs","GB-BV-016",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"48","2024-04_Geographe_stereo-BRUVs","GB-BV-016",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,6
+"49","2024-04_Geographe_stereo-BRUVs","GB-BV-017",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,10
+"50","2024-04_Geographe_stereo-BRUVs","GB-BV-017",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"51","2024-04_Geographe_stereo-BRUVs","GB-BV-017",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,17
+"52","2024-04_Geographe_stereo-BRUVs","GB-BV-017",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"53","2024-04_Geographe_stereo-BRUVs","GB-BV-017",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"54","2024-04_Geographe_stereo-BRUVs","GB-BV-018",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"55","2024-04_Geographe_stereo-BRUVs","GB-BV-018",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,6
+"56","2024-04_Geographe_stereo-BRUVs","GB-BV-018",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,8
+"57","2024-04_Geographe_stereo-BRUVs","GB-BV-018",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,8
+"58","2024-04_Geographe_stereo-BRUVs","GB-BV-019",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"59","2024-04_Geographe_stereo-BRUVs","GB-BV-019",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,33
+"60","2024-04_Geographe_stereo-BRUVs","GB-BV-019",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,3
+"61","2024-04_Geographe_stereo-BRUVs","GB-BV-020",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,35
+"62","2024-04_Geographe_stereo-BRUVs","GB-BV-021",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"63","2024-04_Geographe_stereo-BRUVs","GB-BV-021",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"64","2024-04_Geographe_stereo-BRUVs","GB-BV-021",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"65","2024-04_Geographe_stereo-BRUVs","GB-BV-021",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"66","2024-04_Geographe_stereo-BRUVs","GB-BV-021",NA,"Substrate","Consolidated (hard)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"67","2024-04_Geographe_stereo-BRUVs","GB-BV-021",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,25
+"68","2024-04_Geographe_stereo-BRUVs","GB-BV-022",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,31
+"69","2024-04_Geographe_stereo-BRUVs","GB-BV-023",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"70","2024-04_Geographe_stereo-BRUVs","GB-BV-023",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"71","2024-04_Geographe_stereo-BRUVs","GB-BV-023",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,19
+"72","2024-04_Geographe_stereo-BRUVs","GB-BV-023",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,6
+"73","2024-04_Geographe_stereo-BRUVs","GB-BV-024",NA,"Cnidaria","Corals","Black & Octocorals",NA,NA,NA,NA,NA,NA,NA,3
+"74","2024-04_Geographe_stereo-BRUVs","GB-BV-024",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"75","2024-04_Geographe_stereo-BRUVs","GB-BV-024",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,7
+"76","2024-04_Geographe_stereo-BRUVs","GB-BV-024",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"77","2024-04_Geographe_stereo-BRUVs","GB-BV-024",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"78","2024-04_Geographe_stereo-BRUVs","GB-BV-025",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"79","2024-04_Geographe_stereo-BRUVs","GB-BV-025",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,24
+"80","2024-04_Geographe_stereo-BRUVs","GB-BV-026",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,4
+"81","2024-04_Geographe_stereo-BRUVs","GB-BV-026",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"82","2024-04_Geographe_stereo-BRUVs","GB-BV-026",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"83","2024-04_Geographe_stereo-BRUVs","GB-BV-026",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,10
+"84","2024-04_Geographe_stereo-BRUVs","GB-BV-027",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,22
+"85","2024-04_Geographe_stereo-BRUVs","GB-BV-027",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,8
+"86","2024-04_Geographe_stereo-BRUVs","GB-BV-028",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,4
+"87","2024-04_Geographe_stereo-BRUVs","GB-BV-028",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,18
+"88","2024-04_Geographe_stereo-BRUVs","GB-BV-028",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"89","2024-04_Geographe_stereo-BRUVs","GB-BV-028",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,10
+"90","2024-04_Geographe_stereo-BRUVs","GB-BV-029",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,13
+"91","2024-04_Geographe_stereo-BRUVs","GB-BV-029",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,13
+"92","2024-04_Geographe_stereo-BRUVs","GB-BV-029",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"93","2024-04_Geographe_stereo-BRUVs","GB-BV-029",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"94","2024-04_Geographe_stereo-BRUVs","GB-BV-029",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"95","2024-04_Geographe_stereo-BRUVs","GB-BV-030",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,32
+"96","2024-04_Geographe_stereo-BRUVs","GB-BV-031",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"97","2024-04_Geographe_stereo-BRUVs","GB-BV-031",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,26
+"98","2024-04_Geographe_stereo-BRUVs","GB-BV-031",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,7
+"99","2024-04_Geographe_stereo-BRUVs","GB-BV-032",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,31
+"100","2024-04_Geographe_stereo-BRUVs","GB-BV-033",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"101","2024-04_Geographe_stereo-BRUVs","GB-BV-033",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"102","2024-04_Geographe_stereo-BRUVs","GB-BV-033",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,29
+"103","2024-04_Geographe_stereo-BRUVs","GB-BV-034",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"104","2024-04_Geographe_stereo-BRUVs","GB-BV-034",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,2
+"105","2024-04_Geographe_stereo-BRUVs","GB-BV-034",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"106","2024-04_Geographe_stereo-BRUVs","GB-BV-034",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,29
+"107","2024-04_Geographe_stereo-BRUVs","GB-BV-035",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,39
+"108","2024-04_Geographe_stereo-BRUVs","GB-BV-036",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,17
+"109","2024-04_Geographe_stereo-BRUVs","GB-BV-037",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"110","2024-04_Geographe_stereo-BRUVs","GB-BV-037",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,31
+"111","2024-04_Geographe_stereo-BRUVs","GB-BV-038",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,27
+"112","2024-04_Geographe_stereo-BRUVs","GB-BV-039",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"113","2024-04_Geographe_stereo-BRUVs","GB-BV-039",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,33
+"114","2024-04_Geographe_stereo-BRUVs","GB-BV-041",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,7
+"115","2024-04_Geographe_stereo-BRUVs","GB-BV-041",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"116","2024-04_Geographe_stereo-BRUVs","GB-BV-041",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,20
+"117","2024-04_Geographe_stereo-BRUVs","GB-BV-042",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"118","2024-04_Geographe_stereo-BRUVs","GB-BV-042",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"119","2024-04_Geographe_stereo-BRUVs","GB-BV-042",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,33
+"120","2024-04_Geographe_stereo-BRUVs","GB-BV-043",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"121","2024-04_Geographe_stereo-BRUVs","GB-BV-043",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"122","2024-04_Geographe_stereo-BRUVs","GB-BV-043",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,11
+"123","2024-04_Geographe_stereo-BRUVs","GB-BV-043",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"124","2024-04_Geographe_stereo-BRUVs","GB-BV-043",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"125","2024-04_Geographe_stereo-BRUVs","GB-BV-043",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"126","2024-04_Geographe_stereo-BRUVs","GB-BV-043",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,14
+"127","2024-04_Geographe_stereo-BRUVs","GB-BV-045",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"128","2024-04_Geographe_stereo-BRUVs","GB-BV-045",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"129","2024-04_Geographe_stereo-BRUVs","GB-BV-045",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,25
+"130","2024-04_Geographe_stereo-BRUVs","GB-BV-045",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"131","2024-04_Geographe_stereo-BRUVs","GB-BV-046",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"132","2024-04_Geographe_stereo-BRUVs","GB-BV-046",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,1
+"133","2024-04_Geographe_stereo-BRUVs","GB-BV-046",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,29
+"134","2024-04_Geographe_stereo-BRUVs","GB-BV-047",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,6
+"135","2024-04_Geographe_stereo-BRUVs","GB-BV-047",NA,"Fishes",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"136","2024-04_Geographe_stereo-BRUVs","GB-BV-047",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,24
+"137","2024-04_Geographe_stereo-BRUVs","GB-BV-048",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"138","2024-04_Geographe_stereo-BRUVs","GB-BV-048",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,4
+"139","2024-04_Geographe_stereo-BRUVs","GB-BV-048",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"140","2024-04_Geographe_stereo-BRUVs","GB-BV-048",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,13
+"141","2024-04_Geographe_stereo-BRUVs","GB-BV-048",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"142","2024-04_Geographe_stereo-BRUVs","GB-BV-048",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,2
+"143","2024-04_Geographe_stereo-BRUVs","GB-BV-049",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"144","2024-04_Geographe_stereo-BRUVs","GB-BV-049",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,9
+"145","2024-04_Geographe_stereo-BRUVs","GB-BV-049",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,6
+"146","2024-04_Geographe_stereo-BRUVs","GB-BV-049",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,12
+"147","2024-04_Geographe_stereo-BRUVs","GB-BV-049",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,5
+"148","2024-04_Geographe_stereo-BRUVs","GB-BV-050",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,10
+"149","2024-04_Geographe_stereo-BRUVs","GB-BV-050",NA,"Seagrasses","Elliptical leaves",NA,NA,NA,NA,NA,NA,NA,NA,1
+"150","2024-04_Geographe_stereo-BRUVs","GB-BV-050",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,4
+"151","2024-04_Geographe_stereo-BRUVs","GB-BV-050",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"152","2024-04_Geographe_stereo-BRUVs","GB-BV-050",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"153","2024-04_Geographe_stereo-BRUVs","GB-BV-050",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,4
+"154","2024-04_Geographe_stereo-BRUVs","GB-BV-051",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"155","2024-04_Geographe_stereo-BRUVs","GB-BV-051",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,6
+"156","2024-04_Geographe_stereo-BRUVs","GB-BV-051",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,3
+"157","2024-04_Geographe_stereo-BRUVs","GB-BV-051",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"158","2024-04_Geographe_stereo-BRUVs","GB-BV-051",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,10
+"159","2024-04_Geographe_stereo-BRUVs","GB-BV-051",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,8
+"160","2024-04_Geographe_stereo-BRUVs","GB-BV-052",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"161","2024-04_Geographe_stereo-BRUVs","GB-BV-052",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,8
+"162","2024-04_Geographe_stereo-BRUVs","GB-BV-052",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,7
+"163","2024-04_Geographe_stereo-BRUVs","GB-BV-052",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,14
+"164","2024-04_Geographe_stereo-BRUVs","GB-BV-053",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"165","2024-04_Geographe_stereo-BRUVs","GB-BV-053",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,30
+"166","2024-04_Geographe_stereo-BRUVs","GB-BV-054",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,29
+"167","2024-04_Geographe_stereo-BRUVs","GB-BV-054",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"168","2024-04_Geographe_stereo-BRUVs","GB-BV-055",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,35
+"169","2024-04_Geographe_stereo-BRUVs","GB-BV-056",NA,"Fishes",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"170","2024-04_Geographe_stereo-BRUVs","GB-BV-056",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,31
+"171","2024-04_Geographe_stereo-BRUVs","GB-BV-057",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,16
+"172","2024-04_Geographe_stereo-BRUVs","GB-BV-057",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"173","2024-04_Geographe_stereo-BRUVs","GB-BV-057",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"174","2024-04_Geographe_stereo-BRUVs","GB-BV-057",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,6
+"175","2024-04_Geographe_stereo-BRUVs","GB-BV-058",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,34
+"176","2024-04_Geographe_stereo-BRUVs","GB-BV-058",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"177","2024-04_Geographe_stereo-BRUVs","GB-BV-058",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"178","2024-04_Geographe_stereo-BRUVs","GB-BV-059",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,5
+"179","2024-04_Geographe_stereo-BRUVs","GB-BV-059",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,26
+"180","2024-04_Geographe_stereo-BRUVs","GB-BV-060",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,32
+"181","2024-04_Geographe_stereo-BRUVs","GB-BV-061",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"182","2024-04_Geographe_stereo-BRUVs","GB-BV-061",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,32
+"183","2024-04_Geographe_stereo-BRUVs","GB-BV-061",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"184","2024-04_Geographe_stereo-BRUVs","GB-BV-062",NA,"Fishes",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"185","2024-04_Geographe_stereo-BRUVs","GB-BV-062",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"186","2024-04_Geographe_stereo-BRUVs","GB-BV-062",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"187","2024-04_Geographe_stereo-BRUVs","GB-BV-062",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"188","2024-04_Geographe_stereo-BRUVs","GB-BV-062",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,19
+"189","2024-04_Geographe_stereo-BRUVs","GB-BV-062",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"190","2024-04_Geographe_stereo-BRUVs","GB-BV-062",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"191","2024-04_Geographe_stereo-BRUVs","GB-BV-063",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,18
+"192","2024-04_Geographe_stereo-BRUVs","GB-BV-064",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,34
+"193","2024-04_Geographe_stereo-BRUVs","GB-BV-065",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,3
+"194","2024-04_Geographe_stereo-BRUVs","GB-BV-065",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,10
+"195","2024-04_Geographe_stereo-BRUVs","GB-BV-065",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,1
+"196","2024-04_Geographe_stereo-BRUVs","GB-BV-065",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"197","2024-04_Geographe_stereo-BRUVs","GB-BV-066",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"198","2024-04_Geographe_stereo-BRUVs","GB-BV-066",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,1
+"199","2024-04_Geographe_stereo-BRUVs","GB-BV-066",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,26
+"200","2024-04_Geographe_stereo-BRUVs","GB-BV-067",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,36
+"201","2024-04_Geographe_stereo-BRUVs","GB-BV-068",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,3
+"202","2024-04_Geographe_stereo-BRUVs","GB-BV-068",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"203","2024-04_Geographe_stereo-BRUVs","GB-BV-068",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"204","2024-04_Geographe_stereo-BRUVs","GB-BV-068",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"205","2024-04_Geographe_stereo-BRUVs","GB-BV-068",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,4
+"206","2024-04_Geographe_stereo-BRUVs","GB-BV-069",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,35
+"207","2024-04_Geographe_stereo-BRUVs","GB-BV-070",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"208","2024-04_Geographe_stereo-BRUVs","GB-BV-070",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,30
+"209","2024-04_Geographe_stereo-BRUVs","GB-BV-070",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"210","2024-04_Geographe_stereo-BRUVs","GB-BV-071",NA,"Fishes",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"211","2024-04_Geographe_stereo-BRUVs","GB-BV-071",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"212","2024-04_Geographe_stereo-BRUVs","GB-BV-071",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"213","2024-04_Geographe_stereo-BRUVs","GB-BV-071",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,21
+"214","2024-04_Geographe_stereo-BRUVs","GB-BV-072",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,32
+"215","2024-04_Geographe_stereo-BRUVs","GB-BV-073",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"216","2024-04_Geographe_stereo-BRUVs","GB-BV-073",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"217","2024-04_Geographe_stereo-BRUVs","GB-BV-073",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"218","2024-04_Geographe_stereo-BRUVs","GB-BV-073",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,16
+"219","2024-04_Geographe_stereo-BRUVs","GB-BV-074",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,30
+"220","2024-04_Geographe_stereo-BRUVs","GB-BV-075",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,4
+"221","2024-04_Geographe_stereo-BRUVs","GB-BV-075",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"222","2024-04_Geographe_stereo-BRUVs","GB-BV-075",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,4
+"223","2024-04_Geographe_stereo-BRUVs","GB-BV-075",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"224","2024-04_Geographe_stereo-BRUVs","GB-BV-075",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,11
+"225","2024-04_Geographe_stereo-BRUVs","GB-BV-076",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,35
+"226","2024-04_Geographe_stereo-BRUVs","GB-BV-077",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"227","2024-04_Geographe_stereo-BRUVs","GB-BV-077",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,15
+"228","2024-04_Geographe_stereo-BRUVs","GB-BV-077",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,13
+"229","2024-04_Geographe_stereo-BRUVs","GB-BV-078",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"230","2024-04_Geographe_stereo-BRUVs","GB-BV-078",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"231","2024-04_Geographe_stereo-BRUVs","GB-BV-078",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"232","2024-04_Geographe_stereo-BRUVs","GB-BV-078",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,24
+"233","2024-04_Geographe_stereo-BRUVs","GB-BV-079",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"234","2024-04_Geographe_stereo-BRUVs","GB-BV-079",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"235","2024-04_Geographe_stereo-BRUVs","GB-BV-079",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,32
+"236","2024-04_Geographe_stereo-BRUVs","GB-BV-080",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,4
+"237","2024-04_Geographe_stereo-BRUVs","GB-BV-080",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,5
+"238","2024-04_Geographe_stereo-BRUVs","GB-BV-080",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"239","2024-04_Geographe_stereo-BRUVs","GB-BV-080",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,6
+"240","2024-04_Geographe_stereo-BRUVs","GB-BV-080",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"241","2024-04_Geographe_stereo-BRUVs","GB-BV-080",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,11
+"242","2024-04_Geographe_stereo-BRUVs","GB-BV-081",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"243","2024-04_Geographe_stereo-BRUVs","GB-BV-081",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"244","2024-04_Geographe_stereo-BRUVs","GB-BV-081",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,10
+"245","2024-04_Geographe_stereo-BRUVs","GB-BV-081",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"246","2024-04_Geographe_stereo-BRUVs","GB-BV-083",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,35
+"247","2024-04_Geographe_stereo-BRUVs","GB-BV-084",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"248","2024-04_Geographe_stereo-BRUVs","GB-BV-084",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"249","2024-04_Geographe_stereo-BRUVs","GB-BV-084",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"250","2024-04_Geographe_stereo-BRUVs","GB-BV-084",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"251","2024-04_Geographe_stereo-BRUVs","GB-BV-084",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,8
+"252","2024-04_Geographe_stereo-BRUVs","GB-BV-084",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,15
+"253","2024-04_Geographe_stereo-BRUVs","GB-BV-085",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,33
+"254","2024-04_Geographe_stereo-BRUVs","GB-BV-086",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"255","2024-04_Geographe_stereo-BRUVs","GB-BV-086",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,25
+"256","2024-04_Geographe_stereo-BRUVs","GB-BV-086",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,9
+"257","2024-04_Geographe_stereo-BRUVs","GB-BV-087",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"258","2024-04_Geographe_stereo-BRUVs","GB-BV-087",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,15
+"259","2024-04_Geographe_stereo-BRUVs","GB-BV-087",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,14
+"260","2024-04_Geographe_stereo-BRUVs","GB-BV-088",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,36
+"261","2024-04_Geographe_stereo-BRUVs","GB-BV-089",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,36
+"262","2024-04_Geographe_stereo-BRUVs","GB-BV-090",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"263","2024-04_Geographe_stereo-BRUVs","GB-BV-090",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"264","2024-04_Geographe_stereo-BRUVs","GB-BV-090",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,25
+"265","2024-04_Geographe_stereo-BRUVs","GB-BV-090",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"266","2024-04_Geographe_stereo-BRUVs","GB-BV-091",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"267","2024-04_Geographe_stereo-BRUVs","GB-BV-091",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,4
+"268","2024-04_Geographe_stereo-BRUVs","GB-BV-091",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,11
+"269","2024-04_Geographe_stereo-BRUVs","GB-BV-091",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,13
+"270","2024-04_Geographe_stereo-BRUVs","GB-BV-092",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,33
+"271","2024-04_Geographe_stereo-BRUVs","GB-BV-093",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,32
+"272","2024-04_Geographe_stereo-BRUVs","GB-BV-094",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,8
+"273","2024-04_Geographe_stereo-BRUVs","GB-BV-094",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,15
+"274","2024-04_Geographe_stereo-BRUVs","GB-BV-094",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,5
+"275","2024-04_Geographe_stereo-BRUVs","GB-BV-095",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"276","2024-04_Geographe_stereo-BRUVs","GB-BV-095",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,6
+"277","2024-04_Geographe_stereo-BRUVs","GB-BV-095",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,10
+"278","2024-04_Geographe_stereo-BRUVs","GB-BV-095",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,4
+"279","2024-04_Geographe_stereo-BRUVs","GB-BV-095",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"280","2024-04_Geographe_stereo-BRUVs","GB-BV-095",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"281","2024-04_Geographe_stereo-BRUVs","GB-BV-095",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"282","2024-04_Geographe_stereo-BRUVs","GB-BV-096",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"283","2024-04_Geographe_stereo-BRUVs","GB-BV-096",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"284","2024-04_Geographe_stereo-BRUVs","GB-BV-096",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,20
+"285","2024-04_Geographe_stereo-BRUVs","GB-BV-096",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,2
+"286","2024-04_Geographe_stereo-BRUVs","GB-BV-097",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"287","2024-04_Geographe_stereo-BRUVs","GB-BV-097",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"288","2024-04_Geographe_stereo-BRUVs","GB-BV-097",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,23
+"289","2024-04_Geographe_stereo-BRUVs","GB-BV-098",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,7
+"290","2024-04_Geographe_stereo-BRUVs","GB-BV-098",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"291","2024-04_Geographe_stereo-BRUVs","GB-BV-098",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,5
+"292","2024-04_Geographe_stereo-BRUVs","GB-BV-098",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,6
+"293","2024-04_Geographe_stereo-BRUVs","GB-BV-098",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,3
+"294","2024-04_Geographe_stereo-BRUVs","GB-BV-099",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,27
+"295","2024-04_Geographe_stereo-BRUVs","GB-BV-100",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,29
+"296","2024-04_Geographe_stereo-BRUVs","GB-BV-101",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,12
+"297","2024-04_Geographe_stereo-BRUVs","GB-BV-101",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"298","2024-04_Geographe_stereo-BRUVs","GB-BV-101",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,14
+"299","2024-04_Geographe_stereo-BRUVs","GB-BV-102",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,11
+"300","2024-04_Geographe_stereo-BRUVs","GB-BV-102",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,6
+"301","2024-04_Geographe_stereo-BRUVs","GB-BV-102",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,2
+"302","2024-04_Geographe_stereo-BRUVs","GB-BV-102",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,5
+"303","2024-04_Geographe_stereo-BRUVs","GB-BV-103",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"304","2024-04_Geographe_stereo-BRUVs","GB-BV-103",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,18
+"305","2024-04_Geographe_stereo-BRUVs","GB-BV-104",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,39
+"306","2024-04_Geographe_stereo-BRUVs","GB-BV-105",NA,"Seagrasses","Elliptical leaves",NA,NA,NA,NA,NA,NA,NA,NA,6
+"307","2024-04_Geographe_stereo-BRUVs","GB-BV-105",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,5
+"308","2024-04_Geographe_stereo-BRUVs","GB-BV-105",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"309","2024-04_Geographe_stereo-BRUVs","GB-BV-105",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,22
+"310","2024-04_Geographe_stereo-BRUVs","GB-BV-106",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"311","2024-04_Geographe_stereo-BRUVs","GB-BV-106",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"312","2024-04_Geographe_stereo-BRUVs","GB-BV-106",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,7
+"313","2024-04_Geographe_stereo-BRUVs","GB-BV-106",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,19
+"314","2024-04_Geographe_stereo-BRUVs","GB-BV-107",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,38
+"315","2024-04_Geographe_stereo-BRUVs","GB-BV-108",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,33
+"316","2024-04_Geographe_stereo-BRUVs","GB-BV-109",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,7
+"317","2024-04_Geographe_stereo-BRUVs","GB-BV-109",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,3
+"318","2024-04_Geographe_stereo-BRUVs","GB-BV-109",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"319","2024-04_Geographe_stereo-BRUVs","GB-BV-109",NA,"Seagrasses","Elliptical leaves",NA,NA,NA,NA,NA,NA,NA,NA,2
+"320","2024-04_Geographe_stereo-BRUVs","GB-BV-109",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"321","2024-04_Geographe_stereo-BRUVs","GB-BV-109",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,2
+"322","2024-04_Geographe_stereo-BRUVs","GB-BV-110",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"323","2024-04_Geographe_stereo-BRUVs","GB-BV-110",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,34
+"324","2024-04_Geographe_stereo-BRUVs","GB-BV-111",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"325","2024-04_Geographe_stereo-BRUVs","GB-BV-111",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"326","2024-04_Geographe_stereo-BRUVs","GB-BV-111",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"327","2024-04_Geographe_stereo-BRUVs","GB-BV-111",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,14
+"328","2024-04_Geographe_stereo-BRUVs","GB-BV-112",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,33
+"329","2024-04_Geographe_stereo-BRUVs","GB-BV-113",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"330","2024-04_Geographe_stereo-BRUVs","GB-BV-113",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,5
+"331","2024-04_Geographe_stereo-BRUVs","GB-BV-113",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"332","2024-04_Geographe_stereo-BRUVs","GB-BV-113",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,12
+"333","2024-04_Geographe_stereo-BRUVs","GB-BV-114",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"334","2024-04_Geographe_stereo-BRUVs","GB-BV-114",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,26
+"335","2024-04_Geographe_stereo-BRUVs","GB-BV-115",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"336","2024-04_Geographe_stereo-BRUVs","GB-BV-115",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,31
+"337","2024-04_Geographe_stereo-BRUVs","GB-BV-115",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,4
+"338","2024-04_Geographe_stereo-BRUVs","GB-BV-116",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,4
+"339","2024-04_Geographe_stereo-BRUVs","GB-BV-116",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,9
+"340","2024-04_Geographe_stereo-BRUVs","GB-BV-116",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,7
+"341","2024-04_Geographe_stereo-BRUVs","GB-BV-116",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"342","2024-04_Geographe_stereo-BRUVs","GB-BV-116",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,2
+"343","2024-04_Geographe_stereo-BRUVs","GB-BV-117",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,3
+"344","2024-04_Geographe_stereo-BRUVs","GB-BV-117",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"345","2024-04_Geographe_stereo-BRUVs","GB-BV-117",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"346","2024-04_Geographe_stereo-BRUVs","GB-BV-117",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,3
+"347","2024-04_Geographe_stereo-BRUVs","GB-BV-117",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,26
+"348","2024-04_Geographe_stereo-BRUVs","GB-BV-118",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,27
+"349","2024-04_Geographe_stereo-BRUVs","GB-BV-119",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,35
+"350","2024-04_Geographe_stereo-BRUVs","GB-BV-120",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"351","2024-04_Geographe_stereo-BRUVs","GB-BV-120",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,13
+"352","2024-04_Geographe_stereo-BRUVs","GB-BV-121",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,3
+"353","2024-04_Geographe_stereo-BRUVs","GB-BV-121",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"354","2024-04_Geographe_stereo-BRUVs","GB-BV-121",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,22
+"355","2024-04_Geographe_stereo-BRUVs","GB-BV-121",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"356","2024-04_Geographe_stereo-BRUVs","GB-BV-122",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"357","2024-04_Geographe_stereo-BRUVs","GB-BV-122",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,12
+"358","2024-04_Geographe_stereo-BRUVs","GB-BV-123",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"359","2024-04_Geographe_stereo-BRUVs","GB-BV-123",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"360","2024-04_Geographe_stereo-BRUVs","GB-BV-123",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,10
+"361","2024-04_Geographe_stereo-BRUVs","GB-BV-124",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,3
+"362","2024-04_Geographe_stereo-BRUVs","GB-BV-124",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,8
+"363","2024-04_Geographe_stereo-BRUVs","GB-BV-124",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,19
+"364","2024-04_Geographe_stereo-BRUVs","GB-BV-125",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"365","2024-04_Geographe_stereo-BRUVs","GB-BV-125",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,2
+"366","2024-04_Geographe_stereo-BRUVs","GB-BV-125",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,21
+"367","2024-04_Geographe_stereo-BRUVs","GB-BV-126",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"368","2024-04_Geographe_stereo-BRUVs","GB-BV-126",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"369","2024-04_Geographe_stereo-BRUVs","GB-BV-126",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,6
+"370","2024-04_Geographe_stereo-BRUVs","GB-BV-126",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,12
+"371","2024-04_Geographe_stereo-BRUVs","GB-BV-126",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"372","2024-04_Geographe_stereo-BRUVs","GB-BV-126",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,6
+"373","2024-04_Geographe_stereo-BRUVs","GB-BV-127",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"374","2024-04_Geographe_stereo-BRUVs","GB-BV-127",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,4
+"375","2024-04_Geographe_stereo-BRUVs","GB-BV-127",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"376","2024-04_Geographe_stereo-BRUVs","GB-BV-127",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"377","2024-04_Geographe_stereo-BRUVs","GB-BV-127",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"378","2024-04_Geographe_stereo-BRUVs","GB-BV-127",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,6
+"379","2024-04_Geographe_stereo-BRUVs","GB-BV-127",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,14
+"380","2024-04_Geographe_stereo-BRUVs","GB-BV-128",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,35
+"381","2024-04_Geographe_stereo-BRUVs","GB-BV-129",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,1
+"382","2024-04_Geographe_stereo-BRUVs","GB-BV-129",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,33
+"383","2024-04_Geographe_stereo-BRUVs","GB-BV-130",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,37
+"384","2024-04_Geographe_stereo-BRUVs","GB-BV-131",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"385","2024-04_Geographe_stereo-BRUVs","GB-BV-131",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"386","2024-04_Geographe_stereo-BRUVs","GB-BV-131",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,27
+"387","2024-04_Geographe_stereo-BRUVs","GB-BV-131",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"388","2024-04_Geographe_stereo-BRUVs","GB-BV-132",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"389","2024-04_Geographe_stereo-BRUVs","GB-BV-132",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,8
+"390","2024-04_Geographe_stereo-BRUVs","GB-BV-132",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"391","2024-04_Geographe_stereo-BRUVs","GB-BV-132",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"392","2024-04_Geographe_stereo-BRUVs","GB-BV-132",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,12
+"393","2024-04_Geographe_stereo-BRUVs","GB-BV-132",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"394","2024-04_Geographe_stereo-BRUVs","GB-BV-133",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,27
+"395","2024-04_Geographe_stereo-BRUVs","GB-BV-134",NA,"Fishes",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"396","2024-04_Geographe_stereo-BRUVs","GB-BV-134",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,28
+"397","2024-04_Geographe_stereo-BRUVs","GB-BV-135",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,3
+"398","2024-04_Geographe_stereo-BRUVs","GB-BV-135",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,21
+"399","2024-04_Geographe_stereo-BRUVs","GB-BV-135",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,4
+"400","2024-04_Geographe_stereo-BRUVs","GB-BV-136",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,19
+"401","2024-04_Geographe_stereo-BRUVs","GB-BV-137",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,31
+"402","2024-04_Geographe_stereo-BRUVs","GB-BV-138",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,30
+"403","2024-04_Geographe_stereo-BRUVs","GB-BV-139",NA,"Cnidaria","Corals","Stony corals",NA,NA,NA,NA,NA,NA,NA,3
+"404","2024-04_Geographe_stereo-BRUVs","GB-BV-139",NA,"Macroalgae","Encrusting",NA,NA,NA,NA,NA,NA,NA,NA,1
+"405","2024-04_Geographe_stereo-BRUVs","GB-BV-139",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"406","2024-04_Geographe_stereo-BRUVs","GB-BV-139",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,11
+"407","2024-04_Geographe_stereo-BRUVs","GB-BV-140",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,5
+"408","2024-04_Geographe_stereo-BRUVs","GB-BV-140",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"409","2024-04_Geographe_stereo-BRUVs","GB-BV-140",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,11
+"410","2024-04_Geographe_stereo-BRUVs","GB-BV-140",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,7
+"411","2024-04_Geographe_stereo-BRUVs","GB-BV-141",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"412","2024-04_Geographe_stereo-BRUVs","GB-BV-141",NA,"Macroalgae","Laminate",NA,NA,NA,NA,NA,NA,NA,NA,1
+"413","2024-04_Geographe_stereo-BRUVs","GB-BV-141",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,8
+"414","2024-04_Geographe_stereo-BRUVs","GB-BV-141",NA,"Substrate","Consolidated (hard)",NA,NA,NA,NA,NA,NA,NA,NA,11
+"415","2024-04_Geographe_stereo-BRUVs","GB-BV-141",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"416","2024-04_Geographe_stereo-BRUVs","GB-BV-142",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"417","2024-04_Geographe_stereo-BRUVs","GB-BV-142",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"418","2024-04_Geographe_stereo-BRUVs","GB-BV-142",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,3
+"419","2024-04_Geographe_stereo-BRUVs","GB-BV-142",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,19
+"420","2024-04_Geographe_stereo-BRUVs","GB-BV-143",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,4
+"421","2024-04_Geographe_stereo-BRUVs","GB-BV-143",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"422","2024-04_Geographe_stereo-BRUVs","GB-BV-143",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,4
+"423","2024-04_Geographe_stereo-BRUVs","GB-BV-143",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,25
+"424","2024-04_Geographe_stereo-BRUVs","GB-BV-144",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"425","2024-04_Geographe_stereo-BRUVs","GB-BV-144",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,4
+"426","2024-04_Geographe_stereo-BRUVs","GB-BV-144",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"427","2024-04_Geographe_stereo-BRUVs","GB-BV-144",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"428","2024-04_Geographe_stereo-BRUVs","GB-BV-145",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"429","2024-04_Geographe_stereo-BRUVs","GB-BV-145",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,17
+"430","2024-04_Geographe_stereo-BRUVs","GB-BV-146",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,37
+"431","2024-04_Geographe_stereo-BRUVs","GB-BV-147",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"432","2024-04_Geographe_stereo-BRUVs","GB-BV-147",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"433","2024-04_Geographe_stereo-BRUVs","GB-BV-147",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,25
+"434","2024-04_Geographe_stereo-BRUVs","GB-BV-148",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"435","2024-04_Geographe_stereo-BRUVs","GB-BV-148",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"436","2024-04_Geographe_stereo-BRUVs","GB-BV-148",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,6
+"437","2024-04_Geographe_stereo-BRUVs","GB-BV-148",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,16
+"438","2024-04_Geographe_stereo-BRUVs","GB-BV-149",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"439","2024-04_Geographe_stereo-BRUVs","GB-BV-149",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"440","2024-04_Geographe_stereo-BRUVs","GB-BV-149",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,27
+"441","2024-04_Geographe_stereo-BRUVs","GB-BV-149",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,3
+"442","2024-04_Geographe_stereo-BRUVs","GB-BV-150",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"443","2024-04_Geographe_stereo-BRUVs","GB-BV-150",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,3
+"444","2024-04_Geographe_stereo-BRUVs","GB-BV-150",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,7
+"445","2024-04_Geographe_stereo-BRUVs","GB-BV-150",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"446","2024-04_Geographe_stereo-BRUVs","GB-BV-150",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,2
+"447","2024-04_Geographe_stereo-BRUVs","GB-BV-151",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,9
+"448","2024-04_Geographe_stereo-BRUVs","GB-BV-151",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"449","2024-04_Geographe_stereo-BRUVs","GB-BV-151",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,15
+"450","2024-04_Geographe_stereo-BRUVs","GB-BV-152",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"451","2024-04_Geographe_stereo-BRUVs","GB-BV-152",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,29
+"452","2024-04_Geographe_stereo-BRUVs","GB-BV-153",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,1
+"453","2024-04_Geographe_stereo-BRUVs","GB-BV-153",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,30
+"454","2024-04_Geographe_stereo-BRUVs","GB-BV-154",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,35
+"455","2024-04_Geographe_stereo-BRUVs","GB-BV-155",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,7
+"456","2024-04_Geographe_stereo-BRUVs","GB-BV-155",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"457","2024-04_Geographe_stereo-BRUVs","GB-BV-155",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,15
+"458","2024-04_Geographe_stereo-BRUVs","GB-BV-155",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"459","2024-04_Geographe_stereo-BRUVs","GB-BV-155",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"460","2024-04_Geographe_stereo-BRUVs","GB-BV-156",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,4
+"461","2024-04_Geographe_stereo-BRUVs","GB-BV-156",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"462","2024-04_Geographe_stereo-BRUVs","GB-BV-156",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,21
+"463","2024-04_Geographe_stereo-BRUVs","GB-BV-157",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"464","2024-04_Geographe_stereo-BRUVs","GB-BV-157",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"465","2024-04_Geographe_stereo-BRUVs","GB-BV-157",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"466","2024-04_Geographe_stereo-BRUVs","GB-BV-157",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,18
+"467","2024-04_Geographe_stereo-BRUVs","GB-BV-158",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"468","2024-04_Geographe_stereo-BRUVs","GB-BV-158",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"469","2024-04_Geographe_stereo-BRUVs","GB-BV-158",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,28
+"470","2024-04_Geographe_stereo-BRUVs","GB-BV-159",NA,"Cnidaria","Hydrocorals",NA,NA,NA,NA,NA,NA,NA,NA,1
+"471","2024-04_Geographe_stereo-BRUVs","GB-BV-159",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"472","2024-04_Geographe_stereo-BRUVs","GB-BV-159",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"473","2024-04_Geographe_stereo-BRUVs","GB-BV-159",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"474","2024-04_Geographe_stereo-BRUVs","GB-BV-159",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,20
+"475","2024-04_Geographe_stereo-BRUVs","GB-BV-160",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,23
+"476","2024-04_Geographe_stereo-BRUVs","GB-BV-160",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,3
+"477","2024-04_Geographe_stereo-BRUVs","GB-BV-161",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"478","2024-04_Geographe_stereo-BRUVs","GB-BV-161",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"479","2024-04_Geographe_stereo-BRUVs","GB-BV-161",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"480","2024-04_Geographe_stereo-BRUVs","GB-BV-161",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,27
+"481","2024-04_Geographe_stereo-BRUVs","GB-BV-162",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"482","2024-04_Geographe_stereo-BRUVs","GB-BV-162",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"483","2024-04_Geographe_stereo-BRUVs","GB-BV-162",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"484","2024-04_Geographe_stereo-BRUVs","GB-BV-162",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,1
+"485","2024-04_Geographe_stereo-BRUVs","GB-BV-162",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,28
+"486","2024-04_Geographe_stereo-BRUVs","GB-BV-163",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,11
+"487","2024-04_Geographe_stereo-BRUVs","GB-BV-163",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,15
+"488","2024-04_Geographe_stereo-BRUVs","GB-BV-164",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"489","2024-04_Geographe_stereo-BRUVs","GB-BV-164",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,8
+"490","2024-04_Geographe_stereo-BRUVs","GB-BV-164",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,11
+"491","2024-04_Geographe_stereo-BRUVs","GB-BV-164",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"492","2024-04_Geographe_stereo-BRUVs","GB-BV-165",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"493","2024-04_Geographe_stereo-BRUVs","GB-BV-165",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,30
+"494","2024-04_Geographe_stereo-BRUVs","GB-BV-166",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"495","2024-04_Geographe_stereo-BRUVs","GB-BV-166",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"496","2024-04_Geographe_stereo-BRUVs","GB-BV-166",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,4
+"497","2024-04_Geographe_stereo-BRUVs","GB-BV-166",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"498","2024-04_Geographe_stereo-BRUVs","GB-BV-166",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"499","2024-04_Geographe_stereo-BRUVs","GB-BV-166",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"500","2024-04_Geographe_stereo-BRUVs","GB-BV-166",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,5
+"501","2024-04_Geographe_stereo-BRUVs","GB-BV-167",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,3
+"502","2024-04_Geographe_stereo-BRUVs","GB-BV-167",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"503","2024-04_Geographe_stereo-BRUVs","GB-BV-167",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"504","2024-04_Geographe_stereo-BRUVs","GB-BV-167",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,3
+"505","2024-04_Geographe_stereo-BRUVs","GB-BV-168",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"506","2024-04_Geographe_stereo-BRUVs","GB-BV-168",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"507","2024-04_Geographe_stereo-BRUVs","GB-BV-168",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,8
+"508","2024-04_Geographe_stereo-BRUVs","GB-BV-168",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,8
+"509","2024-04_Geographe_stereo-BRUVs","GB-BV-168",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,8
+"510","2024-04_Geographe_stereo-BRUVs","GB-BV-169",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"511","2024-04_Geographe_stereo-BRUVs","GB-BV-169",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,21
+"512","2024-04_Geographe_stereo-BRUVs","GB-BV-170",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,35
+"513","2024-04_Geographe_stereo-BRUVs","GB-BV-171",NA,"Fishes",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"514","2024-04_Geographe_stereo-BRUVs","GB-BV-171",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,4
+"515","2024-04_Geographe_stereo-BRUVs","GB-BV-171",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,3
+"516","2024-04_Geographe_stereo-BRUVs","GB-BV-171",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"517","2024-04_Geographe_stereo-BRUVs","GB-BV-171",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,5
+"518","2024-04_Geographe_stereo-BRUVs","GB-BV-171",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"519","2024-04_Geographe_stereo-BRUVs","GB-BV-171",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"520","2024-04_Geographe_stereo-BRUVs","GB-BV-171",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,9
+"521","2024-04_Geographe_stereo-BRUVs","GB-BV-172",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"522","2024-04_Geographe_stereo-BRUVs","GB-BV-172",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"523","2024-04_Geographe_stereo-BRUVs","GB-BV-172",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"524","2024-04_Geographe_stereo-BRUVs","GB-BV-172",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,22
+"525","2024-04_Geographe_stereo-BRUVs","GB-BV-172",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,2
+"526","2024-04_Geographe_stereo-BRUVs","GB-BV-173",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,6
+"527","2024-04_Geographe_stereo-BRUVs","GB-BV-173",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"528","2024-04_Geographe_stereo-BRUVs","GB-BV-173",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"529","2024-04_Geographe_stereo-BRUVs","GB-BV-173",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"530","2024-04_Geographe_stereo-BRUVs","GB-BV-173",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,17
+"531","2024-04_Geographe_stereo-BRUVs","GB-BV-174",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"532","2024-04_Geographe_stereo-BRUVs","GB-BV-174",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"533","2024-04_Geographe_stereo-BRUVs","GB-BV-174",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,4
+"534","2024-04_Geographe_stereo-BRUVs","GB-BV-174",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,6
+"535","2024-04_Geographe_stereo-BRUVs","GB-BV-174",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"536","2024-04_Geographe_stereo-BRUVs","GB-BV-174",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,5
+"537","2024-04_Geographe_stereo-BRUVs","GB-BV-175",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"538","2024-04_Geographe_stereo-BRUVs","GB-BV-175",NA,"Seagrasses","Elliptical leaves",NA,NA,NA,NA,NA,NA,NA,NA,3
+"539","2024-04_Geographe_stereo-BRUVs","GB-BV-175",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,20
+"540","2024-04_Geographe_stereo-BRUVs","GB-BV-175",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,6
+"541","2024-04_Geographe_stereo-BRUVs","GB-BV-176",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"542","2024-04_Geographe_stereo-BRUVs","GB-BV-176",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"543","2024-04_Geographe_stereo-BRUVs","GB-BV-176",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,13
+"544","2024-04_Geographe_stereo-BRUVs","GB-BV-176",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,14
+"545","2024-04_Geographe_stereo-BRUVs","GB-BV-177",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,1
+"546","2024-04_Geographe_stereo-BRUVs","GB-BV-177",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,20
+"547","2024-04_Geographe_stereo-BRUVs","GB-BV-178",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,30
+"548","2024-04_Geographe_stereo-BRUVs","GB-BV-179",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,36
+"549","2024-04_Geographe_stereo-BRUVs","GB-BV-180",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,19
+"550","2024-04_Geographe_stereo-BRUVs","GB-BV-180",NA,"Macroalgae","Large canopy-forming","Brown",NA,NA,NA,NA,NA,NA,NA,1
+"551","2024-04_Geographe_stereo-BRUVs","GB-BV-180",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"552","2024-04_Geographe_stereo-BRUVs","GB-BV-180",NA,"Seagrasses","Elliptical leaves",NA,NA,NA,NA,NA,NA,NA,NA,2
+"553","2024-04_Geographe_stereo-BRUVs","GB-BV-180",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"554","2024-04_Geographe_stereo-BRUVs","GB-BV-180",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"555","2024-04_Geographe_stereo-BRUVs","GB-BV-181",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"556","2024-04_Geographe_stereo-BRUVs","GB-BV-181",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,30
+"557","2024-04_Geographe_stereo-BRUVs","GB-BV-182",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,9
+"558","2024-04_Geographe_stereo-BRUVs","GB-BV-183",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,18
+"559","2024-04_Geographe_stereo-BRUVs","GB-BV-184",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"560","2024-04_Geographe_stereo-BRUVs","GB-BV-184",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,20
+"561","2024-04_Geographe_stereo-BRUVs","GB-BV-184",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"562","2024-04_Geographe_stereo-BRUVs","GB-BV-184",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,3
+"563","2024-04_Geographe_stereo-BRUVs","GB-BV-185",NA,"Fishes",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"564","2024-04_Geographe_stereo-BRUVs","GB-BV-185",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"565","2024-04_Geographe_stereo-BRUVs","GB-BV-185",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"566","2024-04_Geographe_stereo-BRUVs","GB-BV-185",NA,"Seagrasses","Elliptical leaves",NA,NA,NA,NA,NA,NA,NA,NA,1
+"567","2024-04_Geographe_stereo-BRUVs","GB-BV-185",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,16
+"568","2024-04_Geographe_stereo-BRUVs","GB-BV-185",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"569","2024-04_Geographe_stereo-BRUVs","GB-BV-185",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,3
+"570","2024-04_Geographe_stereo-BRUVs","GB-BV-186",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"571","2024-04_Geographe_stereo-BRUVs","GB-BV-186",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,4
+"572","2024-04_Geographe_stereo-BRUVs","GB-BV-186",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,27
+"573","2024-04_Geographe_stereo-BRUVs","GB-BV-187",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"574","2024-04_Geographe_stereo-BRUVs","GB-BV-187",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,32
+"575","2024-04_Geographe_stereo-BRUVs","GB-BV-187",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"576","2024-04_Geographe_stereo-BRUVs","GB-BV-188",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"577","2024-04_Geographe_stereo-BRUVs","GB-BV-188",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,16
+"578","2024-04_Geographe_stereo-BRUVs","GB-BV-188",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,16
+"579","2024-04_Geographe_stereo-BRUVs","GB-BV-189",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"580","2024-04_Geographe_stereo-BRUVs","GB-BV-189",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,32
+"581","2024-04_Geographe_stereo-BRUVs","GB-BV-190",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"582","2024-04_Geographe_stereo-BRUVs","GB-BV-190",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,4
+"583","2024-04_Geographe_stereo-BRUVs","GB-BV-190",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,25
+"584","2024-04_Geographe_stereo-BRUVs","GB-BV-191",NA,"Bryozoa",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"585","2024-04_Geographe_stereo-BRUVs","GB-BV-191",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,4
+"586","2024-04_Geographe_stereo-BRUVs","GB-BV-191",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,6
+"587","2024-04_Geographe_stereo-BRUVs","GB-BV-191",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,17
+"588","2024-04_Geographe_stereo-BRUVs","GB-BV-192",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,34
+"589","2024-04_Geographe_stereo-BRUVs","GB-BV-193",NA,"Fishes",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"590","2024-04_Geographe_stereo-BRUVs","GB-BV-193",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,35
+"591","2024-04_Geographe_stereo-BRUVs","GB-BV-194",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"592","2024-04_Geographe_stereo-BRUVs","GB-BV-194",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"593","2024-04_Geographe_stereo-BRUVs","GB-BV-194",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"594","2024-04_Geographe_stereo-BRUVs","GB-BV-194",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,13
+"595","2024-04_Geographe_stereo-BRUVs","GB-BV-194",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,8
+"596","2024-04_Geographe_stereo-BRUVs","GB-BV-195",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,1
+"597","2024-04_Geographe_stereo-BRUVs","GB-BV-195",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,15
+"598","2024-04_Geographe_stereo-BRUVs","GB-BV-196",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"599","2024-04_Geographe_stereo-BRUVs","GB-BV-196",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,5
+"600","2024-04_Geographe_stereo-BRUVs","GB-BV-196",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,22
+"601","2024-04_Geographe_stereo-BRUVs","GB-BV-197",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"602","2024-04_Geographe_stereo-BRUVs","GB-BV-197",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,37
+"603","2024-04_Geographe_stereo-BRUVs","GB-BV-198",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"604","2024-04_Geographe_stereo-BRUVs","GB-BV-198",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,18
+"605","2024-04_Geographe_stereo-BRUVs","GB-BV-198",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"606","2024-04_Geographe_stereo-BRUVs","GB-BV-199",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"607","2024-04_Geographe_stereo-BRUVs","GB-BV-199",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"608","2024-04_Geographe_stereo-BRUVs","GB-BV-199",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,30
+"609","2024-04_Geographe_stereo-BRUVs","GB-BV-199",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,3
+"610","2024-04_Geographe_stereo-BRUVs","GB-BV-200",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,3
+"611","2024-04_Geographe_stereo-BRUVs","GB-BV-200",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"612","2024-04_Geographe_stereo-BRUVs","GB-BV-200",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,12
+"613","2024-04_Geographe_stereo-BRUVs","GB-BV-200",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"614","2024-04_Geographe_stereo-BRUVs","GB-BV-200",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"615","2024-04_Geographe_stereo-BRUVs","GB-BV-201",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,34
+"616","2024-04_Geographe_stereo-BRUVs","GB-BV-201",NA,"Seagrasses",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"617","2024-04_Geographe_stereo-BRUVs","GB-BV-202",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,22
+"618","2024-04_Geographe_stereo-BRUVs","GB-BV-202",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,5
+"619","2024-04_Geographe_stereo-BRUVs","GB-BV-203",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"620","2024-04_Geographe_stereo-BRUVs","GB-BV-203",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"621","2024-04_Geographe_stereo-BRUVs","GB-BV-203",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,22
+"622","2024-04_Geographe_stereo-BRUVs","GB-BV-203",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"623","2024-04_Geographe_stereo-BRUVs","GB-BV-204",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"624","2024-04_Geographe_stereo-BRUVs","GB-BV-204",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,7
+"625","2024-04_Geographe_stereo-BRUVs","GB-BV-204",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,15
+"626","2024-04_Geographe_stereo-BRUVs","GB-BV-205",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,6
+"627","2024-04_Geographe_stereo-BRUVs","GB-BV-205",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"628","2024-04_Geographe_stereo-BRUVs","GB-BV-205",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,29
+"629","2024-04_Geographe_stereo-BRUVs","GB-BV-206",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"630","2024-04_Geographe_stereo-BRUVs","GB-BV-206",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"631","2024-04_Geographe_stereo-BRUVs","GB-BV-206",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,31
+"632","2024-04_Geographe_stereo-BRUVs","GB-BV-207",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"633","2024-04_Geographe_stereo-BRUVs","GB-BV-207",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,34
+"634","2024-04_Geographe_stereo-BRUVs","GB-BV-208",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"635","2024-04_Geographe_stereo-BRUVs","GB-BV-208",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,4
+"636","2024-04_Geographe_stereo-BRUVs","GB-BV-208",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"637","2024-04_Geographe_stereo-BRUVs","GB-BV-208",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,5
+"638","2024-04_Geographe_stereo-BRUVs","GB-BV-208",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"639","2024-04_Geographe_stereo-BRUVs","GB-BV-208",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"640","2024-04_Geographe_stereo-BRUVs","GB-BV-209",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"641","2024-04_Geographe_stereo-BRUVs","GB-BV-209",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,7
+"642","2024-04_Geographe_stereo-BRUVs","GB-BV-209",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,18
+"643","2024-04_Geographe_stereo-BRUVs","GB-BV-209",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"644","2024-04_Geographe_stereo-BRUVs","GB-BV-209",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,5
+"645","2024-04_Geographe_stereo-BRUVs","GB-BV-210",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"646","2024-04_Geographe_stereo-BRUVs","GB-BV-210",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,31
+"647","2024-04_Geographe_stereo-BRUVs","GB-BV-211",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,35
+"648","2024-04_Geographe_stereo-BRUVs","GB-BV-212",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"649","2024-04_Geographe_stereo-BRUVs","GB-BV-212",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,5
+"650","2024-04_Geographe_stereo-BRUVs","GB-BV-212",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,22
+"651","2024-04_Geographe_stereo-BRUVs","GB-BV-213",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"652","2024-04_Geographe_stereo-BRUVs","GB-BV-213",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"653","2024-04_Geographe_stereo-BRUVs","GB-BV-213",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,29
+"654","2024-04_Geographe_stereo-BRUVs","GB-BV-214",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"655","2024-04_Geographe_stereo-BRUVs","GB-BV-214",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,21
+"656","2024-04_Geographe_stereo-BRUVs","GB-BV-214",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"657","2024-04_Geographe_stereo-BRUVs","GB-BV-214",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,6
+"658","2024-04_Geographe_stereo-BRUVs","GB-BV-215",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,29
+"659","2024-04_Geographe_stereo-BRUVs","GB-BV-216",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,37
+"660","2024-04_Geographe_stereo-BRUVs","GB-BV-217",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,33
+"661","2024-04_Geographe_stereo-BRUVs","GB-BV-218",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"662","2024-04_Geographe_stereo-BRUVs","GB-BV-218",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,14
+"663","2024-04_Geographe_stereo-BRUVs","GB-BV-219",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"664","2024-04_Geographe_stereo-BRUVs","GB-BV-219",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,25
+"665","2024-04_Geographe_stereo-BRUVs","GB-BV-220",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"666","2024-04_Geographe_stereo-BRUVs","GB-BV-220",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,31
+"667","2024-04_Geographe_stereo-BRUVs","GB-BV-221",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,37
+"668","2024-04_Geographe_stereo-BRUVs","GB-BV-222",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"669","2024-04_Geographe_stereo-BRUVs","GB-BV-222",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,4
+"670","2024-04_Geographe_stereo-BRUVs","GB-BV-222",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,23
+"671","2024-04_Geographe_stereo-BRUVs","GB-BV-223",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,4
+"672","2024-04_Geographe_stereo-BRUVs","GB-BV-223",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,29
+"673","2024-04_Geographe_stereo-BRUVs","GB-BV-224",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,33
+"674","2024-04_Geographe_stereo-BRUVs","GB-BV-225",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"675","2024-04_Geographe_stereo-BRUVs","GB-BV-225",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,28
+"676","2024-04_Geographe_stereo-BRUVs","GB-BV-226",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,14
+"677","2024-04_Geographe_stereo-BRUVs","GB-BV-227",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,38
+"678","2024-04_Geographe_stereo-BRUVs","GB-BV-228",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,13
+"679","2024-04_Geographe_stereo-BRUVs","GB-BV-228",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,6
+"680","2024-04_Geographe_stereo-BRUVs","GB-BV-228",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,13
+"681","2024-04_Geographe_stereo-BRUVs","GB-BV-229",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,3
+"682","2024-04_Geographe_stereo-BRUVs","GB-BV-229",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,9
+"683","2024-04_Geographe_stereo-BRUVs","GB-BV-229",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,1
+"684","2024-04_Geographe_stereo-BRUVs","GB-BV-230",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"685","2024-04_Geographe_stereo-BRUVs","GB-BV-230",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,9
+"686","2024-04_Geographe_stereo-BRUVs","GB-BV-230",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,12
+"687","2024-04_Geographe_stereo-BRUVs","GB-BV-231",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,3
+"688","2024-04_Geographe_stereo-BRUVs","GB-BV-231",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,5
+"689","2024-04_Geographe_stereo-BRUVs","GB-BV-231",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"690","2024-04_Geographe_stereo-BRUVs","GB-BV-231",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,20
+"691","2024-04_Geographe_stereo-BRUVs","GB-BV-231",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,2
+"692","2024-04_Geographe_stereo-BRUVs","GB-BV-232",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"693","2024-04_Geographe_stereo-BRUVs","GB-BV-232",NA,"Seagrasses","Elliptical leaves",NA,NA,NA,NA,NA,NA,NA,NA,2
+"694","2024-04_Geographe_stereo-BRUVs","GB-BV-232",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,32
+"695","2024-04_Geographe_stereo-BRUVs","GB-BV-233",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"696","2024-04_Geographe_stereo-BRUVs","GB-BV-233",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,36
+"697","2024-04_Geographe_stereo-BRUVs","GB-BV-234",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"698","2024-04_Geographe_stereo-BRUVs","GB-BV-234",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,18
+"699","2024-04_Geographe_stereo-BRUVs","GB-BV-234",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,10
+"700","2024-04_Geographe_stereo-BRUVs","GB-BV-235",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,35
+"701","2024-04_Geographe_stereo-BRUVs","GB-BV-236",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,11
+"702","2024-04_Geographe_stereo-BRUVs","GB-BV-236",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,23
+"703","2024-04_Geographe_stereo-BRUVs","GB-BV-237",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"704","2024-04_Geographe_stereo-BRUVs","GB-BV-237",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,35
+"705","2024-04_Geographe_stereo-BRUVs","GB-BV-238",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"706","2024-04_Geographe_stereo-BRUVs","GB-BV-238",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,15
+"707","2024-04_Geographe_stereo-BRUVs","GB-BV-238",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,18
+"708","2024-04_Geographe_stereo-BRUVs","GB-BV-239",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,31
+"709","2024-04_Geographe_stereo-BRUVs","GB-BV-240",NA,"Fishes",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"710","2024-04_Geographe_stereo-BRUVs","GB-BV-240",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,5
+"711","2024-04_Geographe_stereo-BRUVs","GB-BV-240",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,24
+"712","2024-04_Geographe_stereo-BRUVs","GB-BV-CP1",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,2
+"713","2024-04_Geographe_stereo-BRUVs","GB-BV-CP1",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,33
+"714","2024-04_Geographe_stereo-BRUVs","GB-BV-CP2",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,5
+"715","2024-04_Geographe_stereo-BRUVs","GB-BV-CP2",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"716","2024-04_Geographe_stereo-BRUVs","GB-BV-CP2",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,15
+"717","2024-04_Geographe_stereo-BRUVs","GB-BV-CP2",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,6
+"718","2024-04_Geographe_stereo-BRUVs","GB-BV-CP3",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"719","2024-04_Geographe_stereo-BRUVs","GB-BV-CP3",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,35
+"720","2024-04_Geographe_stereo-BRUVs","GB-BV-CP3",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,2
+"721","2024-04_Geographe_stereo-BRUVs","GB-BV-P01",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,18
+"722","2024-04_Geographe_stereo-BRUVs","GB-BV-P01",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"723","2024-04_Geographe_stereo-BRUVs","GB-BV-P02",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,5
+"724","2024-04_Geographe_stereo-BRUVs","GB-BV-P02",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,15
+"725","2024-04_Geographe_stereo-BRUVs","GB-BV-P02",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"726","2024-04_Geographe_stereo-BRUVs","GB-BV-P02",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"727","2024-04_Geographe_stereo-BRUVs","GB-BV-P02",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,8
+"728","2024-04_Geographe_stereo-BRUVs","GB-BV-P03",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"729","2024-04_Geographe_stereo-BRUVs","GB-BV-P03",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,32
+"730","2024-04_Geographe_stereo-BRUVs","GB-BV-P04",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"731","2024-04_Geographe_stereo-BRUVs","GB-BV-P04",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,30
+"732","2024-04_Geographe_stereo-BRUVs","GB-BV-P05",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"733","2024-04_Geographe_stereo-BRUVs","GB-BV-P05",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,6
+"734","2024-04_Geographe_stereo-BRUVs","GB-BV-P05",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,15
+"735","2024-04_Geographe_stereo-BRUVs","GB-BV-P05",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,2
+"736","2024-04_Geographe_stereo-BRUVs","GB-BV-P05",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"737","2024-04_Geographe_stereo-BRUVs","GB-BV-P06",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"738","2024-04_Geographe_stereo-BRUVs","GB-BV-P06",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"739","2024-04_Geographe_stereo-BRUVs","GB-BV-P06",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,28
+"740","2024-04_Geographe_stereo-BRUVs","GB-BV-P07",NA,"Macroalgae","Encrusting",NA,NA,NA,NA,NA,NA,NA,NA,1
+"741","2024-04_Geographe_stereo-BRUVs","GB-BV-P07",NA,"Macroalgae","Laminate",NA,NA,NA,NA,NA,NA,NA,NA,1
+"742","2024-04_Geographe_stereo-BRUVs","GB-BV-P07",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,6
+"743","2024-04_Geographe_stereo-BRUVs","GB-BV-P07",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,18
+"744","2024-04_Geographe_stereo-BRUVs","GB-BV-P08",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"745","2024-04_Geographe_stereo-BRUVs","GB-BV-P08",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,6
+"746","2024-04_Geographe_stereo-BRUVs","GB-BV-P08",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,6
+"747","2024-04_Geographe_stereo-BRUVs","GB-BV-P08",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"748","2024-04_Geographe_stereo-BRUVs","GB-BV-P08",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,7
+"749","2024-04_Geographe_stereo-BRUVs","GB-BV-P09",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"750","2024-04_Geographe_stereo-BRUVs","GB-BV-P09",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"751","2024-04_Geographe_stereo-BRUVs","GB-BV-P09",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,29
+"752","2024-04_Geographe_stereo-BRUVs","GB-BV-P10",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"753","2024-04_Geographe_stereo-BRUVs","GB-BV-P10",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,21
+"754","2024-04_Geographe_stereo-BRUVs","GB-BV-P11",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"755","2024-04_Geographe_stereo-BRUVs","GB-BV-P11",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"756","2024-04_Geographe_stereo-BRUVs","GB-BV-P11",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,2
+"757","2024-04_Geographe_stereo-BRUVs","GB-BV-P11",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,23
+"758","2024-04_Geographe_stereo-BRUVs","GB-BV-P12",NA,"Macroalgae","Erect coarse branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"759","2024-04_Geographe_stereo-BRUVs","GB-BV-P12",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"760","2024-04_Geographe_stereo-BRUVs","GB-BV-P12",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,4
+"761","2024-04_Geographe_stereo-BRUVs","GB-BV-P12",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"762","2024-04_Geographe_stereo-BRUVs","GB-BV-P12",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,14
+"763","2024-04_Geographe_stereo-BRUVs","GB-BV-P12",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"764","2024-04_Geographe_stereo-BRUVs","GB-BV-P12",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,1
+"765","2024-04_Geographe_stereo-BRUVs","GB-BV-P13",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,4
+"766","2024-04_Geographe_stereo-BRUVs","GB-BV-P13",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,4
+"767","2024-04_Geographe_stereo-BRUVs","GB-BV-P13",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,2
+"768","2024-04_Geographe_stereo-BRUVs","GB-BV-P13",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"769","2024-04_Geographe_stereo-BRUVs","GB-BV-P13",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"770","2024-04_Geographe_stereo-BRUVs","GB-BV-P13",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,2
+"771","2024-04_Geographe_stereo-BRUVs","GB-BV-P14",NA,"Cnidaria","Corals","Stony corals",NA,NA,NA,NA,NA,NA,NA,1
+"772","2024-04_Geographe_stereo-BRUVs","GB-BV-P14",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,19
+"773","2024-04_Geographe_stereo-BRUVs","GB-BV-P14",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,2
+"774","2024-04_Geographe_stereo-BRUVs","GB-BV-P14",NA,"Sponges",NA,NA,NA,NA,NA,NA,NA,NA,NA,5
+"775","2024-04_Geographe_stereo-BRUVs","GB-BV-P15",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"776","2024-04_Geographe_stereo-BRUVs","GB-BV-P15",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,2
+"777","2024-04_Geographe_stereo-BRUVs","GB-BV-P15",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"778","2024-04_Geographe_stereo-BRUVs","GB-BV-P15",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,18
+"779","2024-04_Geographe_stereo-BRUVs","GB-BV-P15",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,8
+"780","2024-04_Geographe_stereo-BRUVs","GB-BV-P16",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,1
+"781","2024-04_Geographe_stereo-BRUVs","GB-BV-P16",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"782","2024-04_Geographe_stereo-BRUVs","GB-BV-P16",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,6
+"783","2024-04_Geographe_stereo-BRUVs","GB-BV-P16",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,23
+"784","2024-04_Geographe_stereo-BRUVs","GB-BV-P17",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,12
+"785","2024-04_Geographe_stereo-BRUVs","GB-BV-P17",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,19
+"786","2024-04_Geographe_stereo-BRUVs","GB-BV-P18",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,3
+"787","2024-04_Geographe_stereo-BRUVs","GB-BV-P18",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,3
+"788","2024-04_Geographe_stereo-BRUVs","GB-BV-P18",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,10
+"789","2024-04_Geographe_stereo-BRUVs","GB-BV-P18",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,12
+"790","2024-04_Geographe_stereo-BRUVs","GB-BV-P19",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,1
+"791","2024-04_Geographe_stereo-BRUVs","GB-BV-P19",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,4
+"792","2024-04_Geographe_stereo-BRUVs","GB-BV-P19",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,12
+"793","2024-04_Geographe_stereo-BRUVs","GB-BV-P19",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,11
+"794","2024-04_Geographe_stereo-BRUVs","GB-BV-P19",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,3
+"795","2024-04_Geographe_stereo-BRUVs","GB-BV-P24",NA,"Macroalgae","Erect fine branching",NA,NA,NA,NA,NA,NA,NA,NA,2
+"796","2024-04_Geographe_stereo-BRUVs","GB-BV-P24",NA,"Macroalgae","Filamentous / filiform",NA,NA,NA,NA,NA,NA,NA,NA,6
+"797","2024-04_Geographe_stereo-BRUVs","GB-BV-P24",NA,"Macroalgae",NA,NA,NA,NA,NA,NA,NA,NA,NA,7
+"798","2024-04_Geographe_stereo-BRUVs","GB-BV-P24",NA,"Seagrasses","Strap-like leaves",NA,NA,NA,NA,NA,NA,NA,NA,3
+"799","2024-04_Geographe_stereo-BRUVs","GB-BV-P24",NA,"Sessile invertebrates",NA,NA,NA,NA,NA,NA,NA,NA,NA,1
+"800","2024-04_Geographe_stereo-BRUVs","GB-BV-P24",NA,"Substrate","Unconsolidated (soft)",NA,NA,NA,NA,NA,NA,NA,NA,5
