@@ -116,73 +116,73 @@ metadata_length <- length %>%
 big_carn <- length %>%
   dplyr::filter(length_mm > l50) %>%
   dplyr::group_by(campaignid, sample) %>%
-  dplyr::summarise(number = sum(number)) %>%
+  dplyr::summarise(count = sum(count)) %>%
   ungroup() %>%
   right_join(metadata_length) %>%
-  dplyr::mutate(number = ifelse(is.na(number), 0, number)) %>%
+  dplyr::mutate(count = ifelse(is.na(count), 0, count)) %>%
   dplyr::mutate(response = "greater than Lm carnivores") %>%
   left_join(benthos) %>%
   dplyr::glimpse()
 # Check number of samples that are > 0
-nrow(filter(big_carn, number > 0))/nrow(big_carn)
+nrow(filter(big_carn, count > 0))/nrow(big_carn)
 
 small_carn <- length %>%
   dplyr::filter(length_mm < l50) %>%
   dplyr::group_by(campaignid, sample) %>%
-  dplyr::summarise(number = sum(number)) %>%
+  dplyr::summarise(count = sum(count)) %>%
   ungroup() %>%
   right_join(metadata_length) %>%
-  dplyr::mutate(number = ifelse(is.na(number), 0, number)) %>%
+  dplyr::mutate(count = ifelse(is.na(count), 0, count)) %>%
   dplyr::mutate(response = "smaller than Lm carnivores") %>%
   left_join(benthos) %>%
   dplyr::glimpse()
 # Check number of samples that are > 0
-nrow(filter(small_carn, number > 0))/nrow(small_carn)
+nrow(filter(small_carn, count > 0))/nrow(small_carn)
 
 big_snap <- length %>%
   dplyr::filter(species %in% "auratus",
                 length_mm > l50) %>%
   dplyr::group_by(campaignid, sample) %>%
-  dplyr::summarise(number = sum(number)) %>%
+  dplyr::summarise(count = sum(count)) %>%
   ungroup() %>%
   right_join(metadata_length) %>%
-  dplyr::mutate(number = ifelse(is.na(number), 0, number)) %>%
+  dplyr::mutate(count = ifelse(is.na(count), 0, count)) %>%
   dplyr::mutate(response = "greater than Lm Pink snapper") %>%
   left_join(benthos) %>%
   dplyr::glimpse()
 # Check number of samples that are > 0
-nrow(filter(big_snap, number > 0))/nrow(big_snap) # This won't run in model
+nrow(filter(big_snap, count > 0))/nrow(big_snap) # This won't run in model
 
 small_snap <- length %>%
   dplyr::filter(species %in% "auratus",
                 length_mm < l50) %>%
   dplyr::group_by(campaignid, sample) %>%
-  dplyr::summarise(number = sum(number)) %>%
+  dplyr::summarise(count = sum(count)) %>%
   ungroup() %>%
   right_join(metadata_length) %>%
-  dplyr::mutate(number = ifelse(is.na(number), 0, number)) %>%
+  dplyr::mutate(count = ifelse(is.na(count), 0, count)) %>%
   dplyr::mutate(response = "smaller than Lm Pink snapper") %>%
   left_join(benthos) %>%
   dplyr::glimpse()
 # Check number of samples that are > 0
-nrow(filter(small_snap, number > 0))/nrow(small_snap)
+nrow(filter(small_snap, count > 0))/nrow(small_snap)
 
-tidy_length <- bind_rows(big_carn, small_carn, small_snap) %>% # Removed snapper - not enough non-zero data
+tidy_length <- bind_rows(big_carn, small_carn, big_snap, small_snap) %>% # Removed snapper - not enough non-zero data ##HE added snap
   dplyr::left_join(metadata) %>%
   dplyr::left_join(metadata_bathy_derivatives) %>%
-  dplyr::filter(!is.na(reef), # GBR3-4 missing habitat
+  dplyr::filter(!is.na(reef), # GBR3-4 missing habitat ##HE This will remove all 2024 until habitat is included
                 !is.na(geoscience_aspect)) %>% # Not valid values for modelling so will remove them now
   glimpse()
 
 # Visualise spatial patterns
 preds <- readRDS(paste0("data/", park, "/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
-plot(preds)
+plot(preds) ##HE change aspect palette to cyclic
 names(preds)
 
 ggplot() +
   geom_spatraster(data = preds, aes(fill = geoscience_depth)) +
   geom_point(data = tidy_length,
-             aes(x = longitude_dd, y = latitude_dd, size = number, colour = I(if_else(number == 0, "white", "darkblue"))),
+             aes(x = longitude_dd, y = latitude_dd, size = count, colour = I(if_else(count == 0, "white", "darkblue"))),
              show.legend = F) +
   facet_wrap(~response) +
   theme_classic() +
