@@ -37,7 +37,9 @@ CheckEM::ga_api_all_data(synthesis_id = "47", # Synthesis ID changes between pro
 
 # Tidy and join habitat with metadata
 tidy_habitat <- benthos_summarised %>%
-  left_join(metadata) %>% # Successful habitat columns not filled for this synthesis/campaign
+  left_join(metadata) %>% # Successful habitat columns not filled for 2014 synthesis/campaign
   glimpse()
 
 saveRDS(tidy_habitat, paste0("data/", park, "/raw/", name, "_benthos.RDS"))
+
+##HE need get habitat data for 2024

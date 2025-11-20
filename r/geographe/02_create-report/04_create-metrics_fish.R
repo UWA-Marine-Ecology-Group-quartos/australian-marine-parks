@@ -82,7 +82,7 @@ cti <- CheckEM::create_cti(data = count) %>%
   dplyr::mutate(response = "cti") %>%
   glimpse()
 
-tidy_maxn <- bind_rows(ta.sr, cti) %>%
+tidy_maxn <- bind_rows(ta.sr, cti) %>% ## HE need to check missing aspects
   dplyr::select(-c(log_count, w_sti)) %>%
   dplyr::left_join(benthos) %>%
   dplyr::left_join(metadata) %>% # To join samples without valid bathymetry derivatives
@@ -93,8 +93,8 @@ tidy_maxn <- bind_rows(ta.sr, cti) %>%
 
 saveRDS(tidy_maxn, file = paste0("data/", park, "/tidy/", name, "_tidy-count.rds"))
 
-length <- readRDS(paste0("data/", park, "/raw/", name, "_complete_length.RDS")) %>%
-  dplyr::select(campaignid, sample, family, genus, species, length_mm, number) %>%
+length <- readRDS(paste0("data/", park, "/raw/_length-with-zeros.RDS")) %>%
+  dplyr::select(campaignid, sample, family, genus, species, length_mm, count) %>%
   left_join(large_bodied_carnivores) %>%
   dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
   glimpse()
