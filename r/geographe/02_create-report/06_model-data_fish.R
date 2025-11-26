@@ -21,7 +21,7 @@ library(FSSgam)
 library(CheckEM)
 
 tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %>%
-  dplyr::filter(!number > 200, # Remove some outliers
+  dplyr::filter(!count > 200, # Remove some outliers
                 # !sample %in% "779", ##HE what was 779?
                 geoscience_roughness < 4) %>% # Remove outliers in roughness
   glimpse()
@@ -37,7 +37,7 @@ unique.vars <- unique(as.character(tidy_maxn$response))
 resp.vars <- character()
 for(i in 1:length(unique.vars)){
   temp.dat <- tidy_maxn[which(tidy_maxn$response == unique.vars[i]), ]
-  if(length(which(temp.dat$number == 0)) / nrow(temp.dat) < 0.8){
+  if(length(which(temp.dat$count == 0)) / nrow(temp.dat) < 0.8){
     resp.vars <- c(resp.vars, unique.vars[i])}
 }
 resp.vars # All good
@@ -54,7 +54,7 @@ for(i in 1:length(resp.vars)){
   use.dat <- as.data.frame(tidy_maxn[which(tidy_maxn$response == resp.vars[i]), ])
   use.dat$status <- as.factor(use.dat$status)
   use.dat$campaignid <- as.factor(use.dat$campaignid)
-  Model1  <- gam(number ~ s(geoscience_depth, k = 3, bs = 'cr'),
+  Model1  <- gam(count ~ s(geoscience_depth, k = 3, bs = 'cr'),
                  family = gaussian(link = "identity"),  data = use.dat)
 
   model.set <- generate.model.set(use.dat = use.dat,
@@ -112,7 +112,7 @@ unique.vars <- unique(tidy_length$response)
 resp.vars <- character()
 for(i in 1:length(unique.vars)){
   temp.dat <- tidy_length[which(tidy_length$response == unique.vars[i]), ]
-  if(length(which(temp.dat$number == 0)) / nrow(temp.dat) < 0.8){
+  if(length(which(temp.dat$count == 0)) / nrow(temp.dat) < 0.8){
     resp.vars <- c(resp.vars, unique.vars[i])} ##HE what is it actually doing?
 }
 resp.vars
@@ -128,7 +128,7 @@ for(i in 1:length(resp.vars)){
   use.dat = as.data.frame(tidy_length[which(tidy_length$response==resp.vars[i]),])
   use.dat$campaignid <- as.factor(use.dat$campaignid)
   use.dat$status <- as.factor(use.dat$status)
-  Model1  <- gam(number ~ s(geoscience_depth, k = 3, bs = 'cr'),
+  Model1  <- gam(count ~ s(geoscience_depth, k = 3, bs = 'cr'),
                  family = tw(),  data = use.dat)
 
   model.set <- generate.model.set(use.dat = use.dat,
@@ -212,7 +212,7 @@ unique(fabund$response)
 # smaller than Lm carnivores, smaller than Lm snapper
 
 # Species richness
-m_richness <- gam(number ~ s(geoscience_aspect, k = 3, bs = "cc") +
+m_richness <- gam(count ~ s(geoscience_aspect, k = 3, bs = "cc") +
                     s(reef, k = 3, bs = "cr"),
                   data = fabund %>% dplyr::filter(response %in% "species_richness"),
                   family = gaussian(link = "identity"))
@@ -220,7 +220,7 @@ summary(m_richness)
 plot(m_richness)
 
 # CTI
-m_cti <- gam(number ~ s(reef, k = 3, bs = "cr") +
+m_cti <- gam(count ~ s(reef, k = 3, bs = "cr") +
                s(geoscience_detrended, k = 3, bs = "cr"),
              data = fabund %>% dplyr::filter(response %in% "cti"),
              family = gaussian(link = "identity"))
@@ -228,7 +228,7 @@ summary(m_cti)
 plot(m_cti)
 
 # Greater than Lm large bodied carnivores
-m_mature <- gam(number ~ s(geoscience_detrended, k = 3, bs = "cr") +
+m_mature <- gam(count ~ s(geoscience_detrended, k = 3, bs = "cr") +
                   s(geoscience_roughness, k = 3, bs = "cr"),
                 data = fabund %>% dplyr::filter(response %in% "greater than Lm carnivores"),
                 family = tw())
@@ -236,7 +236,7 @@ summary(m_mature)
 plot(m_mature)
 
 # Smaller than Lm large bodied carnivores - NULL MODEL
-# m_immature <- gam(number ~ s(reef, k = 3, bs = "cr") +
+# m_immature <- gam(count ~ s(reef, k = 3, bs = "cr") +
 #                     s(roughness, k = 3, bs = "cr") +
 #                     s(SLA, k = 3, bs = "cr") +
 #                     s(SST, k = 3, bs = "cr") +
@@ -246,7 +246,7 @@ plot(m_mature)
 # summary(m_immature)
 
 # Smaller than Lm pinkies
-m_pinkies <- gam(number ~ s(geoscience_depth, k = 3, bs = "cr") +
+m_pinkies <- gam(count ~ s(geoscience_depth, k = 3, bs = "cr") +
                    s(geoscience_aspect, k = 3, bs = "cc"),
                  data = fabund %>% dplyr::filter(response %in% "smaller than Lm Pink snapper"),
                  family = tw())

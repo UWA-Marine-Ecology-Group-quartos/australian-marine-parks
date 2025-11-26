@@ -24,7 +24,7 @@ park <- "geographe"
 #   dplyr::select(-c(starts_with("broad"))) %>%
 #   glimpse()
 
-benthos <- readRDS(paste0("data/", park, "/raw/", name, "_benthos.RDS")) %>%
+benthos <- readRDS(paste0("data/", park, "/raw/", name, "_benthos_combined.RDS")) %>%
   dplyr::select(campaignid, sample, macroalgae, seagrasses,
                 sand = unconsolidated, rock = consolidated,
                 sessile_invertebrates, total_pts = total_points_annotated) %>%
@@ -33,4 +33,4 @@ benthos <- readRDS(paste0("data/", park, "/raw/", name, "_benthos.RDS")) %>%
 
 length(unique(benthos$sample))
 
-saveRDS(benthos, paste0("data/", park, "/tidy/", name, "_benthos-count.RDS"))
+saveRDS(benthos, paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS"))

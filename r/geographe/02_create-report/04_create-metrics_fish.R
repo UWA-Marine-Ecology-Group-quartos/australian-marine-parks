@@ -30,7 +30,7 @@ metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_me
 metadata <- readRDS(paste0("data/", park, "/raw/metadata.RDS"))
 
 # This is formatted habitat from 03_create-metrics_habitat
-benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) %>%
+benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")) %>%
   CheckEM::clean_names() %>%
   dplyr::select(campaignid, sample, reef, total_pts) %>%
   dplyr::mutate(reef = reef/total_pts) %>% # Model reef as proportion for fish prediction
@@ -47,13 +47,12 @@ maturity_mean <- CheckEM::maturity %>%
   ungroup() %>%
   glimpse()
 
-large_bodied_carnivores <- CheckEM::australia_life_history %>%
-  dplyr::filter(fb_trophic_level > 2.8) %>%
-  dplyr::filter(length_max_cm > 40) %>%
+large_bodied_carnivores <- CheckEM::australia_life_history %>% ##HE remove pelagics
+  dplyr::filter(length_max_cm > 20) %>%
   dplyr::filter(class %in% "Actinopterygii") %>%
   dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
                               "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
-                              "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes")) %>%
+                              "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
   left_join(maturity_mean) %>%
   dplyr::mutate(fb_length_at_maturity_mm = fb_length_at_maturity_cm * 10) %>%
   dplyr::mutate(l50 = if_else(is.na(l50), fb_length_at_maturity_mm, l50)) %>%
@@ -74,11 +73,11 @@ ta.sr <- count %>%
   dplyr::mutate(total_abundance = rowSums(.[, 3:(ncol(.))], na.rm = T),
                 species_richness = rowSums(.[, 3:(ncol(.))] > 0)) %>%
   dplyr::select(campaignid, sample, total_abundance, species_richness) %>%
-  pivot_longer(cols = c("total_abundance", "species_richness"), names_to = "response", values_to = "number") %>%
+  pivot_longer(cols = c("total_abundance", "species_richness"), names_to = "response", values_to = "count") %>%
   glimpse() # Should be nsamps * 2 = 594
 
 cti <- CheckEM::create_cti(data = count) %>%
-  dplyr::rename(number = cti) %>%
+  dplyr::rename(count = cti) %>%
   dplyr::mutate(response = "cti") %>%
   glimpse()
 
