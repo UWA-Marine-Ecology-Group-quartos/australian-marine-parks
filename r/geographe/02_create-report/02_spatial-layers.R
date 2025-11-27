@@ -25,10 +25,9 @@ library(RNetCDF)
 library(rerddap)
 
 # Set the extent of the study
-e <- ext(115.04, 115.60, -33.67, -33.346) ##HE expanded extent as 8 samples were getting cut out
+e <- ext(115.04, 115.60, -33.67, -33.346)
 
 # Load the bathymetry data (GA 250m resolution)
-##HE need to update bathy data
 bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
   crop(e) %>%
   clamp(upper = 0, lower = -250, values = F) %>%
@@ -64,7 +63,7 @@ saveRDS(preds, file = paste0("data/", park, "/spatial/rasters/",
 #                 latitude_dd = as.numeric(latitude_dd)) %>%
 #   glimpse()
 
-metadata <- readRDS(paste0("data/", park, "/raw/metadata.RDS")) %>% ##HE 2014 was in "data/", park, "/raw/", name, "_metadata.RDS"
+metadata <- readRDS(paste0("data/", park, "/raw/metadata.RDS")) %>%
   dplyr::select(campaignid, sample, longitude_dd, latitude_dd, status) %>%
   glimpse()
 
@@ -103,7 +102,7 @@ plot(rast_sst)
 names(rast_sst) <- dates_sst
 time(rast_sst) <- dates_sst
 
-winter_sst_ts <- rast_sst[[names(rast_sst)[str_detect(names(rast_sst), "-06-|-07-|-08-")]]] ##HE later months have colder water?
+winter_sst_ts <- rast_sst[[names(rast_sst)[str_detect(names(rast_sst), "-07-|-08-|-09-")]]]
 
 for (month in unique(month(time(rast_sst)))) {
   print(month)
@@ -131,13 +130,15 @@ sst_tsdf <- terra::global(rast_sst, fun = "mean", na.rm = T) %>%
   summarise(sst = mean(mean, na.rm = T) - 273.15, # Convert kelvin to celsius
             sd = mean(sd, na.rm = T)) %>%
   ungroup() %>%
-  dplyr::mutate(season = case_when(month %in% c("03", "04", "05") ~ "Autumn",
-                                   month %in% c("06", "07", "08") ~ "Winter",
-                                   month %in% c("09", "10", "11") ~ "Spring",
-                                   month %in% c("12", "01", "02") ~ "Summer")) %>%
+  dplyr::mutate(season = case_when(month %in% c("04", "05", "06") ~ "Autumn", ##HE seasons are based on SST not euro seasons
+                                   month %in% c("07", "08", "09") ~ "Winter",
+                                   month %in% c("10", "11", "12") ~ "Spring",
+                                   month %in% c("01", "02", "03") ~ "Summer")) %>%
   glimpse()
 
 saveRDS(sst_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_SST_time-series.rds"))
+
+boxplot(sst_tsdf$sst ~ sst_tsdf$month)
 
 # Sea Level Anomaly
 # nc_sla <- open.nc(paste0("data/geographe/spatial/oceanography/", name, "-SLA.nc"),

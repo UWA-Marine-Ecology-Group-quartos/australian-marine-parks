@@ -1,4 +1,4 @@
-"","reef","geoscience_depth","geoscience_aspect","geoscience_roughness","geoscience_detrended","status"
-"total_abundance",1,1,0.566,0,0.878,0.314
-"species_richness",1.001,1.001,0.94,0,0.977,0.374
-"cti",0.82,0.516,0.502,0.181,0.688,0.515
+"","reef","geoscience_depth","geoscience_aspect","geoscience_roughness","geoscience_detrended","status","campaignid"
+"total_abundance",0.97,0.076,0.431,0.401,0.745,0.605,0.97
+"species_richness",1.001,0.781,0.783,0.015,0.988,0.22,1.001
+"cti",0.98,0.885,0.529,0.093,0.978,0.025,0.405

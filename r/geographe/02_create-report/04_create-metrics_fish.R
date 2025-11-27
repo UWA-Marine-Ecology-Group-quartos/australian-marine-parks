@@ -43,7 +43,7 @@ maturity_mean <- CheckEM::maturity %>%
   dplyr::slice(which.min(l50_mm)) %>%
   ungroup() %>%
   dplyr::group_by(family, genus, species) %>%
-  dplyr::summarise(l50 = mean(l50_mm)) %>%
+  dplyr::summarise(l50 = mean(l50_mm)) %>% ##HE this averages across sexes, but sometimes big difference (e.g. double:half male:female)
   ungroup() %>%
   glimpse()
 
@@ -188,3 +188,57 @@ ggplot() +
   coord_sf()
 
 saveRDS(tidy_length, file = paste0("data/", park, "/tidy/", name, "_tidy-length.rds"))
+
+# Get length to mass coefficients
+b20_lifehistory <- CheckEM::australia_life_history %>% ##HE remove pelagics
+  dplyr::filter(class %in% "Actinopterygii") %>%
+  dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
+                              "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
+                              "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
+  glimpse()
+
+# Create df for calculating B20
+length_b20 <- readRDS(paste0("data/", park, "/raw/_length-with-zeros.RDS")) %>%
+  dplyr::select(campaignid, sample, family, genus, species, length_mm, count) %>%
+  mutate(length_cm = length_mm / 10) %>%
+  left_join(b20_lifehistory) %>%
+  dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
+  glimpse() ##HE 8 metre KGW?
+
+# Calculate mass from lengths
+mass_b20 <- length_b20 %>%
+  # Convert to TL if needed
+  dplyr::mutate(adj_length = case_when(
+    fb_length_weight_measure %in% "FL" ~ length_cm, # Leave as FL
+    # Convert into Total Length to match Length-Weight calculations
+    fb_length_weight_measure %in% "TL" & fb_ll_equation_type %in% "FL → TL" ~ (length_cm * fb_b_ll) + fb_a_ll, # Forwards converion
+    fb_length_weight_measure %in% "TL" & fb_ll_equation_type %in% "TL → FL" ~ (length_cm - fb_a_ll) / fb_b_ll  # Inverse conversion
+  )) %>% # Check for NAs: messages below
+  dplyr::mutate(mass_g = (adj_length ^ fb_b) * fb_a * count) %>%
+  dplyr::left_join(metadata) %>%
+  dplyr::left_join(metadata_bathy_derivatives) %>%
+  glimpse()
+
+message(paste(length(which(!is.na(mass_b20$length_cm))), "measured lengths in data"))
+message(paste(length(which(!is.na(mass_b20$adj_length))), "adjusted lengths in data"))
+message(paste(length(which(!is.na(mass_b20$length_cm))) - length(which(!is.na(mass_b20$adj_length))),
+              "measured lengths not converted to adjusted (missing)"))
+
+message(paste(length(which(!is.na(mass_b20$length_cm) &
+               is.na(mass_b20$fb_length_weight_measure))), "because fb_length_weight_measure is NA"))
+message(paste(length(which(!is.na(mass_b20$length_cm) &
+               is.na(mass_b20$fb_ll_equation_type) &
+               mass_b20$fb_length_weight_measure == "TL")),
+              "because fb_length_weight_measure = TL (good) but fb_ll_equation_type is missing"))
+message(paste(length(which(mass_b20$fb_length_weight_measure == "SL" & !is.na(mass_b20$length_cm))),
+              "because fb_length_weight_measure is SL (not FL or TL)"))
+
+message(paste("These 3x reasons added =", length(which(!is.na(mass_b20$length_cm) &
+               is.na(mass_b20$fb_length_weight_measure))) +
+  length(which(!is.na(mass_b20$length_cm) &
+               is.na(mass_b20$fb_ll_equation_type) &
+               mass_b20$fb_length_weight_measure == "TL")) +
+    length(which(mass_b20$fb_length_weight_measure == "SL" & !is.na(mass_b20$length_cm))),
+  "accounting for all missing adjusted lengths"))
+
+

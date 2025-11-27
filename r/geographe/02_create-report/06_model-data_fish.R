@@ -28,8 +28,21 @@ tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %
 
 # # Re-set the predictors for modeling----
 names(tidy_maxn)
-pred.vars = c("reef", "geoscience_depth", "geoscience_aspect",
+pred.vars = c("reef", "geoscience_depth",
               "geoscience_roughness", "geoscience_detrended")
+
+# model_dat <- habi %>%
+#   pivot_longer(cols = c(macroalgae, sand, rock, sessile_invertebrates, reef, seagrasses),
+#                names_to = "response", values_to = "number")
+#
+# # Set predictor variables---
+# pred.vars <- c("geoscience_depth", "geoscience_aspect", "geoscience_roughness", "geoscience_detrended")
+#
+# # Check for correlation of predictor variables- remove anything highly correlated (>0.95)---
+# round(cor(model_dat[ , pred.vars]), 2) # Roughness and depth 0.35 correlated
+#
+# # Review of individual predictors for even distribution---
+# CheckEM::plot_transformations(pred.vars = pred.vars, dat = model_dat)
 
 # Check to make sure Response vector has not more than 80% zeros----
 unique.vars <- unique(as.character(tidy_maxn$response))
@@ -44,7 +57,7 @@ resp.vars # All good
 
 # Run the full subset model selection----
 savedir <- "output/model-output/geographe/fish/"
-factor.vars <- c("status")
+factor.vars <- c("status", "campaignid")
 out.all     <- list()
 var.imp     <- list()
 
@@ -113,7 +126,7 @@ resp.vars <- character()
 for(i in 1:length(unique.vars)){
   temp.dat <- tidy_length[which(tidy_length$response == unique.vars[i]), ]
   if(length(which(temp.dat$count == 0)) / nrow(temp.dat) < 0.8){
-    resp.vars <- c(resp.vars, unique.vars[i])} ##HE what is it actually doing?
+    resp.vars <- c(resp.vars, unique.vars[i])}
 }
 resp.vars
 
@@ -135,7 +148,7 @@ for(i in 1:length(resp.vars)){
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
                                   pred.vars.fact = factor.vars,
-                                  cyclic.vars = "aspect", ##HE why not geoscience_aspect?
+                                  cyclic.vars = "geoscience_aspect",
                                   k = 3,
                                   factor.smooth.interactions = F,
                                   max.predictors = 5
@@ -210,6 +223,16 @@ plot(preds)
 unique(fabund$response)
 # Use species richness, CTI, greater than Lm carnivores,
 # smaller than Lm carnivores, smaller than Lm snapper
+
+#Total abundance
+m_abundance <- gam(count ~ s(geoscience_detrended, k = 3, bs = "cr") +
+                    s(reef, k = 3, bs = "cr") +
+                    status +
+                    campaignid,
+                  data = fabund %>% dplyr::filter(response %in% "total_abundance"),
+                  family = gaussian(link = "identity"))
+summary(m_abundance)
+plot(m_abundance)
 
 # Species richness
 m_richness <- gam(count ~ s(geoscience_aspect, k = 3, bs = "cc") +

@@ -27,7 +27,7 @@ metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_me
   glimpse()
 
 # Bring in and format the data----
-habi <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) %>%
+habi <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")) %>%
   left_join(metadata_bathy_derivatives) %>%
   dplyr::filter(!is.na(geoscience_roughness)) %>%
   dplyr::filter(!geoscience_roughness > 3) %>% # Filter outliers - check later when more data is added
@@ -52,7 +52,7 @@ unique.vars = unique(as.character(model_dat$response))
 unique.vars.use = character()
 for(i in 1:length(unique.vars)){
   temp.dat = model_dat[which(model_dat$response == unique.vars[i]),]
-  if(length(which(temp.dat$number == 0))/nrow(temp.dat)< 0.9){
+  if(length(which(temp.dat$number == 0))/nrow(temp.dat)< 0.8){
     unique.vars.use = c(unique.vars.use, unique.vars[i])}
 }
 
@@ -64,6 +64,7 @@ use.dat   <- model_dat[model_dat$response %in% c(unique.vars.use), ]
 out.all   <- list()
 var.imp   <- list()
 resp.vars <- unique.vars.use
+factor.vars <- c("status", "campaignid")
 
 # Loop through the FSS function for each Abiotic taxa----
 for(i in 1:length(resp.vars)){
@@ -77,10 +78,11 @@ for(i in 1:length(resp.vars)){
   model.set <- generate.model.set(use.dat = use.dat,
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
+                                  pred.vars.fact = factor.vars,
                                   cyclic.vars = c("aspect"),
-                                  k = 5, ##HE usually k=3 for fish
+                                  k = 3,
                                   cov.cutoff = 0.7,
-                                  max.predictors = 3
+                                  max.predictors = 5
   )
   out.list <- fit.model.set(model.set,
                             max.models = 600,
@@ -133,16 +135,16 @@ summary(m_sand)
 # Macroalgae
 m_macro <- gam(cbind(macroalgae, total_pts - macroalgae) ~
                  s(geoscience_aspect,     k = 5, bs = "cc")  +
-                 s(geoscience_detrended, k = 5, bs = "cr") +
-                 s(geoscience_roughness, k = 5, bs = "cr"),
+                 s(geoscience_depth, k = 5, bs = "cr") +
+                 s(geoscience_detrended, k = 5, bs = "cr"),
                data = habi, method = "REML", family = binomial("logit"))
 summary(m_macro)
 
 # Seagrass
 m_seagrass <- gam(cbind(seagrasses, total_pts - seagrasses) ~
+                    s(geoscience_aspect,     k = 5, bs = "cc")  +
                     s(geoscience_depth, k = 5, bs = "cr") +
-                    s(geoscience_detrended, k = 5, bs = "cr") +
-                    s(geoscience_roughness, k = 5, bs = "cr"),
+                    s(geoscience_detrended, k = 5, bs = "cr"),
                   data = habi, method = "REML", family = binomial("logit"))
 summary(m_seagrass)
 

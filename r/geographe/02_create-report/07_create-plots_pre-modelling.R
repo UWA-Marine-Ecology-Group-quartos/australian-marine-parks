@@ -37,7 +37,8 @@ file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
 sapply(file.sources, source, .GlobalEnv)
 
 # Set cropping extent - larger than most zoomed out plot
-e <- ext(114.2, 115.8,-34.7, -33.1) ##HE check this compared to script 02
+e <- ext(114.2, 115.8,-34.7, -33.1)
+# e <- ext(115.04, 115.60, -33.67, -33.346) ##HE sscript 02 uses this extent
 
 # Load necessary spatial files
 sf_use_s2(T)

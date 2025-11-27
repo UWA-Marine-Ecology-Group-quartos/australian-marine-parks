@@ -15,7 +15,8 @@ name <- "GeographeAMP"
 park <- "geographe"
 
 # Set the extent of the study
-e <- ext(115.05, 115.592, -33.67, -33.347) ##HE changed these to match script 02
+e <- ext(115.05, 115.592, -33.67, -33.347)
+# e <- ext(115.04, 115.60, -33.67, -33.346) ##HE this was extent in script 02
 
 # Read in shapefile data for maps
 aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp")
