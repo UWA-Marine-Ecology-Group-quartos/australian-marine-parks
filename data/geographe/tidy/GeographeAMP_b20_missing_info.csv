@@ -1,0 +1,30 @@
+"","family","genus","species","australian_common_name","fb_length_weight_measure","fb_a","fb_b","fb_ll_equation_type"
+"1","Paralichthyidae","Pseudorhombus","spp",NA,NA,NA,NA,NA
+"2","Platycephalidae","Platycephalus","spp",NA,NA,NA,NA,NA
+"3","Sillaginidae","Sillago","spp",NA,NA,NA,NA,NA
+"4","Carangidae","Pseudocaranx","spp",NA,NA,NA,NA,NA
+"5","Labridae","Notolabrus","parilus","Brownspotted Wrasse","TL",0.021,2.9072,NA
+"6","Labridae","Ophthalmolepis","lineolatus","Southern Maori Wrasse","TL",0.01065,2.986,NA
+"7","Neosebastidae","Neosebastes","pandus","Bighead Gurnard Perch","TL",20.29528,1.0182,NA
+"8","Kyphosidae","Kyphosus","spp",NA,NA,NA,NA,NA
+"9","Scombridae","Unknown","spp","mackerels",NA,NA,NA,NA
+"10","Haemulidae","Plectorhinchus","flavomaculatus","Goldspotted Sweetlips","TL",0.2697,2.2459,NA
+"11","Chaetodontidae","Chelmonops","curiosus","Western Talma","TL",0.02239,3.01,NA
+"12","Labridae","Pictilabrus","laticlavius","Senator Wrasse","TL",0.00955,3.07,NA
+"13","Cheilodactylidae","Cheilodactylus","gibbosus","Magpie Morwong","TL",0.0123,3.02,NA
+"14","Labridae","Pseudolabrus","biserialis","Redband Wrasse","TL",0.01995,2.99,NA
+"15","Pempherididae","Pempheris","klunzingeri","Rough Bullseye","TL",0.01288,3.03,NA
+"16","Mullidae","Parupeneus","chrysopleuron","Rosy Goatfish","SL",0.0344,2.86,"TL → FL"
+"17","Scombridae","Thunnus","spp",NA,NA,NA,NA,NA
+"18","Neosebastidae","Neosebastes","bougainvillii","Gulf Gurnard Perch","TL",0.01995,3.01,NA
+"19","Terapontidae","Pelsartia","humeralis","Sea Trumpeter","TL",0.01288,3.04,NA
+"20","Carangidae","Unknown","spp","trevallies",NA,NA,NA,NA
+"21","Carangidae","Trachurus","spp","a trevally",NA,NA,NA,NA
+"22","Scorpaenidae","Scorpaena","sumptuosa","Western Red Scorpionfish","TL",0.03117,2.8809,NA
+"23","Serranidae","Hypoplectrodes","nigroruber","Banded Seaperch","TL",0.01349,3,NA
+"24","Sillaginidae","Unknown","spp","whitings",NA,NA,NA,NA
+"25","Plesiopidae","Paraplesiops","meleagris","Southern Blue Devil","TL",0.02342,2.8924,NA
+"26","Labridae","Notolabrus","spp",NA,NA,NA,NA,NA
+"27","Sillaginidae","Sillaginodes","spp",NA,NA,NA,NA,NA
+"28","Sphyraenidae","Sphyraena","spp","striped seapike",NA,NA,NA,NA
+"29","Serranidae","Unknown","spp",NA,NA,NA,NA,NA

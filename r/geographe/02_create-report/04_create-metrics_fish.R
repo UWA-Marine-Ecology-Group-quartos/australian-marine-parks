@@ -189,19 +189,11 @@ ggplot() +
 
 saveRDS(tidy_length, file = paste0("data/", park, "/tidy/", name, "_tidy-length.rds"))
 
-# Get length to mass coefficients
-b20_lifehistory <- CheckEM::australia_life_history %>% ##HE remove pelagics
-  dplyr::filter(class %in% "Actinopterygii") %>%
-  dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
-                              "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
-                              "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
-  glimpse()
-
 # Create df for calculating B20
 length_b20 <- readRDS(paste0("data/", park, "/raw/_length-with-zeros.RDS")) %>%
   dplyr::select(campaignid, sample, family, genus, species, length_mm, count) %>%
   mutate(length_cm = length_mm / 10) %>%
-  left_join(b20_lifehistory) %>%
+  left_join(CheckEM::australia_life_history) %>%
   dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
   glimpse() ##HE 8 metre KGW?
 
@@ -225,20 +217,57 @@ message(paste(length(which(!is.na(mass_b20$length_cm))) - length(which(!is.na(ma
               "measured lengths not converted to adjusted (missing)"))
 
 message(paste(length(which(!is.na(mass_b20$length_cm) &
-               is.na(mass_b20$fb_length_weight_measure))), "because fb_length_weight_measure is NA"))
+                             is.na(mass_b20$fb_length_weight_measure))), "because fb_length_weight_measure is NA"))
 message(paste(length(which(!is.na(mass_b20$length_cm) &
-               is.na(mass_b20$fb_ll_equation_type) &
-               mass_b20$fb_length_weight_measure == "TL")),
+                             is.na(mass_b20$fb_ll_equation_type) &
+                             mass_b20$fb_length_weight_measure == "TL")),
               "because fb_length_weight_measure = TL (good) but fb_ll_equation_type is missing"))
 message(paste(length(which(mass_b20$fb_length_weight_measure == "SL" & !is.na(mass_b20$length_cm))),
               "because fb_length_weight_measure is SL (not FL or TL)"))
 
 message(paste("These 3x reasons added =", length(which(!is.na(mass_b20$length_cm) &
-               is.na(mass_b20$fb_length_weight_measure))) +
-  length(which(!is.na(mass_b20$length_cm) &
-               is.na(mass_b20$fb_ll_equation_type) &
-               mass_b20$fb_length_weight_measure == "TL")) +
-    length(which(mass_b20$fb_length_weight_measure == "SL" & !is.na(mass_b20$length_cm))),
-  "accounting for all missing adjusted lengths"))
+                                                         is.na(mass_b20$fb_length_weight_measure))) +
+                length(which(!is.na(mass_b20$length_cm) &
+                               is.na(mass_b20$fb_ll_equation_type) &
+                               mass_b20$fb_length_weight_measure == "TL")) +
+                length(which(mass_b20$fb_length_weight_measure == "SL" & !is.na(mass_b20$length_cm))),
+              "accounting for all missing adjusted lengths"))
 
+fb <- CheckEM::australia_life_history %>%
+  glimpse()
 
+missing_info <- mass_b20 %>%
+  dplyr::filter(class %in% "Actinopterygii") %>%
+  dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
+                              "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
+                              "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
+  dplyr::filter(!length_cm < 20) %>%
+  filter(is.na(adj_length)) %>%
+  distinct(scientific_name, australian_common_name, .keep_all = TRUE) %>%
+  select(family, genus, species, australian_common_name, fb_length_weight_measure,
+         fb_a, fb_b, fb_ll_equation_type)
+write.csv(missing_info, file = paste0("data/", park, "/tidy/", name, "_b20_missing_info.csv"))
+
+# Calculate B20* for each sample
+tidy_b20 <- mass_b20 %>% ##HE this needs tweaking, not working 100% because some lengths have NA mass (fix in mass_b20)
+  dplyr::filter(class %in% "Actinopterygii") %>%
+  dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
+                              "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
+                              "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
+  dplyr::filter(!length_cm < 20) %>%
+  dplyr::group_by(campaignid, sample) %>%
+  dplyr::summarise(b20 = sum(mass_g)) %>%
+  ungroup() %>%
+  right_join(metadata_length) %>%
+  dplyr::mutate(b20 = ifelse(is.na(b20), 0, b20)) %>%
+  dplyr::mutate(response = "b20") %>%
+  left_join(metadata) %>%
+  left_join(metadata_bathy_derivatives) %>%
+  left_join(benthos) %>%
+  dplyr::filter(!is.na(reef), ##HE need to remove outliers
+                !is.na(geoscience_aspect)) %>%
+  dplyr::glimpse()
+# Check number of samples that are > 0
+nrow(filter(tidy_b20, b20 > 0))/nrow(tidy_b20)
+
+saveRDS(tidy_b20, file = paste0("data/", park, "/tidy/", name, "_tidy-b20.rds"))

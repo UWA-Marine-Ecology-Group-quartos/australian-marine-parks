@@ -1,0 +1,7 @@
+"","modname","AICc","BIC","r2.vals","r2.vals.unique","edf","edf.less.1","delta.AICc","delta.BIC","wi.AICc","wi.BIC","reef","geoscience_depth","geoscience_roughness","geoscience_detrended","status","campaignid","cumsum.wi"
+"b20.reef","reef",13123.2395873633,13138.6653227424,0.02225,NA,2.73,0,0,0.117,0.203,0.372,1,0,0,0,0,0,0.203
+"b20.geoscience_detrended+reef","geoscience_detrended+reef",13124.4775986719,13144.9460222968,0.02489,NA,3.96,0,1.238,6.397,0.11,0.016,1,0,0,1,0,0,0.313
+"b20.campaignid+reef","campaignid+reef",13124.9287679173,13144.0360226944,0.02254,NA,3.63,0,1.689,5.487,0.087,0.025,1,0,0,0,0,1,0.4
+"b20.geoscience_depth+reef","geoscience_depth+reef",13125.0639702801,13144.5914585051,0.02269,NA,3.73,0,1.824,6.043,0.082,0.019,1,1,0,0,0,0,0.482
+"b20.geoscience_roughness+reef","geoscience_roughness+reef",13125.1865680271,13144.7072302056,0.02243,NA,3.73,0,1.947,6.159,0.077,0.018,1,0,1,0,0,0,0.559
+"b20.reef+status","reef+status",13125.2324658101,13144.7619060893,0.02235,NA,3.73,0,1.993,6.213,0.075,0.018,1,0,0,0,1,0,0.634
