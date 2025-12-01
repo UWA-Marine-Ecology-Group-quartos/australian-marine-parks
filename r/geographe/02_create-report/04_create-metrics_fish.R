@@ -256,10 +256,10 @@ tidy_b20 <- mass_b20 %>% ##HE this needs tweaking, not working 100% because some
                               "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
   dplyr::filter(!length_cm < 20) %>%
   dplyr::group_by(campaignid, sample) %>%
-  dplyr::summarise(b20 = sum(mass_g)) %>%
+  dplyr::summarise(count = sum(mass_g)) %>%
   ungroup() %>%
   right_join(metadata_length) %>%
-  dplyr::mutate(b20 = ifelse(is.na(b20), 0, b20)) %>%
+  dplyr::mutate(count = ifelse(is.na(count), 0, count)) %>%
   dplyr::mutate(response = "b20") %>%
   left_join(metadata) %>%
   left_join(metadata_bathy_derivatives) %>%
@@ -268,6 +268,6 @@ tidy_b20 <- mass_b20 %>% ##HE this needs tweaking, not working 100% because some
                 !is.na(geoscience_aspect)) %>%
   dplyr::glimpse()
 # Check number of samples that are > 0
-nrow(filter(tidy_b20, b20 > 0))/nrow(tidy_b20)
+nrow(filter(tidy_b20, count > 0))/nrow(tidy_b20)
 
 saveRDS(tidy_b20, file = paste0("data/", park, "/tidy/", name, "_tidy-b20.rds"))

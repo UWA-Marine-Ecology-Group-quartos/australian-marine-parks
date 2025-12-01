@@ -1,7 +1,5 @@
 "","modname","AICc","BIC","r2.vals","r2.vals.unique","edf","edf.less.1","delta.AICc","delta.BIC","wi.AICc","wi.BIC","reef","geoscience_depth","geoscience_roughness","geoscience_detrended","status","campaignid","cumsum.wi"
-"total_abundance.campaignid+geoscience_detrended+reef+status","campaignid+geoscience_detrended+reef+status",5219.77612939636,5245.05177656501,0.14681,NA,5,0,0,3.776,0.266,0.071,1,0,0,1,1,1,0.266
-"total_abundance.campaignid+geoscience_detrended+geoscience_roughness+reef+status","campaignid+geoscience_detrended+geoscience_roughness+reef+status",5219.96950913599,5251.36536270907,0.15148,NA,6.46,0,0.193,10.089,0.241,0.003,1,0,1,1,1,1,0.507
-"total_abundance.campaignid+geoscience_detrended+geoscience_roughness+reef","campaignid+geoscience_detrended+geoscience_roughness+reef",5221.35920386046,5248.59199139824,0.14577,NA,5.47,0,1.583,7.316,0.12,0.012,1,0,1,1,0,1,0.627
-"species_richness","campaignid+geoscience_depth+geoscience_detrended+reef",3091.53542030591,3124.12139842359,0.40081,NA,6.65,0,0,0,0.914,0.85,1,1,0,1,0,1,0.914
-"cti.geoscience_depth+geoscience_detrended+reef","geoscience_depth+geoscience_detrended+reef",1421.61697362005,1453.57596514968,0.08931,NA,6.5,0,0,0.91,0.536,0.085,1,1,0,1,0,0,0.536
-"cti.campaignid+geoscience_depth+geoscience_detrended+reef","campaignid+geoscience_depth+geoscience_detrended+reef",1422.6372630572,1458.13089447719,0.0905,NA,7.34,0,1.02,5.465,0.322,0.009,1,1,0,1,0,1,0.858
+"total_abundance.geoscience_depth+geoscience_detrended+reef","geoscience_depth+geoscience_detrended+reef",5267.04646407704,5293.2274167546,0.06526,NA,5.22,0,0,4.606,0.566,0.047,1,1,0,1,0,0,0.566
+"total_abundance.geoscience_detrended+reef","geoscience_detrended+reef",5268.91924517474,5288.6215420457,0.05604,NA,3.67,0,1.873,0,0.222,0.472,1,0,0,1,0,0,0.788
+"species_richness","geoscience_depth+geoscience_detrended+reef",3137.76311759091,3167.04657009181,0.34542,NA,5.87,0,0,0,0.995,0.965,1,1,0,1,0,0,0.995
+"cti","geoscience_depth+geoscience_detrended+reef",1421.61697362005,1453.57596514968,0.08931,NA,6.5,0,0,0.687,0.941,0.158,1,1,0,1,0,0,0.941

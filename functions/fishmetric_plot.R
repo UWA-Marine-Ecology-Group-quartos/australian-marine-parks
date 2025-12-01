@@ -36,6 +36,22 @@ fishmetric_plot <- function(prediction_limits) {
     plot_list[["cti"]] <- gg_cti  # Store the plot
   }
 
+  if ("p_b20.fit" %in% names(dat)) {
+    gg_b20 <- ggplot() +
+      geom_spatraster(data = dat, aes(fill = p_b20.fit)) +
+      scale_fill_viridis_c(na.value = "transparent", direction = -1) +
+      labs(fill = "B20", x = NULL, y = NULL, title = "Bony fish > 20cm") +
+      new_scale_fill() +
+      geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
+      geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, show.legend = F,
+              linewidth = 0.75) +
+      scale_colour_manual(name = "Australian Marine Parks",
+                          values = with(marine_parks_amp, setNames(colour, zone))) +
+      coord_sf(xlim = c(prediction_limits[1], prediction_limits[2]), ylim = c(prediction_limits[3], prediction_limits[4]), crs = 4326) +
+      theme_minimal()
+    plot_list[["b20"]] <- gg_b20  # Store the plot
+  }
+
   if ("p_mature.fit" %in% names(dat)) {
     gg_mature <- ggplot() +
       geom_spatraster(data = dat, aes(fill = p_mature.fit)) +

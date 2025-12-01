@@ -29,7 +29,7 @@ tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %
 # # Re-set the predictors for modeling----
 names(tidy_maxn)
 pred.vars = c("reef", "geoscience_depth",
-              "geoscience_roughness", "geoscience_detrended")
+              "geoscience_roughness", "geoscience_detrended", "status", "campaignid")
 
 # model_dat <- habi %>%
 #   pivot_longer(cols = c(macroalgae, sand, rock, sessile_invertebrates, reef, seagrasses),
@@ -199,7 +199,7 @@ unique.vars <- unique(tidy_b20$response)
 resp.vars <- character()
 for(i in 1:length(unique.vars)){
   temp.dat <- tidy_b20[which(tidy_b20$response == unique.vars[i]), ]
-  if(length(which(temp.dat$b20 == 0)) / nrow(temp.dat) < 0.9){ ##HE change back to 80% when cleaned up
+  if(length(which(temp.dat$count == 0)) / nrow(temp.dat) < 0.9){ ##HE change back to 80% when cleaned up
     resp.vars <- c(resp.vars, unique.vars[i])}
 }
 resp.vars
@@ -215,7 +215,7 @@ for(i in 1:length(resp.vars)){
   use.dat = as.data.frame(tidy_b20[which(tidy_b20$response==resp.vars[i]),])
   use.dat$campaignid <- as.factor(use.dat$campaignid)
   use.dat$status <- as.factor(use.dat$status)
-  Model1  <- gam(b20 ~ s(geoscience_depth, k = 3, bs = 'cr'),
+  Model1  <- gam(count ~ s(geoscience_depth, k = 3, bs = 'cr'),
                  gaussian(link = "identity"),  data = use.dat) ##HE changed to gaussion
 
   model.set <- generate.model.set(use.dat = use.dat,
@@ -324,13 +324,12 @@ summary(m_cti)
 plot(m_cti)
 
 # B20
-m_b20 <- gam(b20 ~ s(reef, k = 3, bs = "cr") +
-               status +
-               campaignid, ##HE should add status and campaignid but doesn't work for predicted_fish
+m_b20 <- gam(count ~ s(reef, k = 3, bs = "cr") +
+               s(geoscience_detrended, k = 3, bs = "cr"), ##HE should add status and campaignid but doesn't work for predicted_fish
              data = fabund %>% dplyr::filter(response %in% "b20"),
              family = tw())
 summary(m_b20)
-plot(m_b20)
+plot(m_b20, all.terms = TRUE)
 
 predicted_fish <- cbind(preddf,
                         "p_b20" = mgcv::predict.gam(m_b20, preddf, type = "response",
@@ -357,6 +356,7 @@ xy <- fabund %>%
 resp.vars <- c("p_b20", "p_cti",
                "p_richness")
 
+##HE not sure if this worked, predfish looks the same as prasts?
 for(i in 1:length(resp.vars)) {
   print(resp.vars[i])
   mod <- get(str_replace_all(resp.vars[i], "p_", "m_"))
@@ -366,6 +366,7 @@ for(i in 1:length(resp.vars)) {
                   paste0(resp.vars[i], ".se.fit")) %>%
     rast(crs = "epsg:4326")
 
+  ##HE there is an error below when responses have different number of predictors
   dat <- terra::extract(subset(preds, names(mod$model)[2:length(names(mod$model))]), xy) %>%
     dplyr::select(-ID)
   messrast <- predicts::mess(subset(preds, names(mod$model)[2:length(names(mod$model))]), dat) %>%
@@ -389,7 +390,7 @@ saveRDS(preddf_m, paste0("output/model-output/geographe/fish/", name,
                          "_predicted-fish.RDS"))
 
 predfish <- rast(preddf_m, crs = "epsg:4326")
-plot(predfish) ##HE spatial exclusions differ because the explanatory variables used were different for each model?
+plot(predfish)
 
 writeRaster(predfish, paste0("output/model-output/geographe/fish/", names(predfish), "_predicted.tif"),
             overwrite = TRUE)
