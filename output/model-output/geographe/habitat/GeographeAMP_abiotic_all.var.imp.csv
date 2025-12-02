@@ -1,5 +1,5 @@
-"","geoscience_depth","geoscience_aspect","geoscience_roughness","geoscience_detrended"
-"macroalgae",1,1,0,1
-"sand",1,1,0,1
-"reef",0,1,1,1
-"seagrasses",1,1,0,1
+"","geoscience_depth","geoscience_aspect","geoscience_roughness","geoscience_detrended","status","campaignid"
+"macroalgae",1,1,0.027,1,1,0.973
+"sand",1,1,0.999,0.001,1,1
+"reef",0,0.999,0.999,0.999,0.999,0.999
+"seagrasses",0.999,0.946,0.053,0.999,0.999,0.999

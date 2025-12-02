@@ -233,9 +233,6 @@ message(paste("These 3x reasons added =", length(which(!is.na(mass_b20$length_cm
                 length(which(mass_b20$fb_length_weight_measure == "SL" & !is.na(mass_b20$length_cm))),
               "accounting for all missing adjusted lengths"))
 
-fb <- CheckEM::australia_life_history %>%
-  glimpse()
-
 missing_info <- mass_b20 %>%
   dplyr::filter(class %in% "Actinopterygii") %>%
   dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",

@@ -27,7 +27,15 @@ metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_me
   glimpse()
 
 # Bring in and format the data----
-habi <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")) %>%
+habi2014 <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")) %>%
+  filter(substr(campaignid, 1, 4) %in% 2014) %>% # Seperate years
+  left_join(metadata_bathy_derivatives) %>%
+  dplyr::filter(!is.na(geoscience_roughness)) %>%
+  dplyr::filter(!geoscience_roughness > 3) %>% # Filter outliers - check later when more data is added
+  glimpse()
+
+habi2024 <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")) %>%
+  filter(substr(campaignid, 1, 4) %in% 2024) %>% # Seperate years
   left_join(metadata_bathy_derivatives) %>%
   dplyr::filter(!is.na(geoscience_roughness)) %>%
   dplyr::filter(!geoscience_roughness > 3) %>% # Filter outliers - check later when more data is added
