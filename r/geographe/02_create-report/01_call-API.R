@@ -34,23 +34,28 @@ CheckEM::ga_api_all_data(synthesis_id = "47", # Synthesis ID changes between pro
                          dir = paste0("data/", park, "/raw/"), # Check the directory
                          include_zeros = TRUE)
 
-
-# Tidy and join habitat with metadata
-tidy_habitat <- benthos_summarised %>%
-  left_join(metadata) %>% # Successful habitat columns not filled for 2014 synthesis/campaign
+metadata <- metadata %>%
+  mutate(year = as.factor(year(date_time)),
+         status = as.factor(status)) %>%
   glimpse()
 
-##HE below was done for manually importing 2024 habitat data (not from GA)
-# metadata <- readRDS(paste0("data/", park, "/raw/metadata.RDS"))
-#
-# benthos_summarised <- readRDS(paste0("data/", park, "/raw/benthos_summarised.RDS"))
-# benthos_new <- readRDS(paste0("data/", park, "/raw/", name, "_2024_benthos.RDS"))
-#
-# tidy_habitat <- bind_rows(benthos_summarised,benthos_new) %>%
-#   left_join(metadata) %>% ##HE 2 missing metadata
-#   select(-c(reef,na,ends_with("_percent"))) %>%
-#   glimpse()
-#
-# saveRDS(tidy_habitat, paste0("data/", park, "/raw/", name, "_benthos_combined.RDS"))
+saveRDS(metadata, paste0("data/", park, "/raw/metadata.RDS"))
 
-saveRDS(tidy_habitat, paste0("data/", park, "/raw/", name, "_benthos.RDS"))
+##HE Use below code when 2024 habitat added to synthesis
+# # Tidy and join habitat with metadata
+# tidy_habitat <- benthos_summarised %>%
+#   left_join(metadata) %>% # Successful habitat columns not filled for 2014 synthesis/campaign
+#   glimpse()
+
+# saveRDS(tidy_habitat, paste0("data/", park, "/raw/", name, "_benthos.RDS"))
+
+##HE below was done for manually importing 2024 habitat data (not from GA)
+
+benthos_new <- readRDS(paste0("data/", park, "/raw/", name, "_2024_benthos.RDS"))
+
+tidy_habitat <- bind_rows(benthos_summarised,benthos_new) %>%
+  left_join(metadata, by = c("campaignid", "sample")) %>% ##HE 2 missing from metadata
+  select(-c(reef,na,ends_with("_percent"))) %>%
+  glimpse()
+
+saveRDS(tidy_habitat, paste0("data/", park, "/raw/", name, "_benthos_combined.RDS"))

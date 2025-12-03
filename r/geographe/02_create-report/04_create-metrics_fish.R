@@ -32,7 +32,7 @@ metadata <- readRDS(paste0("data/", park, "/raw/metadata.RDS"))
 # This is formatted habitat from 03_create-metrics_habitat
 benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")) %>%
   CheckEM::clean_names() %>%
-  dplyr::select(campaignid, sample, reef, total_pts) %>%
+  dplyr::select(campaignid, sample, year, status, reef, total_pts) %>%
   dplyr::mutate(reef = reef/total_pts) %>% # Model reef as proportion for fish prediction
   glimpse()
 
@@ -211,39 +211,40 @@ mass_b20 <- length_b20 %>%
   dplyr::left_join(metadata_bathy_derivatives) %>%
   glimpse()
 
-message(paste(length(which(!is.na(mass_b20$length_cm))), "measured lengths in data"))
-message(paste(length(which(!is.na(mass_b20$adj_length))), "adjusted lengths in data"))
-message(paste(length(which(!is.na(mass_b20$length_cm))) - length(which(!is.na(mass_b20$adj_length))),
-              "measured lengths not converted to adjusted (missing)"))
-
-message(paste(length(which(!is.na(mass_b20$length_cm) &
-                             is.na(mass_b20$fb_length_weight_measure))), "because fb_length_weight_measure is NA"))
-message(paste(length(which(!is.na(mass_b20$length_cm) &
-                             is.na(mass_b20$fb_ll_equation_type) &
-                             mass_b20$fb_length_weight_measure == "TL")),
-              "because fb_length_weight_measure = TL (good) but fb_ll_equation_type is missing"))
-message(paste(length(which(mass_b20$fb_length_weight_measure == "SL" & !is.na(mass_b20$length_cm))),
-              "because fb_length_weight_measure is SL (not FL or TL)"))
-
-message(paste("These 3x reasons added =", length(which(!is.na(mass_b20$length_cm) &
-                                                         is.na(mass_b20$fb_length_weight_measure))) +
-                length(which(!is.na(mass_b20$length_cm) &
-                               is.na(mass_b20$fb_ll_equation_type) &
-                               mass_b20$fb_length_weight_measure == "TL")) +
-                length(which(mass_b20$fb_length_weight_measure == "SL" & !is.na(mass_b20$length_cm))),
-              "accounting for all missing adjusted lengths"))
-
-missing_info <- mass_b20 %>%
-  dplyr::filter(class %in% "Actinopterygii") %>%
-  dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
-                              "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
-                              "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
-  dplyr::filter(!length_cm < 20) %>%
-  filter(is.na(adj_length)) %>%
-  distinct(scientific_name, australian_common_name, .keep_all = TRUE) %>%
-  select(family, genus, species, australian_common_name, fb_length_weight_measure,
-         fb_a, fb_b, fb_ll_equation_type)
-write.csv(missing_info, file = paste0("data/", park, "/tidy/", name, "_b20_missing_info.csv"))
+##HE The below is to work out which species are missing fishbase data
+# message(paste(length(which(!is.na(mass_b20$length_cm))), "measured lengths in data"))
+# message(paste(length(which(!is.na(mass_b20$adj_length))), "adjusted lengths in data"))
+# message(paste(length(which(!is.na(mass_b20$length_cm))) - length(which(!is.na(mass_b20$adj_length))),
+#               "measured lengths not converted to adjusted (missing)"))
+#
+# message(paste(length(which(!is.na(mass_b20$length_cm) &
+#                              is.na(mass_b20$fb_length_weight_measure))), "because fb_length_weight_measure is NA"))
+# message(paste(length(which(!is.na(mass_b20$length_cm) &
+#                              is.na(mass_b20$fb_ll_equation_type) &
+#                              mass_b20$fb_length_weight_measure == "TL")),
+#               "because fb_length_weight_measure = TL (good) but fb_ll_equation_type is missing"))
+# message(paste(length(which(mass_b20$fb_length_weight_measure == "SL" & !is.na(mass_b20$length_cm))),
+#               "because fb_length_weight_measure is SL (not FL or TL)"))
+#
+# message(paste("These 3x reasons added =", length(which(!is.na(mass_b20$length_cm) &
+#                                                          is.na(mass_b20$fb_length_weight_measure))) +
+#                 length(which(!is.na(mass_b20$length_cm) &
+#                                is.na(mass_b20$fb_ll_equation_type) &
+#                                mass_b20$fb_length_weight_measure == "TL")) +
+#                 length(which(mass_b20$fb_length_weight_measure == "SL" & !is.na(mass_b20$length_cm))),
+#               "accounting for all missing adjusted lengths"))
+#
+# missing_info <- mass_b20 %>%
+#   dplyr::filter(class %in% "Actinopterygii") %>%
+#   dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
+#                               "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
+#                               "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
+#   dplyr::filter(!length_cm < 20) %>%
+#   filter(is.na(adj_length)) %>%
+#   distinct(scientific_name, australian_common_name, .keep_all = TRUE) %>%
+#   select(family, genus, species, australian_common_name, fb_length_weight_measure,
+#          fb_a, fb_b, fb_ll_equation_type)
+# write.csv(missing_info, file = paste0("data/", park, "/tidy/", name, "_b20_missing_info.csv"))
 
 # Calculate B20* for each sample
 tidy_b20 <- mass_b20 %>% ##HE this needs tweaking, not working 100% because some lengths have NA mass (fix in mass_b20)

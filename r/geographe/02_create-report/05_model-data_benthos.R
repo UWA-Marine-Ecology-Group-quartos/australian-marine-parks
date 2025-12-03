@@ -17,6 +17,7 @@ library(patchwork)
 library(foreach)
 library(doParallel)
 library(terra)
+library(sf)
 
 # Set the study name
 name <- "GeographeAMP"
@@ -27,15 +28,7 @@ metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_me
   glimpse()
 
 # Bring in and format the data----
-habi2014 <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")) %>%
-  filter(substr(campaignid, 1, 4) %in% 2014) %>% # Seperate years
-  left_join(metadata_bathy_derivatives) %>%
-  dplyr::filter(!is.na(geoscience_roughness)) %>%
-  dplyr::filter(!geoscience_roughness > 3) %>% # Filter outliers - check later when more data is added
-  glimpse()
-
-habi2024 <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")) %>%
-  filter(substr(campaignid, 1, 4) %in% 2024) %>% # Seperate years
+habi <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")) %>%
   left_join(metadata_bathy_derivatives) %>%
   dplyr::filter(!is.na(geoscience_roughness)) %>%
   dplyr::filter(!geoscience_roughness > 3) %>% # Filter outliers - check later when more data is added
@@ -43,7 +36,8 @@ habi2024 <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combin
 
 model_dat <- habi %>%
   pivot_longer(cols = c(macroalgae, sand, rock, sessile_invertebrates, reef, seagrasses),
-               names_to = "response", values_to = "number")
+               names_to = "response", values_to = "number") %>%
+  glimpse()
 
 # Set predictor variables---
 pred.vars <- c("geoscience_depth", "geoscience_aspect", "geoscience_roughness", "geoscience_detrended")
@@ -72,7 +66,7 @@ use.dat   <- model_dat[model_dat$response %in% c(unique.vars.use), ]
 out.all   <- list()
 var.imp   <- list()
 resp.vars <- unique.vars.use
-factor.vars <- c("status", "campaignid")
+factor.vars <- c("status", "year")
 
 # Loop through the FSS function for each Abiotic taxa----
 for(i in 1:length(resp.vars)){
@@ -132,9 +126,10 @@ write.csv(all.var.imp,         file = paste0(outdir, name, "_abiotic_all.var.imp
 
 # Sand
 m_sand <- gam(cbind(sand, total_pts - sand) ~
-                s(geoscience_aspect,     k = 5, bs = "cc")  +
-                s(geoscience_depth, k = 5, bs = "cr") +
-                s(geoscience_detrended, k = 5, bs = "cr"),
+                year + status +
+                s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
+                s(geoscience_depth, by = year, k = 5, bs = "cr") +
+                s(geoscience_roughness, by = year, k = 5, bs = "cr"),
               data = habi, method = "REML", family = binomial("logit"))
 summary(m_sand)
 
@@ -142,17 +137,19 @@ summary(m_sand)
 
 # Macroalgae
 m_macro <- gam(cbind(macroalgae, total_pts - macroalgae) ~
-                 s(geoscience_aspect,     k = 5, bs = "cc")  +
-                 s(geoscience_depth, k = 5, bs = "cr") +
-                 s(geoscience_detrended, k = 5, bs = "cr"),
+                 year + status +
+                 s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
+                 s(geoscience_depth, by = year, k = 5, bs = "cr") +
+                 s(geoscience_detrended, by = year, k = 5, bs = "cr"),
                data = habi, method = "REML", family = binomial("logit"))
 summary(m_macro)
 
 # Seagrass
 m_seagrass <- gam(cbind(seagrasses, total_pts - seagrasses) ~
-                    s(geoscience_aspect,     k = 5, bs = "cc")  +
-                    s(geoscience_depth, k = 5, bs = "cr") +
-                    s(geoscience_detrended, k = 5, bs = "cr"),
+                    year + status +
+                    s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
+                    s(geoscience_depth, by = year, k = 5, bs = "cr") +
+                    s(geoscience_detrended, by = year, k = 5, bs = "cr"),
                   data = habi, method = "REML", family = binomial("logit"))
 summary(m_seagrass)
 
@@ -166,65 +163,234 @@ summary(m_seagrass)
 
 # Reef
 m_reef <- gam(cbind(reef, total_pts - reef) ~
-                s(geoscience_aspect,     k = 5, bs = "cc")  +
-                s(geoscience_detrended, k = 5, bs = "cr") +
-                s(geoscience_roughness, k = 5, bs = "cr"),
+                year + status +
+                s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
+                s(geoscience_detrended, by = year, k = 5, bs = "cr") +
+                s(geoscience_roughness, by = year, k = 5, bs = "cr"),
               data = habi, method = "REML", family = binomial("logit"))
 summary(m_reef)
 
+# Read predictor rasters to predict onto
 preds <- readRDS(paste0("data/", park, "/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
 preddf <- preds %>%
   as.data.frame(xy = T, na.rm = T)
 
+# Extract status to predict onto
+marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
+  dplyr::filter(zone_type %in% c("Sanctuary Zone (IUCN VI)",
+                                 "National Park Zone (IUCN II)")) %>%
+  dplyr::mutate(status = "No-Take") %>%
+  vect() %>%
+  glimpse()
+
+predv <- vect(preddf, geom = c("x", "y"), crs = "epsg:4326")
+
+preddf <- cbind(preddf, terra::extract(marine_parks, predv)) %>%
+  dplyr::mutate(status = ifelse(is.na(status), "Fished", "No-Take"))
+
+# Ensure status is a factor with the SAME levels as in habi
+preddf <- preddf %>%
+  mutate(status = factor(status, levels = levels(habi$status))) %>%
+  select(-any_of("year"))  # prevent any accidental year column / closure weirdness
+
 # predict, rasterise and plot
-predhab <- cbind(preddf,
-                "p_macro"    = predict(m_macro, preddf, type = "response", se.fit = T),
-                "p_sand"     = predict(m_sand, preddf, type = "response", se.fit = T),
-                "p_seagrass" = predict(m_seagrass, preddf, type = "response", se.fit = T),
-                # "p_inverts"  = predict(m_inverts, preddf, type = "response", se.fit = T),
-                "p_reef"     = predict(m_reef, preddf, type = "response", se.fit = T)) %>%
-  glimpse()
+predict_all_models_one_year <- function(preddf, year_value) {
+  nd <- preddf %>%
+    mutate(year = factor(as.character(year_value), levels = levels(habi$year)))
 
-prasts <- rast(predhab %>% dplyr::select(x, y, starts_with("p_")),
-               crs = "epsg:4326")
-plot(prasts)
-summary(prasts)
-
-# Calculate MESS and mask predictions
-xy <- habi %>%
-  dplyr::select(longitude_dd , latitude_dd) %>%
-  dplyr::rename(x = longitude_dd, y = latitude_dd) %>%
-  glimpse()
-
-resp.vars <- c("p_sand", "p_macro",
-               "p_seagrass", "p_reef")
-
-for(i in 1:length(resp.vars)) {
-  print(resp.vars[i])
-  mod <- get(str_replace_all(resp.vars[i], "p_", "m_"))
-
-  temppred <- predhab %>%
-    dplyr::select(x, y, paste0(resp.vars[i], ".fit"),
-                  paste0(resp.vars[i], ".se.fit")) %>%
-    rast(crs = "epsg:4326")
-
-  dat <- terra::extract(subset(preds, names(mod$model)[2:length(names(mod$model))]), xy) %>%
-    dplyr::select(-ID)
-  messrast <- predicts::mess(subset(preds, names(mod$model)[2:length(names(mod$model))]), dat) %>%
-    terra::clamp(lower = -0.01, values = F)
-  messrast <- terra::crop(messrast, temppred)
-  temppred_m <- terra::mask(temppred, messrast)
-
-
-  if (i == 1) {
-    preddf_m <- temppred_m
-  }
-  else {
-    preddf_m <- rast(list(preddf_m, temppred_m))
-  }
+  nd %>%
+    mutate(
+      p_macro    = mgcv::predict.gam(m_macro,    nd, type="response"),
+      p_sand     = mgcv::predict.gam(m_sand,     nd, type="response"),
+      p_seagrass = mgcv::predict.gam(m_seagrass, nd, type="response"),
+      p_reef     = mgcv::predict.gam(m_reef,     nd, type="response"),
+      year  = year_value
+    )
 }
 
-saveRDS(preddf_m, paste0("output/model-output/", park, "/habitat/", name, "_predicted-habitat.rds"))      # Ignored
+pred_2014 <- predict_all_models_one_year(preddf, "2014")
+pred_2024 <- predict_all_models_one_year(preddf, "2024")
 
-writeRaster(preddf_m, paste0("output/model-output/", park, "/habitat/", names(preddf_m), "_predicted.tif"),
-            overwrite = TRUE)
+predhab <- bind_rows(
+  pred_2014 %>% mutate(year = "2014"),
+  pred_2024 %>% mutate(year = "2024")
+)
+
+predhab_long <- predhab %>%
+  tidyr::pivot_longer(
+    cols = starts_with("p_"),
+    names_to = "layer",
+    values_to = "pred"
+  )
+
+ggplot(predhab_long, aes(x = x, y = y, fill = pred)) +
+  geom_raster() +
+  coord_equal() +
+  facet_grid(layer ~ year) +
+  scale_fill_viridis_c() +
+  theme_minimal()
+
+# r_2014 <- terra::rast(pred_2014 %>% dplyr::select(x, y, starts_with("p_")),
+#                       crs = "epsg:4326")
+# r_2024 <- terra::rast(pred_2024 %>% dplyr::select(x, y, starts_with("p_")),
+#                       crs = "epsg:4326")
+#
+# plot(r_2014)
+# plot(r_2024)
+
+r_2014 <- rast(predhab %>% filter(year == "2014") %>% select(x, y, starts_with("p_")),
+               crs = "epsg:4326")
+names(r_2014) <- paste0(names(r_2014), "_2014")
+
+r_2024 <- rast(predhab %>% filter(year == "2024") %>% select(x, y, starts_with("p_")),
+               crs = "epsg:4326")
+names(r_2024) <- paste0(names(r_2024), "_2024")
+
+prasts <- c(r_2014, r_2024)
+
+# prasts <- rast(predhab %>% dplyr::select(x, y, year, starts_with("p_")),
+#                crs = "epsg:4326")
+# plot(prasts)
+# summary(prasts)
+# glimpse(predhab)
+# # predict, rasterise and plot
+# predhab <- cbind(preddf, marine_parks,
+#                 "p_macro"    = predict(m_macro, preddf, type = "response", se.fit = T),
+#                 "p_sand"     = predict(m_sand, preddf, type = "response", se.fit = T),
+#                 "p_seagrass" = predict(m_seagrass, preddf, type = "response", se.fit = T),
+#                 # "p_inverts"  = predict(m_inverts, preddf, type = "response", se.fit = T),
+#                 "p_reef"     = predict(m_reef, preddf, type = "response", se.fit = T)) %>%
+#   glimpse()
+#
+# prasts <- rast(predhab %>% dplyr::select(x, y, starts_with("p_")),
+#                crs = "epsg:4326")
+# plot(prasts)
+# summary(prasts)
+
+# Calculate MESS and mask predictions
+resp_vars <- c("p_sand", "p_macro", "p_seagrass", "p_reef")
+years_to_run <- sort(unique(as.character(predhab$year)))
+
+# training xy points for MESS reference
+xy <- habi %>% transmute(x = longitude_dd, y = latitude_dd)
+
+# pull only raster covariates actually present in preds
+get_model_covars <- function(mod, preds) {
+  nms <- names(mod$model)
+  # drop response columns; for cbind response it's usually first 2
+  cand <- nms[3:length(nms)]
+  # remove non-raster terms
+  cand <- setdiff(cand, c("year", "status"))
+  # keep only those that exist in preds
+  cand[cand %in% names(preds)]
+}
+
+preddf_m_by_year <- list()
+
+for (yy in years_to_run) {
+  message("=== Year: ", yy, " ===")
+  predhab_y <- predhab %>% filter(as.character(year) == yy)
+
+  preddf_m <- NULL
+
+  for (rv in resp_vars) {
+    message("  - ", rv)
+    mod <- get(str_replace(rv, "^p_", "m_"))
+    covars <- get_model_covars(mod, preds)
+
+    if (length(covars) == 0) {
+      stop("No matching raster covariates in `preds` for model ", deparse(substitute(mod)))
+    }
+
+    # prediction raster (single layer)
+    temppred <- predhab_y %>%
+      select(x, y, all_of(rv)) %>%
+      terra::rast(crs = "epsg:4326")
+
+    # training covariate values for MESS reference
+    dat <- terra::extract(terra::subset(preds, covars), xy) %>%
+      as.data.frame() %>%
+      select(-ID)
+
+    # MESS raster and mask
+    messrast <- predicts::mess(terra::subset(preds, covars), dat) %>%
+      terra::clamp(lower = -0.01, values = FALSE) %>%
+      terra::crop(temppred)
+
+    temppred_m <- terra::mask(temppred, messrast)
+    names(temppred_m) <- paste0(rv, "_", yy)
+
+    preddf_m <- if (is.null(preddf_m)) temppred_m else terra::rast(list(preddf_m, temppred_m))
+  }
+
+  preddf_m_by_year[[yy]] <- preddf_m
+}
+
+# Save to RDS + write GeoTIFFs (per year)
+outdir <- paste0("output/model-output/", park, "/habitat/")
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
+
+# Save all years as one RDS (handy)
+saveRDS(preddf_m_by_year, file = paste0(outdir, name, "_predicted-habitat_by-year.rds"))
+
+# Write one GeoTIFF per year (multi-band)
+for (yy in names(preddf_m_by_year)) {
+  r <- preddf_m_by_year[[yy]]
+  writeRaster(
+    r,
+    filename = paste0(outdir, name, "_predicted-habitat_", yy, ".tif"),
+    overwrite = TRUE
+  )
+}
+
+# One combined raster stack across years
+preddf_m <- do.call(c, unname(preddf_m_by_year))  # stacks all layers
+saveRDS(preddf_m, paste0(outdir, name, "_predicted-habitat_ALLYEARS.rds"))
+
+writeRaster(
+  preddf_m,
+  filename = paste0(outdir, name, "_predicted-habitat_ALLYEARS.tif"),
+  overwrite = TRUE
+)
+
+# # Old MESS code
+# xy <- habi %>%
+#   dplyr::select(longitude_dd , latitude_dd) %>%
+#   dplyr::rename(x = longitude_dd, y = latitude_dd) %>%
+#   glimpse()
+#
+# resp.vars <- c("p_sand", "p_macro", "p_seagrass", "p_reef")
+#
+# for(i in 1:length(resp.vars)) {
+#   print(resp.vars[i])
+#   mod <- get(str_replace_all(resp.vars[i], "p_", "m_"))
+#
+#   temppred <- predhab %>%
+#     dplyr::select(
+#       x, y,
+#       all_of(resp.vars[i]),
+#       all_of(str_replace(resp.vars[i], "^p_", "se_"))
+#     ) %>%
+#     rast(crs = "epsg:4326")
+#
+#   dat <- terra::extract(subset(preds, names(mod$model)[2:length(names(mod$model))]), xy) %>%
+#     dplyr::select(-ID)
+#   messrast <- predicts::mess(subset(preds, names(mod$model)[2:length(names(mod$model))]), dat) %>%
+#     terra::clamp(lower = -0.01, values = F)
+#   messrast <- terra::crop(messrast, temppred)
+#   temppred_m <- terra::mask(temppred, messrast)
+#
+#
+#   if (i == 1) {
+#     preddf_m <- temppred_m
+#   }
+#   else {
+#     preddf_m <- rast(list(preddf_m, temppred_m))
+#   }
+# }
+#
+# saveRDS(preddf_m, paste0("output/model-output/", park, "/habitat/", name, "_predicted-habitat.rds"))      # Ignored
+#
+# writeRaster(preddf_m, paste0("output/model-output/", park, "/habitat/", names(preddf_m), "_predicted.tif"),
+#             overwrite = TRUE)

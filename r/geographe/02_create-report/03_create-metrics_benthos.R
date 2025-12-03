@@ -25,7 +25,7 @@ park <- "geographe"
 #   glimpse()
 
 benthos <- readRDS(paste0("data/", park, "/raw/", name, "_benthos_combined.RDS")) %>%
-  dplyr::select(campaignid, sample, macroalgae, seagrasses,
+  dplyr::select(campaignid, sample, year, status, macroalgae, seagrasses,
                 sand = unconsolidated, rock = consolidated,
                 sessile_invertebrates, total_pts = total_points_annotated) %>%
   dplyr::mutate(reef = macroalgae + rock + sessile_invertebrates) %>%
