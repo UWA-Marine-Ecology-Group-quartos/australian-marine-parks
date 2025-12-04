@@ -43,7 +43,7 @@ model_dat <- habi %>%
 pred.vars <- c("geoscience_depth", "geoscience_aspect", "geoscience_roughness", "geoscience_detrended")
 
 # Check for correlation of predictor variables- remove anything highly correlated (>0.95)---
-round(cor(model_dat[ , pred.vars]), 2) # Roughness and depth 0.35 correlated
+round(cor(model_dat[ , pred.vars]), 2) # Roughness and depth 0.43 correlated
 
 # Review of individual predictors for even distribution---
 CheckEM::plot_transformations(pred.vars = pred.vars, dat = model_dat)
@@ -81,7 +81,7 @@ for(i in 1:length(resp.vars)){
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
                                   pred.vars.fact = factor.vars,
-                                  cyclic.vars = c("aspect"),
+                                  cyclic.vars = c("geoscience_aspect"),
                                   k = 3,
                                   cov.cutoff = 0.7,
                                   max.predictors = 5
@@ -186,87 +186,90 @@ marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-aust
 
 predv <- vect(preddf, geom = c("x", "y"), crs = "epsg:4326")
 
-preddf <- cbind(preddf, terra::extract(marine_parks, predv)) %>%
-  dplyr::mutate(status = ifelse(is.na(status), "Fished", "No-Take"))
+preddf_s <- cbind(preddf, terra::extract(marine_parks, predv)) %>%
+  dplyr::mutate(status = as.factor(ifelse(is.na(status), "Fished", "No-Take"))) %>%
+  glimpse()
 
-# Ensure status is a factor with the SAME levels as in habi
-preddf <- preddf %>%
-  mutate(status = factor(status, levels = levels(habi$status))) %>%
-  select(-any_of("year"))  # prevent any accidental year column / closure weirdness
+preddf_s2014 <- preddf_s %>% dplyr::mutate(year = as.factor(2014))
+preddf_s2024 <- preddf_s %>% dplyr::mutate(year = as.factor(2024))
+
+preddf_sy <- dplyr::bind_rows(preddf_s2014, preddf_s2024) %>%
+  glimpse()
 
 # predict, rasterise and plot
-predict_all_models_one_year <- function(preddf, year_value) {
-  nd <- preddf %>%
-    mutate(year = factor(as.character(year_value), levels = levels(habi$year)))
-
-  nd %>%
-    mutate(
-      p_macro    = mgcv::predict.gam(m_macro,    nd, type="response"),
-      p_sand     = mgcv::predict.gam(m_sand,     nd, type="response"),
-      p_seagrass = mgcv::predict.gam(m_seagrass, nd, type="response"),
-      p_reef     = mgcv::predict.gam(m_reef,     nd, type="response"),
-      year  = year_value
-    )
-}
-
-pred_2014 <- predict_all_models_one_year(preddf, "2014")
-pred_2024 <- predict_all_models_one_year(preddf, "2024")
-
-predhab <- bind_rows(
-  pred_2014 %>% mutate(year = "2014"),
-  pred_2024 %>% mutate(year = "2024")
-)
-
-predhab_long <- predhab %>%
-  tidyr::pivot_longer(
-    cols = starts_with("p_"),
-    names_to = "layer",
-    values_to = "pred"
-  )
-
-ggplot(predhab_long, aes(x = x, y = y, fill = pred)) +
-  geom_raster() +
-  coord_equal() +
-  facet_grid(layer ~ year) +
-  scale_fill_viridis_c() +
-  theme_minimal()
-
-# r_2014 <- terra::rast(pred_2014 %>% dplyr::select(x, y, starts_with("p_")),
-#                       crs = "epsg:4326")
-# r_2024 <- terra::rast(pred_2024 %>% dplyr::select(x, y, starts_with("p_")),
-#                       crs = "epsg:4326")
+# predict_all_models_one_year <- function(predsdf, year_value) {
+#   nd <- predsdf %>%
+#     mutate(year = factor(as.character(year_value), levels = levels(habi$year)))
 #
-# plot(r_2014)
-# plot(r_2024)
-
-r_2014 <- rast(predhab %>% filter(year == "2014") %>% select(x, y, starts_with("p_")),
-               crs = "epsg:4326")
-names(r_2014) <- paste0(names(r_2014), "_2014")
-
-r_2024 <- rast(predhab %>% filter(year == "2024") %>% select(x, y, starts_with("p_")),
-               crs = "epsg:4326")
-names(r_2024) <- paste0(names(r_2024), "_2024")
-
-prasts <- c(r_2014, r_2024)
-
+#   nd %>%
+#     mutate(
+#       p_macro    = mgcv::predict.gam(m_macro,    nd, type="response"),
+#       p_sand     = mgcv::predict.gam(m_sand,     nd, type="response"),
+#       p_seagrass = mgcv::predict.gam(m_seagrass, nd, type="response"),
+#       p_reef     = mgcv::predict.gam(m_reef,     nd, type="response"),
+#       year  = year_value
+#     )
+# }
+#
+# pred_2014 <- predict_all_models_one_year(predsdf, "2014")
+# pred_2024 <- predict_all_models_one_year(predsdf, "2024")
+#
+# predhab <- bind_rows(
+#   pred_2014 %>% mutate(year = "2014"),
+#   pred_2024 %>% mutate(year = "2024")
+# )
+#
+# predhab_long <- predhab %>%
+#   tidyr::pivot_longer(
+#     cols = starts_with("p_"),
+#     names_to = "layer",
+#     values_to = "pred"
+#   )
+#
+# ggplot(predhab_long, aes(x = x, y = y, fill = pred)) +
+#   geom_raster() +
+#   coord_equal() +
+#   facet_grid(layer ~ year) +
+#   scale_fill_viridis_c() +
+#   theme_minimal()
+#
+# # r_2014 <- terra::rast(pred_2014 %>% dplyr::select(x, y, starts_with("p_")),
+# #                       crs = "epsg:4326")
+# # r_2024 <- terra::rast(pred_2024 %>% dplyr::select(x, y, starts_with("p_")),
+# #                       crs = "epsg:4326")
+# #
+# # plot(r_2014)
+# # plot(r_2024)
+#
+# r_2014 <- rast(predhab %>% filter(year == "2014") %>% select(x, y, starts_with("p_")),
+#                crs = "epsg:4326")
+# names(r_2014) <- paste0(names(r_2014), "_2014")
+#
+# r_2024 <- rast(predhab %>% filter(year == "2024") %>% select(x, y, starts_with("p_")),
+#                crs = "epsg:4326")
+# names(r_2024) <- paste0(names(r_2024), "_2024")
+#
+# prasts <- c(r_2014, r_2024)
+#
 # prasts <- rast(predhab %>% dplyr::select(x, y, year, starts_with("p_")),
 #                crs = "epsg:4326")
 # plot(prasts)
 # summary(prasts)
 # glimpse(predhab)
-# # predict, rasterise and plot
-# predhab <- cbind(preddf, marine_parks,
-#                 "p_macro"    = predict(m_macro, preddf, type = "response", se.fit = T),
-#                 "p_sand"     = predict(m_sand, preddf, type = "response", se.fit = T),
-#                 "p_seagrass" = predict(m_seagrass, preddf, type = "response", se.fit = T),
-#                 # "p_inverts"  = predict(m_inverts, preddf, type = "response", se.fit = T),
-#                 "p_reef"     = predict(m_reef, preddf, type = "response", se.fit = T)) %>%
-#   glimpse()
 #
-# prasts <- rast(predhab %>% dplyr::select(x, y, starts_with("p_")),
-#                crs = "epsg:4326")
-# plot(prasts)
-# summary(prasts)
+# predict, rasterise and plot
+predhab <- cbind(preddf, marine_parks,
+                "p_macro"    = predict(m_macro, preddf, type = "response", se.fit = T),
+                "p_sand"     = predict(m_sand, preddf, type = "response", se.fit = T),
+                "p_seagrass" = predict(m_seagrass, preddf, type = "response", se.fit = T),
+                # "p_inverts"  = predict(m_inverts, preddf, type = "response", se.fit = T),
+                "p_reef"     = predict(m_reef, preddf, type = "response", se.fit = T)) %>%
+  glimpse()
+
+prasts <- rast(predhab %>% dplyr::select(x, y, starts_with("p_")),
+               crs = "epsg:4326")
+plot(prasts)
+summary(prasts)
 
 # Calculate MESS and mask predictions
 resp_vars <- c("p_sand", "p_macro", "p_seagrass", "p_reef")
