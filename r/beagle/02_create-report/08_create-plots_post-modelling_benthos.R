@@ -1,0 +1,119 @@
+###
+# Project: NESP 4.20 - Marine Park Dashboard reporting
+# Data:    Habitat data synthesis & habitat models derived from FSSgam
+# Task:    Create post-modelling habitat figures for marine park reporting
+# Author:  Claude Spencer
+# Date:    June 2024
+###
+
+# Clear your environment
+rm(list = ls())
+
+# Set the study name
+name <- "BeagleAMP"
+park <- "beagle"
+
+# Load libraries
+library(tidyverse)
+library(terra)
+library(sf)
+library(ggnewscale)
+library(scales)
+library(tidyterra)
+library(patchwork)
+
+# Load functions
+file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
+sapply(file.sources, source, .GlobalEnv)
+
+# Set cropping extent - larger than most zoomed out plot
+e <- ext(114.2, 115.8,-34.7, -33.1)
+
+# Load necessary spatial files
+# Australian outline and state and commonwealth marine parks
+aus    <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp")
+ausc <- st_crop(aus, e)
+
+# Australian outline and state and commonwealth marine parks
+marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
+  glimpse()
+plot(marine_parks["zone"])
+
+marine_parks_amp <- marine_parks %>%
+  dplyr::filter(epbc %in% "Commonwealth")
+marine_parks_state <- marine_parks %>%
+  dplyr::filter(epbc %in% "State")
+
+# Read in the data (per year) ----
+pred.years <- c(2014L, 2024L)
+
+for(pred_year in pred.years) {
+
+  print(pred_year)
+
+  dat <- readRDS(paste0("output/model-output/", park, "/habitat/",
+                        name, "_predicted-habitat_", pred_year, ".rds"))
+
+  pred_class <- as.data.frame(dat, xy = T) %>%
+    dplyr::mutate(year = pred_year) %>%
+    glimpse()
+
+  # Normalise the inverse of standard error
+  pred_plot <- normalise_se(data = pred_class)
+
+  # Set the limits for the plot
+  prediction_limits = c(115.0539, 115.5539, -33.64861, -33.35361)
+
+  # Create the plot
+  dominantbenthos_plot(prediction_limits) + ##HE have to check exclusions in function
+    theme( # Add theme items to sort out the legend
+      legend.position = "bottom",
+      legend.direction = "horizontal",
+      legend.box = "horizontal",
+      legend.box.just = "left",
+      legend.text = element_text(size = 5),
+      legend.title = element_text(size = 7),
+      legend.key.size = unit(0.5, "cm"),
+      legend.margin = margin(t = -0.1, unit = "cm"
+      ))
+
+  # Save the plot
+  ggsave(filename = paste0("plots/", park, "/habitat/", name,
+                           "_predicted-dominant-habitat_", pred_year, ".png"),
+         height = 6, width = 8, dpi = 600, units = "in", bg = "white")
+
+  # Subset the spatraster data to remove reef and standard error
+  pred_rast <- subset(dat, str_detect(names(dat), "(?<!se)\\.fit$") & # fit not preceded by se
+                        str_detect(names(dat), "^(?!.*reef).*$")) # Strings don't contain "reef"
+  names(pred_rast)
+
+  # Set the names - make sure this matches the order
+  # (This assumes you have exactly Sand/Macroalgae/Seagrass remaining)
+  names(pred_rast) <- c("Sand", "Macroalgae", "Seagrasses")
+  plot(pred_rast)
+
+  # Create the plot - same x and y limits
+  individualbenthic_plot(prediction_limits)
+
+  # Save the plot
+  ggsave(filename = paste0("plots/", park, "/habitat/", name,
+                           "_predicted-individual-habitat_", pred_year, ".png"),
+         height = 5.5, width = 8, dpi = 900, units = "in", bg = "white")
+}
+
+##HE The below hasn't yet been tweaked to include both years
+# Create the data (makes a dataframe for each ecosystem depth contour)
+controldata_benthos(year = 2014, amp_abbrv = "GMP", state_abbrv = "NCMP")
+
+# Create and save the plot (shallow)
+controlplot_benthos(data = park_dat.shallow, amp_abbrv = "GMP", state_abbrv = "NCMP",
+                    title = "Shallow (0 - 30 m)")
+ggsave(paste0("plots/", park, "/habitat/", name, "_shallow-control-plots.png"),
+       height = 9, width = 8, dpi = 300, units = "in")
+
+# Create and save the plot (mesophotic)
+controlplot_benthos(data = park_dat.meso, amp_abbrv = "GMP", state_abbrv = "NCMP",
+                    title = "Mesophotic (30 - 70 m)")
+ggsave(paste0("plots/", park, "/habitat/", name, "_mesophotic-control-plots.png"),
+       height = 9, width = 8, dpi = 300, units = "in")
