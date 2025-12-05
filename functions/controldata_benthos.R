@@ -214,8 +214,8 @@ controldata_benthos <- function(year, amp_abbrv, state_abbrv) {
     park_dat.rari <- as.data.frame(marine_parks) %>%
       tibble::rownames_to_column() %>%
       dplyr::rename(ID = rowname) %>%
-      left_join(errors.shallow) %>%
-      left_join(means.shallow) %>%
+      left_join(errors.rari) %>%
+      left_join(means.rari) %>%
       left_join(areas_rari) %>%
       dplyr::filter(filter == "no") %>%
       dplyr::select(zone_new, year, any_of(c("seagrass", "seagrass_se", "macroalgae", "macroalgae_se",
