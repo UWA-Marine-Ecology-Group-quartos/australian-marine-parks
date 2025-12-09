@@ -90,7 +90,7 @@ cwatr <- st_read("data/south-west network/spatial/shapefiles/amb_coastal_waters_
   st_crop(e)
 
 # Bathymetry data
-bathy <- rast("data/south-west network/spatial/rasters/Australian_Bathymetry_and_Topography_2023_250m_MSL_cog.tif") %>%
+bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
   crop(e) %>%
   clamp(upper = 0, values = F)
 names(bathy) <- "Depth"

@@ -13,7 +13,7 @@ dem_cross_section <- function(xstart, xend, ystart, yend, maxdist) {
   st_crs(tran) <- 4326
   tranv <- vect(tran)
 
-  topo <- rast("data/south-west network/spatial/rasters/Australian_Bathymetry_and_Topography_2023_250m_MSL_cog.tif")
+  topo <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif")
   names(topo) <- "depth"
   batht <- terra::extract(topo, tranv, xy = T, ID = F)
 
