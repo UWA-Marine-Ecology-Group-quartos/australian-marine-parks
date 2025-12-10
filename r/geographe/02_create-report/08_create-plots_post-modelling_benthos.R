@@ -102,18 +102,31 @@ for(pred_year in pred.years) {
          height = 5.5, width = 8, dpi = 900, units = "in", bg = "white")
 }
 
-##HE The below hasn't yet been tweaked to include both years
 # Create the data (makes a dataframe for each ecosystem depth contour)
-controldata_benthos(year = 2014, amp_abbrv = "GMP", state_abbrv = "NCMP")
+control_all <- purrr::map(pred.years, \(yy) {
+  dat_yy <- readRDS(paste0("output/model-output/", park, "/habitat/",
+                           name, "_predicted-habitat_", yy, ".rds"))
+  controldata_benthos(dat = dat_yy, year = yy, amp_abbrv = "GMP", state_abbrv = "NCMP")
+})
 
-# Create and save the plot (shallow)
+park_dat.shallow <- purrr::map_dfr(control_all, "shallow")
+park_dat.meso    <- purrr::map_dfr(control_all, "meso")
+park_dat.rari    <- purrr::map_dfr(control_all, "rari")
+
+# Shallow plot
 controlplot_benthos(data = park_dat.shallow, amp_abbrv = "GMP", state_abbrv = "NCMP",
                     title = "Shallow (0 - 30 m)")
 ggsave(paste0("plots/", park, "/habitat/", name, "_shallow-control-plots.png"),
        height = 9, width = 8, dpi = 300, units = "in")
 
-# Create and save the plot (mesophotic)
+# Mesophotic plot
 controlplot_benthos(data = park_dat.meso, amp_abbrv = "GMP", state_abbrv = "NCMP",
                     title = "Mesophotic (30 - 70 m)")
 ggsave(paste0("plots/", park, "/habitat/", name, "_mesophotic-control-plots.png"),
        height = 9, width = 8, dpi = 300, units = "in")
+
+# (Optional) Rariphotic plot if you want it too:
+# controlplot_benthos(data = park_dat.rari, amp_abbrv = "GMP", state_abbrv = "NCMP",
+#                     title = "Rariphotic (70 - 200 m)")
+# ggsave(paste0("plots/", park, "/habitat/", name, "_rariphotic-control-plots.png"),
+#        height = 9, width = 8, dpi = 300, units = "in")
