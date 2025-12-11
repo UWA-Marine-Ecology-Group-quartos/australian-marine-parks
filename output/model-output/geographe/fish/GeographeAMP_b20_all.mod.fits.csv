@@ -1,5 +1,11 @@
-"","modname","AICc","BIC","r2.vals","r2.vals.unique","edf","edf.less.1","delta.AICc","delta.BIC","wi.AICc","wi.BIC","reef","geoscience_depth","geoscience_roughness","geoscience_detrended","status","campaignid","cumsum.wi"
-"b20.reef","reef",13123.2395873633,13138.6653227424,0.02225,NA,2.73,0,0,0.117,0.351,0.416,1,0,0,0,0,0,0.351
-"b20.geoscience_detrended+reef","geoscience_detrended+reef",13124.4775986719,13144.9460222968,0.02489,NA,3.96,0,1.238,6.397,0.189,0.018,1,0,0,1,0,0,0.54
-"b20.geoscience_depth+reef","geoscience_depth+reef",13125.0639702801,13144.5914585051,0.02269,NA,3.73,0,1.824,6.043,0.141,0.021,1,1,0,0,0,0,0.681
-"b20.geoscience_roughness+reef","geoscience_roughness+reef",13125.1865680271,13144.7072302056,0.02243,NA,3.73,0,1.947,6.159,0.133,0.02,1,0,1,0,0,0,0.814
+"","modname","AICc","BIC","r2.vals","r2.vals.unique","edf","edf.less.1","delta.AICc","delta.BIC","wi.AICc","wi.BIC","reef","geoscience_depth","geoscience_aspect","geoscience_roughness","geoscience_detrended","status","year","cumsum.wi"
+"b20.reef","reef",13500.9980681125,13516.5272813187,0.02139,NA,2.73,0,0,0.264,0.112,0.177,1,0,0,0,0,0,0,0.112
+"b20.geoscience_aspect+reef","geoscience_aspect+reef",13500.9980681235,13516.5272830887,0.02139,NA,3.73,1,0,0.264,0.112,0.177,1,0,1,0,0,0,0,0.224
+"b20.geoscience_detrended+reef","geoscience_detrended+reef",13502.5505206554,13522.2233194325,0.02238,NA,3.73,0,1.552,5.96,0.051,0.01,1,0,0,0,1,0,0,0.275
+"b20.geoscience_aspect+geoscience_detrended+reef","geoscience_aspect+geoscience_detrended+reef",13502.5505206557,13522.2233194336,0.02238,NA,4.73,1,1.552,5.96,0.051,0.01,1,0,1,0,1,0,0,0.326
+"b20.reef+year","reef+year",13502.6905612554,13521.9363410002,0.02167,NA,3.63,0,1.692,5.673,0.048,0.012,1,0,0,0,0,0,1,0.374
+"b20.geoscience_aspect+reef+year","geoscience_aspect+reef+year",13502.6905619249,13521.9364404395,0.02167,NA,4.63,1,1.692,5.673,0.048,0.012,1,0,1,0,0,0,1,0.422
+"b20.geoscience_depth+reef","geoscience_depth+reef",13502.8604096332,13522.5197595469,0.02174,NA,3.73,0,1.862,6.256,0.044,0.009,1,1,0,0,0,0,0,0.466
+"b20.geoscience_aspect+geoscience_depth+reef","geoscience_aspect+geoscience_depth+reef",13502.8604096334,13522.5197595478,0.02174,NA,4.73,1,1.862,6.256,0.044,0.009,1,1,1,0,0,0,0,0.51
+"b20.reef+status","reef+status",13502.9962388368,13522.6596961051,0.02147,NA,3.73,0,1.998,6.396,0.041,0.008,1,0,0,0,0,1,0,0.551
+"b20.geoscience_aspect+reef+status","geoscience_aspect+reef+status",13502.9962388423,13522.6596968014,0.02147,NA,4.73,1,1.998,6.396,0.041,0.008,1,0,1,0,0,1,0,0.592

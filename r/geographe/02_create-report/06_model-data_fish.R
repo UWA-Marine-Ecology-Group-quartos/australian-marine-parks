@@ -28,8 +28,7 @@ tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %
 
 # # Re-set the predictors for modeling----
 names(tidy_maxn)
-pred.vars = c("reef", "geoscience_depth",
-              "geoscience_roughness", "geoscience_detrended", "status", "campaignid")
+pred.vars = c("reef", "geoscience_depth","geoscience_aspect" , "geoscience_roughness", "geoscience_detrended")
 
 # model_dat <- habi %>%
 #   pivot_longer(cols = c(macroalgae, sand, rock, sessile_invertebrates, reef, seagrasses),
@@ -56,8 +55,8 @@ for(i in 1:length(unique.vars)){
 resp.vars # All good
 
 # Run the full subset model selection----
-savedir <- "output/model-output/geographe/fish/"
-factor.vars <- c("status", "campaignid")
+savedir <- paste0("output/model-output/", park, "/fish/")
+factor.vars <- c("status", "year")
 out.all     <- list()
 var.imp     <- list()
 
@@ -65,9 +64,7 @@ var.imp     <- list()
 for(i in 1:length(resp.vars)){
   print(resp.vars[i])
   use.dat <- as.data.frame(tidy_maxn[which(tidy_maxn$response == resp.vars[i]), ])
-  use.dat$status <- as.factor(use.dat$status)
-  use.dat$campaignid <- as.factor(use.dat$campaignid)
-  Model1  <- gam(count ~ s(geoscience_depth, k = 3, bs = 'cr'),
+  Model1  <- gam(count ~ s(geoscience_depth, k = 3, bs = 'cr'), ##HE what is Model1 doing?
                  family = gaussian(link = "identity"),  data = use.dat)
 
   model.set <- generate.model.set(use.dat = use.dat,
@@ -190,7 +187,7 @@ write.csv(all.var.imp, file = paste(savedir, paste(name, "all.var.imp.csv", sep 
 # write.csv(all.var.imp, file = paste(savedir, paste(name_length, "all.var.imp.csv", sep = "_"), sep = "/"))
 
 tidy_b20 <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-b20.rds")) %>%
-  dplyr::filter(geoscience_roughness < 3) %>%
+  # dplyr::filter(geoscience_roughness < 3) %>%
   glimpse()
 
 # Check to make sure Response vector has not more than 90% zeros----
@@ -208,13 +205,12 @@ resp.vars
 name_b20 <- paste(name,"b20", sep = "_")
 out.all = list()
 var.imp = list()
+factor.vars <- c("status", "year")
 
 # Loop through the FSS function for each Taxa----
 for(i in 1:length(resp.vars)){
   print(resp.vars[i])
   use.dat = as.data.frame(tidy_b20[which(tidy_b20$response==resp.vars[i]),])
-  use.dat$campaignid <- as.factor(use.dat$campaignid)
-  use.dat$status <- as.factor(use.dat$status)
   Model1  <- gam(count ~ s(geoscience_depth, k = 3, bs = 'cr'),
                  gaussian(link = "identity"),  data = use.dat) ##HE changed to gaussion
 
@@ -267,83 +263,145 @@ write.csv(all.var.imp, file = paste(savedir, paste(name_b20, "all.var.imp.csv", 
 fabund <- bind_rows(tidy_maxn, tidy_b20) %>%
   glimpse()
 
-# Load predictions in Spatraster format
-preds <- readRDS(paste(paste0('data/geographe/spatial/rasters/', name),    # This is ignored - too big!
-                       'bathymetry-derivatives.rds', sep = "_"))
+#Total abundance
+m_abundance <- gam(count ~ year + status +
+                    s(geoscience_detrended, by = year, k = 3, bs = "cr") +
+                    s(reef, by = year, k = 3, bs = "cr"),
+                  data = fabund %>% dplyr::filter(response %in% "total_abundance"),
+                  family = poisson)
+summary(m_abundance)
+# plot(m_abundance)
+
+# Species richness
+m_richness <- gam(count ~ year + status +
+                    s(geoscience_depth, by = year, k = 3, bs = "cr") +
+                    s(geoscience_detrended, by = year, k = 3, bs = "cr") +
+                    s(reef, by = year, k = 3, bs = "cr"),
+                  data = fabund %>% dplyr::filter(response %in% "species_richness"),
+                  family = poisson)
+summary(m_richness)
+# plot(m_richness)
+
+# CTI
+m_cti <- gam(count ~ year + status +
+                    s(geoscience_depth, by = year, k = 3, bs = "cr") +
+                    s(geoscience_detrended, by = year, k = 3, bs = "cr") +
+                    s(reef, by = year, k = 3, bs = "cr"),
+             data = fabund %>% dplyr::filter(response %in% "cti"),
+             family = gaussian(link = "identity"))
+summary(m_cti)
+# plot(m_cti)
+
+# B20
+m_b20 <- gam(count ~ year + status +
+               s(reef, by = year, k = 3, bs = "cr"),
+             data = fabund %>% dplyr::filter(response %in% "b20"),
+             family = tw())
+summary(m_b20)
+# plot(m_b20, all.terms = TRUE)
+
+# Read predictor rasters to predict onto (bathymetry derivatives etc.)
+preds <- readRDS(paste0("data/", park, "/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
 plot(preds)
 
 # Predictors as a dataframe for modelling
 preddf <- preds %>%
-  as.data.frame(xy = T) %>%
+  as.data.frame(xy = TRUE, na.rm = TRUE) %>%
   glimpse()
 
-# Predicted reef
-pred_reef <- readRDS(paste0("output/model-output/geographe/habitat/",
-                            name, "_predicted-habitat.rds")) %>%
+# Extract status to predict onto (same as habitat script)
+marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
+  dplyr::filter(zone_type %in% c("Sanctuary Zone (IUCN VI)",
+                                 "National Park Zone (IUCN II)")) %>%
+  dplyr::mutate(status = "No-Take") %>%
+  vect()
+
+# Points for extraction
+predv <- vect(preddf, geom = c("x", "y"), crs = "epsg:4326")
+
+# Add status (No-Take / Fished) to prediction dataframe
+preddf_s <- cbind(preddf, terra::extract(marine_parks, predv)) %>%
+  dplyr::mutate(status = as.factor(ifelse(is.na(status), "Fished", "No-Take"))) %>%
+  glimpse()
+
+## ------------------------------------------------------------
+## ADD YEAR-SPECIFIC REEF (2014 & 2024) FOR FISH MODELLING
+## ------------------------------------------------------------
+
+# Predicted reef 2014
+pred_reef_2014 <- readRDS(paste0("output/model-output/geographe/habitat/",
+                                 name, "_predicted-habitat_2014.rds")) %>%
   terra::subset("p_reef.fit")
-names(pred_reef) <- "reef"
-plot(pred_reef)
+names(pred_reef_2014) <- "reef"
+plot(pred_reef_2014)
 
-# Add predicted reef on for fish modelling
-presp <- vect(preddf, geom = c("x", "y"))
-preddf <- cbind(preddf, terra::extract(pred_reef, presp))
-names(preddf)
+# Predicted reef 2024
+pred_reef_2024 <- readRDS(paste0("output/model-output/geographe/habitat/",
+                                 name, "_predicted-habitat_2024.rds")) %>%
+  terra::subset("p_reef.fit")
+names(pred_reef_2024) <- "reef"
+plot(pred_reef_2024)
 
-# Back to spatraster
-preds <- rast(preddf, crs = "epsg:4326")
-plot(preds)
+# Add reef for 2014
+preddf_s2014 <- cbind(
+  preddf_s,
+  terra::extract(pred_reef_2014, predv)[, "reef", drop = FALSE]
+) %>%
+  dplyr::mutate(year = 2014L)
 
-# use formula from top model from FSSGam model selection
-unique(fabund$response)
-# Use species richness, CTI, B20
+# Add reef for 2024
+preddf_s2024 <- cbind(
+  preddf_s,
+  terra::extract(pred_reef_2024, predv)[, "reef", drop = FALSE]
+) %>%
+  dplyr::mutate(year = 2024L)
 
-#Total abundance
-m_abundance <- gam(count ~ s(geoscience_detrended, k = 3, bs = "cr") +
-                    s(reef, k = 3, bs = "cr") +
-                    status +
-                    campaignid,
-                  data = fabund %>% dplyr::filter(response %in% "total_abundance"),
-                  family = gaussian(link = "identity"))
-summary(m_abundance)
-plot(m_abundance)
+# Stack years and align year factor levels with your fish data object
+preddf_sy <- dplyr::bind_rows(preddf_s2014, preddf_s2024) %>%
+  dplyr::mutate(
+    year = factor(year, levels = levels(fabund$year))  # <- adjust 'fish' to your fish data object
+  ) %>%
+  glimpse()
 
-# Species richness
-m_richness <- gam(count ~ s(geoscience_aspect, k = 3, bs = "cc") +
-                    s(reef, k = 3, bs = "cr"),
-                  data = fabund %>% dplyr::filter(response %in% "species_richness"),
-                  family = gaussian(link = "identity"))
-summary(m_richness)
-plot(m_richness)
+## ------------------------------------------------------------
+## PREDICT FISH METRICS FOR BOTH YEARS
+## ------------------------------------------------------------
 
-# CTI
-m_cti <- gam(count ~ s(reef, k = 3, bs = "cr") +
-               s(geoscience_detrended, k = 3, bs = "cr"),
-             data = fabund %>% dplyr::filter(response %in% "cti"),
-             family = gaussian(link = "identity"))
-summary(m_cti)
-plot(m_cti)
+predicted_fish <- cbind(
+  preddf_sy,
+  "p_b20"       = mgcv::predict.gam(m_b20,       preddf_sy, type = "response", se.fit = TRUE),
+  "p_abundance" = mgcv::predict.gam(m_abundance, preddf_sy, type = "response", se.fit = TRUE),
+  "p_cti"       = mgcv::predict.gam(m_cti,       preddf_sy, type = "response", se.fit = TRUE),
+  "p_richness"  = mgcv::predict.gam(m_richness,  preddf_sy, type = "response", se.fit = TRUE)
+) %>%
+  glimpse()
 
-# B20
-m_b20 <- gam(count ~ s(reef, k = 3, bs = "cr") +
-               s(geoscience_detrended, k = 3, bs = "cr"), ##HE should add status and campaignid but doesn't work for predicted_fish
-             data = fabund %>% dplyr::filter(response %in% "b20"),
-             family = tw())
-summary(m_b20)
-plot(m_b20, all.terms = TRUE)
+## ------------------------------------------------------------
+## RASTERISE FISH PREDICTIONS BY YEAR (same format as habitat)
+## ------------------------------------------------------------
 
-predicted_fish <- cbind(preddf,
-                        "p_b20" = mgcv::predict.gam(m_b20, preddf, type = "response",
-                                                       se.fit = T),
-                        # "p_immature" = mgcv::predict.gam(m_immature, preddf, type = "response",
-                        #                                  se.fit = T),
-                        "p_cti" = mgcv::predict.gam(m_cti, preddf, type = "response",
-                                                    se.fit = T),
-                        "p_richness" = mgcv::predict.gam(m_richness, preddf, type = "response",
-                                                         se.fit = T))
+# 2014 rasters
+prasts_2014 <- rast(
+  predicted_fish %>%
+    dplyr::filter(as.character(year) %in% "2014") %>%
+    dplyr::select(x, y, starts_with("p_")),
+  crs = "epsg:4326"
+)
 
-prasts <- rast(predicted_fish %>% dplyr::select(x, y, starts_with("p_")),
-               crs = "epsg:4326")
-plot(prasts)
+plot(prasts_2014)
+summary(prasts_2014)
+
+# 2024 rasters
+prasts_2024 <- rast(
+  predicted_fish %>%
+    dplyr::filter(as.character(year) %in% "2024") %>%
+    dplyr::select(x, y, starts_with("p_")),
+  crs = "epsg:4326"
+)
+
+plot(prasts_2024)
+summary(prasts_2024)
 
 # Calculate MESS and mask predictions
 xy <- fabund %>%

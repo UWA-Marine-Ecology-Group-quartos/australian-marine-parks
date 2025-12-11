@@ -1,5 +1,11 @@
-"","modname","AICc","BIC","r2.vals","r2.vals.unique","edf","edf.less.1","delta.AICc","delta.BIC","wi.AICc","wi.BIC","reef","geoscience_depth","geoscience_roughness","geoscience_detrended","status","campaignid","cumsum.wi"
-"total_abundance.geoscience_depth+geoscience_detrended+reef","geoscience_depth+geoscience_detrended+reef",5267.04646407704,5293.2274167546,0.06526,NA,5.22,0,0,4.606,0.566,0.047,1,1,0,1,0,0,0.566
-"total_abundance.geoscience_detrended+reef","geoscience_detrended+reef",5268.91924517474,5288.6215420457,0.05604,NA,3.67,0,1.873,0,0.222,0.472,1,0,0,1,0,0,0.788
-"species_richness","geoscience_depth+geoscience_detrended+reef",3137.76311759091,3167.04657009181,0.34542,NA,5.87,0,0,0,0.995,0.965,1,1,0,1,0,0,0.995
-"cti","geoscience_depth+geoscience_detrended+reef",1421.61697362005,1453.57596514968,0.08931,NA,6.5,0,0,0.687,0.941,0.158,1,1,0,1,0,0,0.941
+"","modname","AICc","BIC","r2.vals","r2.vals.unique","edf","edf.less.1","delta.AICc","delta.BIC","wi.AICc","wi.BIC","reef","geoscience_depth","geoscience_aspect","geoscience_roughness","geoscience_detrended","status","year","cumsum.wi"
+"total_abundance.geoscience_detrended+reef+status+year","geoscience_detrended+reef+status+year",5219.77612939636,5245.05177656501,0.14681,NA,5,0,0,3.776,0.151,0.036,1,0,0,0,1,1,1,0.151
+"total_abundance.geoscience_aspect+geoscience_detrended+reef+status+year","geoscience_aspect+geoscience_detrended+reef+status+year",5219.7761293966,5245.05177656899,0.14681,NA,6,1,0,3.776,0.151,0.036,1,0,1,0,1,1,1,0.302
+"total_abundance.geoscience_detrended+geoscience_roughness+reef+status+year","geoscience_detrended+geoscience_roughness+reef+status+year",5219.96950913599,5251.36536270907,0.15148,NA,6.46,0,0.193,10.089,0.137,0.002,1,0,0,1,1,1,1,0.439
+"total_abundance.geoscience_aspect+geoscience_detrended+geoscience_roughness+reef+year","geoscience_aspect+geoscience_detrended+geoscience_roughness+reef+year",5221.35920386036,5248.59199139858,0.14577,NA,6.47,1,1.583,7.316,0.068,0.006,1,0,1,1,1,0,1,0.507
+"total_abundance.geoscience_detrended+geoscience_roughness+reef+year","geoscience_detrended+geoscience_roughness+reef+year",5221.35920386046,5248.59199139824,0.14577,NA,5.47,0,1.583,7.316,0.068,0.006,1,0,0,1,1,0,1,0.575
+"species_richness","geoscience_aspect+geoscience_depth+geoscience_detrended+reef+year",3089.43246563568,3126.67012801801,0.40563,NA,7.75,0,0,2.549,0.57,0.171,1,1,1,0,1,0,1,0.57
+"cti.geoscience_aspect+geoscience_depth+geoscience_detrended+reef","geoscience_aspect+geoscience_depth+geoscience_detrended+reef",1421.28317778509,1455.70533193623,0.0919,NA,7.5,0,0,3.04,0.299,0.016,1,1,1,0,1,0,0,0.299
+"cti.geoscience_depth+geoscience_detrended+reef","geoscience_depth+geoscience_detrended+reef",1421.61697362005,1453.57596514968,0.08931,NA,6.5,0,0.334,0.91,0.253,0.047,1,1,0,0,1,0,0,0.552
+"cti.geoscience_aspect+geoscience_depth+geoscience_detrended+reef+year","geoscience_aspect+geoscience_depth+geoscience_detrended+reef+year",1422.42824928622,1460.03762698351,0.09259,NA,8.35,0,1.145,7.372,0.169,0.002,1,1,1,0,1,0,1,0.721
+"cti.geoscience_depth+geoscience_detrended+reef+year","geoscience_depth+geoscience_detrended+reef+year",1422.6372630572,1458.13089447719,0.0905,NA,7.34,0,1.354,5.465,0.152,0.005,1,1,0,0,1,0,1,0.873
