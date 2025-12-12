@@ -370,10 +370,10 @@ preddf_sy <- dplyr::bind_rows(preddf_s2014, preddf_s2024) %>%
 
 predicted_fish <- cbind(
   preddf_sy,
-  "p_b20"       = mgcv::predict.gam(m_b20,       preddf_sy, type = "response", se.fit = TRUE),
   "p_abundance" = mgcv::predict.gam(m_abundance, preddf_sy, type = "response", se.fit = TRUE),
+  "p_richness"  = mgcv::predict.gam(m_richness,  preddf_sy, type = "response", se.fit = TRUE),
   "p_cti"       = mgcv::predict.gam(m_cti,       preddf_sy, type = "response", se.fit = TRUE),
-  "p_richness"  = mgcv::predict.gam(m_richness,  preddf_sy, type = "response", se.fit = TRUE)
+  "p_b20"       = mgcv::predict.gam(m_b20,       preddf_sy, type = "response", se.fit = TRUE)
 ) %>%
   glimpse()
 
@@ -404,51 +404,92 @@ plot(prasts_2024)
 summary(prasts_2024)
 
 # Calculate MESS and mask predictions
-xy <- fabund %>%
-  dplyr::select(longitude_dd , latitude_dd) %>%
-  dplyr::rename(x = longitude_dd, y = latitude_dd) %>%
-  distinct(x, y) %>%
-  glimpse()
 
-# resp.vars <- names(preddf)[18:ncol(preddf)]
-resp.vars <- c("p_b20", "p_cti",
-               "p_richness")
+resp.vars <- c("p_abundance", "p_richness", "p_cti", "p_b20")
+pred.years <- c("2014", "2024")
 
-##HE not sure if this worked, predfish looks the same as prasts?
-for(i in 1:length(resp.vars)) {
-  print(resp.vars[i])
-  mod <- get(str_replace_all(resp.vars[i], "p_", "m_"))
+for (y in seq_along(pred.years)) {
 
-  temppred <- predicted_fish %>%
-    dplyr::select(x, y, paste0(resp.vars[i], ".fit"),
-                  paste0(resp.vars[i], ".se.fit")) %>%
-    rast(crs = "epsg:4326")
+  this_year <- pred.years[y]
+  print(this_year)
 
-  ##HE there is an error below when responses have different number of predictors
-  dat <- terra::extract(subset(preds, names(mod$model)[2:length(names(mod$model))]), xy) %>%
-    dplyr::select(-ID)
-  messrast <- predicts::mess(subset(preds, names(mod$model)[2:length(names(mod$model))]), dat) %>%
-    terra::clamp(lower = -0.01, values = F)
-  messrast <- terra::crop(messrast, temppred)
-  temppred_m <- terra::mask(temppred, messrast)
+  xy <- fabund %>%
+    dplyr::filter(as.character(year) == this_year) %>%
+    dplyr::transmute(x = longitude_dd, y = latitude_dd)
 
+  for (i in seq_along(resp.vars)) {
 
-  if (i == 1) {
-    preddf_m <- as.data.frame(temppred_m, xy = T)
+    print(resp.vars[i])
+    mod <- get(str_replace_all(resp.vars[i], "p_", "m_"))
+
+    temppred <- predicted_fish %>%
+      dplyr::filter(as.character(year) == this_year) %>%
+      dplyr::select(x, y,
+                    paste0(resp.vars[i], ".fit"),
+                    paste0(resp.vars[i], ".se.fit")) %>%
+      rast(crs = "epsg:4326")
+
+    geo.vars <- names(mod$model)[startsWith(names(mod$model), "geoscience")]
+
+    if (length(geo.vars) > 0) {
+
+      xr  <- subset(preds, geo.vars)
+
+      dat <- terra::extract(xr, xy) %>%
+        dplyr::select(-ID) %>%
+        as.data.frame()
+
+      # drop rows with NA covariates
+      dat <- dat[stats::complete.cases(dat), , drop = FALSE]
+
+      if (nrow(dat) == 0) {
+        message("No complete covariate rows for ", resp.vars[i], " (", this_year, "). Skipping mask.")
+        temppred_m <- temppred
+
+      } else if (length(geo.vars) == 1) {
+
+        # --- univariate mask: keep only cells within observed range ---
+        vmin <- min(dat[[1]], na.rm = TRUE)
+        vmax <- max(dat[[1]], na.rm = TRUE)
+
+        maskrast <- xr[[1]]
+        maskrast <- terra::ifel(maskrast >= vmin & maskrast <= vmax, 1, NA)
+
+        maskrast <- terra::crop(maskrast, temppred)
+        temppred_m <- terra::mask(temppred, maskrast)
+
+      } else {
+
+        # --- multivariate MESS (works fine for >=2 predictors) ---
+        messrast <- predicts::mess(xr, dat) %>%
+          terra::clamp(lower = -0.01, values = FALSE) %>%
+          terra::crop(temppred)
+
+        temppred_m <- terra::mask(temppred, messrast)
+      }
+
+    } else {
+      message("No geoscience predictors in model for ", resp.vars[i],
+              " (", this_year, "). Skipping MESS mask.")
+      temppred_m <- temppred
+    }
+
+    if (i == 1) {
+      preddf_m <- temppred_m
+    } else {
+      preddf_m <- c(preddf_m, temppred_m)   # <- combine layers
+    }
+
   }
-  else {
-    preddf_m <- as.data.frame(temppred_m, xy = T) %>%
-      full_join(preddf_m)
-  }
+
+  plot(preddf_m)
+
+  saveRDS(preddf_m,
+          paste0("output/model-output/", park, "/fish/",
+                 name, "_predicted-fish_", this_year, ".rds"))
+
+  writeRaster(preddf_m,
+              paste0("output/model-output/", park, "/fish/",
+                     names(preddf_m), "_predicted_", this_year, ".tif"),
+              overwrite = TRUE)
 }
-
-glimpse(preddf_m)
-
-saveRDS(preddf_m, paste0("output/model-output/geographe/fish/", name,
-                         "_predicted-fish.RDS"))
-
-predfish <- rast(preddf_m, crs = "epsg:4326")
-plot(predfish)
-
-writeRaster(predfish, paste0("output/model-output/geographe/fish/", names(predfish), "_predicted.tif"),
-            overwrite = TRUE)
