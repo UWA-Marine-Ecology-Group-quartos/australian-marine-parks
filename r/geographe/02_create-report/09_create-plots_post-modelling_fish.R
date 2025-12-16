@@ -79,48 +79,41 @@ for (pred_year in pred.years) {
 }
 
 # ------------------------------------------------------------
-# CONTROL DATA: loop years (mirrors habitat Script 08)
+# CONTROL DATA: mirrors habitat Script 08 (combine years on plots)
 # ------------------------------------------------------------
-for (pred_year in pred.years) {
 
-  print(paste("Control data:", pred_year))
+pred.years <- c(2014L, 2024L)
 
-  dat <- readRDS(paste0("output/model-output/", park, "/fish/",
-                        name, "_predicted-fish_", pred_year, ".rds"))
-  if (!inherits(dat, "SpatRaster")) dat <- terra::rast(dat)
-  terra::crs(dat) <- "EPSG:4326"
+# Create the data (returns a list per year: shallow/meso/rari)
+control_all <- purrr::map(pred.years, \(yy) {
 
-  # controldata_fish expects global 'dat'
-  control_out <- controldata_fish(dat = dat, year = pred_year, amp_abbrv = "GMP", state_abbrv = "NCMP")
+  dat_yy <- readRDS(paste0("output/model-output/", park, "/fish/",
+                           name, "_predicted-fish_", yy, ".rds"))
+  if (!inherits(dat_yy, "SpatRaster")) dat_yy <- terra::rast(dat_yy)
+  terra::crs(dat_yy) <- "EPSG:4326"
 
-  park_dat.shallow <- control_out$shallow
-  park_dat.meso    <- control_out$meso
-  park_dat.rari    <- control_out$rari
+  controldata_fish(dat = dat_yy, year = yy, amp_abbrv = "GMP", state_abbrv = "NCMP")
+})
 
-  # Save per-year control plots (so you get year + status output)
-  p_shallow <- controlplot_fish(data = park_dat.shallow, amp_abbrv = "GMP",
-                                state_abbrv = "NCMP", title = paste0("Shallow (0 - 30 m) - ", pred_year))
+# Bind years together per depth band (so year is combined on plots)
+park_dat.shallow <- purrr::map_dfr(control_all, "shallow")
+park_dat.meso    <- purrr::map_dfr(control_all, "meso")
+park_dat.rari    <- purrr::map_dfr(control_all, "rari")
 
-  if (!is.null(p_shallow)) {
-    ggsave(paste0("plots/", park, "/fish/", name, "_shallow_control-plots_", pred_year, ".png"),
-           plot = p_shallow, height = 7, width = 8, dpi = 300, units = "in", bg = "white")
-  } else {
-    message("Shallow controlplot_fish returned NULL for ", pred_year, " — not saving.")
-  }
+# Shallow plot (both years together)
+p_shallow <- controlplot_fish(data = park_dat.shallow, amp_abbrv = "GMP", state_abbrv = "NCMP",
+                              title = "Shallow (0 - 30 m)")
+ggsave(paste0("plots/", park, "/fish/", name, "_shallow-control-plots.png"),
+       plot = p_shallow, height = 9, width = 8, dpi = 300, units = "in", bg = "white")
 
-  p_meso <- controlplot_fish(data = park_dat.meso, amp_abbrv = "GMP",
-                             state_abbrv = "NCMP", title = paste0("Mesophotic (30 - 70 m) - ", pred_year))
+# Mesophotic plot (both years together)
+p_meso <- controlplot_fish(data = park_dat.meso, amp_abbrv = "GMP", state_abbrv = "NCMP",
+                           title = "Mesophotic (30 - 70 m)")
+ggsave(paste0("plots/", park, "/fish/", name, "_mesophotic-control-plots.png"),
+       plot = p_meso, height = 9, width = 8, dpi = 300, units = "in", bg = "white")
 
-  if (!is.null(p_meso)) {
-    ggsave(paste0("plots/", park, "/fish/", name, "_mesophotic_control-plots_", pred_year, ".png"),
-           plot = p_meso, height = 7, width = 8, dpi = 300, units = "in", bg = "white")
-  } else {
-    message("Meso controlplot_fish returned NULL for ", pred_year, " — not saving.")
-  }
-
-  # Optional:
-  # controlplot_fish(data = park_dat.rari, amp_abbrv = "GMP",
-  #                  state_abbrv = "NCMP", title = paste0("Rariphotic (70 - 200 m) - ", pred_year))
-  # ggsave(paste0("plots/", park, "/fish/", name, "_rariphotic_control-plots_", pred_year, ".png"),
-  #        height = 7, width = 8, dpi = 300, units = "in", bg = "white")
-}
+# Optional rariphotic:
+# p_rari <- controlplot_fish(data = park_dat.rari, amp_abbrv = "GMP", state_abbrv = "NCMP",
+#                            title = "Rariphotic (70 - 200 m)")
+# ggsave(paste0("plots/", park, "/fish/", name, "_rariphotic-control-plots.png"),
+#        plot = p_rari, height = 9, width = 8, dpi = 300, units = "in", bg = "white")
