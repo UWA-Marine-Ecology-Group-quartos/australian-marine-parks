@@ -6,6 +6,10 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
       geom_errorbar(data = data, aes(ymin = seagrass_mean - seagrass_se_mean,
                                              ymax = seagrass_mean + seagrass_se_mean),
                     width = 0.8, position = position_dodge(width = 0.6)) +
+      geom_line(aes(group = zone_new, colour = zone_new),
+                position = position_dodge(width = 0.6),
+                linewidth = 0.6,
+                alpha = 0.9) +
       geom_point(size = 3, position = position_dodge(width = 0.6),
                  stroke = 0.2, color = "black", alpha = 0.8) +
       theme_classic() +
@@ -20,6 +24,14 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
           paste(state_abbrv, "SZ (IUCN II)"),
           paste(state_abbrv, "other zones"))
       ), name = "Marine Parks") +
+      scale_colour_manual(values = setNames(
+        c("#b9e6fb", "#fff8a3", "#7bbc63", "#bfd054", "#bddde1"),
+        c(paste(amp_abbrv, "other zones"),
+          paste(amp_abbrv, "HPZ"),
+          paste(amp_abbrv, "NPZ (IUCN II)"),
+          paste(state_abbrv, "SZ (IUCN II)"),
+          paste(state_abbrv, "other zones"))
+      ), guide = "none") +
       scale_shape_manual(values = setNames(
         c(21, 21, 21, 25, 25),
         c(paste(amp_abbrv, "other zones"),
@@ -37,6 +49,10 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
       geom_errorbar(data = data, aes(ymin = macroalgae_mean - macroalgae_se_mean,
                                              ymax = macroalgae_mean + macroalgae_se_mean),
                     width = 0.8, position = position_dodge(width = 0.6)) +
+      geom_line(aes(group = zone_new, colour = zone_new),
+                position = position_dodge(width = 0.6),
+                linewidth = 0.6,
+                alpha = 0.9) +
       geom_point(size = 3, position = position_dodge(width = 0.6),
                  stroke = 0.2, color = "black", alpha = 0.8) +
       theme_classic() +
@@ -51,6 +67,14 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
           paste(state_abbrv, "SZ (IUCN II)"),
           paste(state_abbrv, "other zones"))
       ), name = "Marine Parks") +
+      scale_colour_manual(values = setNames(
+        c("#b9e6fb", "#fff8a3", "#7bbc63", "#bfd054", "#bddde1"),
+        c(paste(amp_abbrv, "other zones"),
+          paste(amp_abbrv, "HPZ"),
+          paste(amp_abbrv, "NPZ (IUCN II)"),
+          paste(state_abbrv, "SZ (IUCN II)"),
+          paste(state_abbrv, "other zones"))
+      ), guide = "none") +
       scale_shape_manual(values = setNames(
         c(21, 21, 21, 25, 25),
         c(paste(amp_abbrv, "other zones"),
@@ -68,6 +92,10 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
       geom_errorbar(data = data, aes(ymin = rock_mean - rock_se_mean,
                                              ymax = rock_mean + rock_se_mean),
                     width = 0.8, position = position_dodge(width = 0.6)) +
+      geom_line(aes(group = zone_new, colour = zone_new),
+                position = position_dodge(width = 0.6),
+                linewidth = 0.6,
+                alpha = 0.9) +
       geom_point(size = 3, position = position_dodge(width = 0.6),
                  stroke = 0.2, color = "black", alpha = 0.8) +
       theme_classic() +
@@ -82,6 +110,14 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
           paste(state_abbrv, "SZ (IUCN II)"),
           paste(state_abbrv, "other zones"))
       ), name = "Marine Parks") +
+      scale_colour_manual(values = setNames(
+        c("#b9e6fb", "#fff8a3", "#7bbc63", "#bfd054", "#bddde1"),
+        c(paste(amp_abbrv, "other zones"),
+          paste(amp_abbrv, "HPZ"),
+          paste(amp_abbrv, "NPZ (IUCN II)"),
+          paste(state_abbrv, "SZ (IUCN II)"),
+          paste(state_abbrv, "other zones"))
+      ), guide = "none") +
       scale_shape_manual(values = setNames(
         c(21, 21, 21, 25, 25),
         c(paste(amp_abbrv, "other zones"),
@@ -99,6 +135,10 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
       geom_errorbar(data = data, aes(ymin = sand_mean - sand_se_mean,
                                              ymax = sand_mean + sand_se_mean),
                     width = 0.8, position = position_dodge(width = 0.6)) +
+      geom_line(aes(group = zone_new, colour = zone_new),
+                position = position_dodge(width = 0.6),
+                linewidth = 0.6,
+                alpha = 0.9) +
       geom_point(size = 3, position = position_dodge(width = 0.6),
                  stroke = 0.2, color = "black", alpha = 0.8) +
       theme_classic() +
@@ -113,6 +153,14 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
           paste(state_abbrv, "SZ (IUCN II)"),
           paste(state_abbrv, "other zones"))
       ), name = "Marine Parks") +
+      scale_colour_manual(values = setNames(
+        c("#b9e6fb", "#fff8a3", "#7bbc63", "#bfd054", "#bddde1"),
+        c(paste(amp_abbrv, "other zones"),
+          paste(amp_abbrv, "HPZ"),
+          paste(amp_abbrv, "NPZ (IUCN II)"),
+          paste(state_abbrv, "SZ (IUCN II)"),
+          paste(state_abbrv, "other zones"))
+      ), guide = "none") +
       scale_shape_manual(values = setNames(
         c(21, 21, 21, 25, 25),
         c(paste(amp_abbrv, "other zones"),
@@ -130,6 +178,10 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
       geom_errorbar(data = data, aes(ymin = inverts_mean - inverts_se_mean,
                                              ymax = inverts_mean + inverts_se_mean),
                     width = 0.8, position = position_dodge(width = 0.6)) +
+      geom_line(aes(group = zone_new, colour = zone_new),
+                position = position_dodge(width = 0.6),
+                linewidth = 0.6,
+                alpha = 0.9) +
       geom_point(size = 3, position = position_dodge(width = 0.6),
                  stroke = 0.2, color = "black", alpha = 0.8) +
       theme_classic() +
@@ -144,6 +196,14 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
           paste(state_abbrv, "SZ (IUCN II)"),
           paste(state_abbrv, "other zones"))
       ), name = "Marine Parks") +
+      scale_colour_manual(values = setNames(
+        c("#b9e6fb", "#fff8a3", "#7bbc63", "#bfd054", "#bddde1"),
+        c(paste(amp_abbrv, "other zones"),
+          paste(amp_abbrv, "HPZ"),
+          paste(amp_abbrv, "NPZ (IUCN II)"),
+          paste(state_abbrv, "SZ (IUCN II)"),
+          paste(state_abbrv, "other zones"))
+      ), guide = "none") +
       scale_shape_manual(values = setNames(
         c(21, 21, 21, 25, 25),
         c(paste(amp_abbrv, "other zones"),
