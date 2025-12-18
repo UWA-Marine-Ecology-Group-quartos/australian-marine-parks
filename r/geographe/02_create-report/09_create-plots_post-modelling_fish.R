@@ -25,6 +25,8 @@ library(patchwork)
 library(tidyterra)
 library(png)
 library(lwgeom)
+library(tidytext)
+library(ggtext)
 
 # Load functions
 file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
@@ -137,196 +139,108 @@ theme.larger.text<-theme(
 
 # read in maxn
 maxn <- readRDS(paste0("data/", park, "/raw/_count-with-zeros.RDS")) %>%
-  mutate(year = as.factor(year(date_time))) %>%
+  mutate(year = year(date_time)) %>%
   # dplyr::filter(!count > 200, # Remove some outliers
   #               # !sample %in% "779", ##HE what was 779?
   #               geoscience_roughness < 4) %>% # Remove outliers in roughness
   glimpse()
 
 # workout mean maxn for each species ---
-maxn.10.2014 <- maxn%>%
-  filter(campaignid %in% "2014-12_Geographe.Bay_stereoBRUVs") %>%
-  mutate(scientific=paste(genus,species,sep=" "))%>%
-  group_by(scientific)%>%
-  dplyr::summarise(maxn=mean(count))%>%
-  ungroup()%>%
-  top_n(10)%>%
+maxn.10 <- maxn %>%
+  mutate(scientific = paste(genus, species, sep = " ")) %>%
+  group_by(year, scientific) %>%
+  summarise(
+    maxn = mean(count, na.rm = TRUE),
+    sd   = sd(count, na.rm = TRUE),
+    .groups = "drop") %>%
   # dplyr::filter(!scientific%in%c('Carangoides sp1', 'Unknown spp'))%>%
-  glimpse()
-
-#have a look
-bar <- ggplot(maxn.10, aes(x=reorder(scientific,maxn), y=maxn)) +
-  geom_bar(stat="identity",position=position_dodge())+
-  coord_flip()+
-  xlab("Species")+
-  ylab(expression(Overall~abundance~(Sigma~MaxN)))+
-  theme_bw()+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  theme_collapse
-bar
-
-#load fish pictures
-#1 Pseudocaranx spp
-p.s <- as.raster(readPNG("data/images/Pseudocaranx dentex-3cm.png"))
-
-#2. Coris auricularis
-c.a <- as.raster(readPNG("data/images/Coris auricularis-3cmL.png"))
-
-#3. Parequula melbournensis - none
-
-#4. Pempheris klunzingeri
-p.k <- as.raster(readPNG("data/images/Pempheris klunzingeri-3cmL.png"))
-
-#5. Trachurus novaezelandiae
-t.n <- as.raster(readPNG("data/images/Trachurus_novaezelandiae_nb_TAYLOR.png"))
-
-#6. Neatypus obliquus
-n.o <- as.raster(readPNG("data/images/Neatypus obliquus-3cmL.png"))
-
-#7. Ophthalmolepis lineolatus
-o.l <- as.raster(readPNG("data/images/Opthalmolepis lineolatus-3cm.png"))
-
-#8. Sillago spp.
-s.s <- as.raster(readPNG("data/images/Sillago_bassensis_nb_TAYLOR.png"))
-
-#9. Chromis klunzingeri - use chromis westaustralis
-c.k <- as.raster(readPNG("data/images/Chromis westaustralis-3cmL.png"))
-
-#10. Trygonorrhina dumerilii - none
-
-
-#plot final bar plot
-bar.top.10<-ggplot(maxn.10%>%mutate(scientific=str_replace_all(.$scientific,
-                                                               c("Pseudocaranx spp"="Pseudocaranx spp*"))), aes(x=reorder(scientific,maxn), y=maxn)) +
-  geom_bar(stat="identity",colour="black",fill="lightgrey",position=position_dodge())+
-  ylim (0, 4000)+
-  coord_flip()+
-  xlab("Species")+
-  ylab(expression(Overall~abundance~(Sigma~MaxN)))+
-  theme_bw()+
-  theme(axis.text.y = element_text(face="italic"))+
-  theme_collapse+
-  theme.larger.text+
-  annotation_raster(p.s, xmin=9.7,xmax=10.3,ymin=3396 + 50, ymax=3396 + 800)+            #1
-  annotation_raster(c.a, xmin=8.7,xmax=9.3,ymin=2310 + 50, ymax=2310 + 800)+               #2
-  # annotation_raster(c.spp, xmin=7.75, xmax=8.25, ymin=2500, ymax=2900)+         #3
-  annotation_raster(p.k, xmin=6.8,xmax=7.2,ymin=1736 + 50, ymax=1736 + 500)+               #4
-  annotation_raster(t.n, xmin=5.75,xmax=6.25,ymin=1243 + 50, ymax=1243 + 700)+             #5
-  annotation_raster(n.o, xmin=4.7,xmax=5.3,ymin=971 + 50, ymax=971 + 700)+               #6
-  annotation_raster(o.l, xmin=3.7,xmax=4.3,ymin=690 + 50, ymax=690 + 900)+               #7
-  annotation_raster(s.s, xmin=2.75,xmax=3.25,ymin=566 + 50, ymax=566 + 900)+               #8
-  annotation_raster(c.k, xmin=1.8,xmax=2.2,ymin=477 + 50, ymax=477 + 400) #+                #9
-# annotation_raster(c.aus, xmin=0.75,xmax=1.25,ymin=650, ymax=1100)             #10
-# ggtitle("10 most abundant species") +
-# theme(plot.title = element_text(hjust = 0))
-bar.top.10
-
-#save out plot
-ggsave("plots/fish/abundant.fish.bar.png",bar.top.10, dpi = 600, width = 6.0, height = 6.0)
-
-#targeted species top 10 abundance
-# Read in life history
-maturity_mean <- CheckEM::maturity %>%
-  dplyr::filter(!marine_region %in% c("NW", "N")) %>% # Change here for each marine park
-  dplyr::group_by(family, genus, species, sex) %>%
-  dplyr::slice(which.min(l50_mm)) %>%
-  ungroup() %>%
-  dplyr::group_by(family, genus, species) %>%
-  dplyr::summarise(l50 = mean(l50_mm)) %>%
+  group_by(year) %>%
+  slice_max(order_by = maxn, n = 10, with_ties = FALSE) %>%
   ungroup() %>%
   glimpse()
 
-large_bodied_carnivores <- CheckEM::australia_life_history %>%
-  dplyr::filter(fb_trophic_level > 2.8) %>%
-  dplyr::filter(length_max_cm > 40) %>%
-  dplyr::filter(class %in% "Actinopterygii") %>%
-  dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
-                              "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
-                              "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes")) %>%
-  left_join(maturity_mean) %>%
-  dplyr::mutate(fb_length_at_maturity_mm = fb_length_at_maturity_cm * 10) %>%
-  dplyr::mutate(l50 = if_else(is.na(l50), fb_length_at_maturity_mm, l50)) %>%
-  dplyr::filter(!is.na(l50)) %>%
-  dplyr::select(family, genus, species, l50) %>%
-  glimpse()
+sp14 <- maxn.10 %>% filter(year == 2014) %>% pull(scientific)
+sp24 <- maxn.10 %>% filter(year == 2024) %>% pull(scientific)
 
-fished.species <- maxn %>%
-  dplyr::mutate(scientific = paste(genus, species, sep = " ")) %>%
-  dplyr::left_join(large_bodied_carnivores) %>%
-  dplyr::filter(!is.na(l50)) %>%
-  glimpse()
+unique_species <- union(
+  setdiff(sp14, sp24),
+  setdiff(sp24, sp14))
 
-maxn.fished.10 <- fished.species %>%
-  group_by(scientific) %>%
-  dplyr::summarise(maxn=sum(maxn)) %>%
-  ungroup() %>%
-  top_n(10) %>%
-  glimpse()
-
-#have a look
-bar <- ggplot(maxn.fished.10, aes(x=reorder(scientific,maxn), y=maxn)) +
-  geom_bar(stat="identity",position=position_dodge())+
-  coord_flip()+
-  xlab("Species")+
-  ylab(expression(Overall~abundance~(Sigma~MaxN)))+
-  theme_bw()+
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-  theme_collapse
-bar
-
-# 1. Trachurus novaezelandiae
-# Already loaded
-
-# 2. Chrysophrys auratus
-c.a <- as.raster(readPNG("data/images/Chrysophrys auratus 3cm.png"))
-
-# 3. Sillaginodes punctatus
-s.p <- as.raster(readPNG("data/images/Sillaginodes_punctatus_nb_TAYLOR.png"))
-
-# 4. Sphryaena novahollandiae
-
-# 5. Seriola hippos
-s.h <- as.raster(readPNG("data/images/Seriola_hippos_nb_HQ_TAYLOR.png"))
-
-# 6. Chorodon rubescens
-c.r <- as.raster(readPNG("data/images/Choerodon rubescens 3cm.png"))
-
-# 7. Glaucosoma hebraicum
-g.h <- as.raster(readPNG("data/images/Glaucosoma hebraicum 3cm.png"))
-
-# 8. Epinephelides armatus
-e.a <- as.raster(readPNG("data/images/Epinephelides armatus-5cmL.png"))
-
-# 9. Nemadactylus valenciennesi
-n.v <- as.raster(readPNG("data/images/Nemadactylus valenciennesi-3cm.png"))
-
-# 10. Sillago schomburgkii
-# Already loaded
-
-#plot final bar plot
-bar.fished.10 <- ggplot(dplyr::filter(maxn.fished.10, !scientific %in% "Rhabdosargus sarba"), aes(x=reorder(scientific, maxn), y=maxn)) +
-  geom_bar(stat = "identity", colour = "black", fill = "lightgrey", position = position_dodge())+
-  ylim (0, 1500)+
-  coord_flip()+
-  xlab("Species")+
-  ylab(expression(Overall~abundance~(Sigma~MaxN)))+
-  theme_bw()+
-  theme(axis.text.y = element_text(face="italic"))+
+bar_maxn <- ggplot(
+  maxn.10 %>%
+    mutate(scientific_label = if_else(scientific %in% unique_species,
+                                      paste0("**", scientific, "**"),
+                                      scientific)),
+  aes(x = reorder_within(scientific_label, maxn, year), y = maxn)
+) +
+  geom_col() +
+  geom_errorbar(aes(ymin = pmax(maxn - sd, 0), ymax = maxn + sd), width = 0.2) +
+  coord_flip() +
+  facet_wrap(~year, scales = "free_y") +
+  scale_x_reordered() +
+  labs(
+    x = "Species",
+    y = expression(Average~abundance~(MaxN~per~BRUV))) +
+  theme_bw() +
   theme_collapse +
-  theme.larger.text +
-  annotation_raster(t.n, xmin = 9.7, xmax = 10.3, ymin = 1243 + 20, ymax = 1243 + 300)+   #1
-  annotation_raster(c.a, xmin = 8.5, xmax = 9.5, ymin = 216 + 20, ymax = 216 + 400)+    #2
-  annotation_raster(s.p, xmin = 7.75, xmax = 8.25, ymin = 144 + 20, ymax = 144 + 300)+  #3
-  # annotation_raster(s.n, xmin = 6.65, xmax = 7.35, ymin = 110 + 20, ymax = 110 + 200)+    #4
-  annotation_raster(s.h, xmin = 5.5, xmax = 6.5, ymin = 84 + 20, ymax = 84 + 500)+      #5
-  annotation_raster(c.r, xmin = 4.7, xmax = 5.3, ymin = 60 + 20, ymax = 60 + 350)+      #6
-  annotation_raster(g.h, xmin = 3.5, xmax = 4.5, ymin = 59 + 20, ymax = 59 + 420)+        #7
-  annotation_raster(e.a, xmin = 2.65, xmax = 3.35, ymin = 29 + 20, ymax = 29 + 280)+      #8
-  annotation_raster(n.v, xmin = 1.5, xmax = 2.5, ymin = 24 + 20, ymax = 24 + 350)+      #9
-  annotation_raster(s.s, xmin = 0.75, xmax = 1.25, ymin = 14 + 20, ymax = 14 + 300)       #10
-# ggtitle("10 most abundant species") +
-# theme(plot.title = element_text(hjust = 0))
-bar.fished.10
+  theme(axis.text.y = element_markdown())
 
-#save out plot
-ggsave("plots/fish/abundant.targets.bar.png", bar.fished.10, dpi = 600, width = 6.0, height = 6.0)
+bar_maxn
+
+ggsave(paste0("plots/", park, "/fish/", name, "_top_maxn_bar_plot.png"),
+       plot = bar_maxn, height = 4, width = 9, dpi = 300, units = "in", bg = "white")
+
+# read in b20 species summaries (already mean + sd per year x species)
+b20 <- readRDS(paste0("data/", park, "/tidy/", name, "_b20-species.rds")) %>%
+  mutate(
+    year = as.integer(as.character(year)),                 # your year is a factor
+    b20  = ifelse(is.nan(b20), NA_real_, b20),             # just in case
+    sd   = ifelse(is.nan(sd),  NA_real_, sd),
+    sd   = tidyr::replace_na(sd, 0)                        # avoids NA errorbars
+  ) %>%
+  glimpse()
+
+# top 10 b20 per year (2014 & 2024)
+b20.10 <- b20 %>%
+  group_by(year) %>%
+  slice_max(order_by = b20, n = 10, with_ties = FALSE) %>%
+  ungroup() %>%
+  glimpse()
+
+# species unique to either year's top 10 (for bold labels)
+sp14_b20 <- b20.10 %>% filter(year == 2014) %>% pull(scientific_name)
+sp24_b20 <- b20.10 %>% filter(year == 2024) %>% pull(scientific_name)
+
+unique_species_b20 <- union(
+  setdiff(sp14_b20, sp24_b20),
+  setdiff(sp24_b20, sp14_b20)
+)
+
+# plot
+bar_b20 <- ggplot(
+  b20.10 %>%
+    mutate(scientific_label = if_else(scientific_name %in% unique_species_b20,
+                                      paste0("**", scientific_name, "**"),
+                                      scientific_name)),
+  aes(x = reorder_within(scientific_label, b20, year), y = b20)
+) +
+  geom_col() +
+  # geom_errorbar(
+  #   aes(ymin = pmax(b20 - sd, 0), ymax = b20 + sd),
+  #   width = 0.2
+  # ) +
+  coord_flip() +
+  facet_wrap(~year, scales = "free_y") +
+  scale_x_reordered() +
+  labs(
+    x = "Species",
+    y = expression(Average~biomass~(B20~per~BRUV))
+  ) +
+  theme_bw() +
+  theme_collapse +
+  theme(axis.text.y = element_markdown())
+
+bar_b20
+
+ggsave(paste0("plots/", park, "/fish/", name, "_top_b20_bar_plot.png"),
+  plot = bar_b20, height = 4, width = 9, dpi = 300, units = "in", bg = "white")
