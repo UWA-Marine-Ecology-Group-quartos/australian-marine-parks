@@ -274,17 +274,31 @@ nrow(filter(b20_tidy, count > 0))/nrow(b20_tidy)
 
 saveRDS(b20_tidy, file = paste0("data/", park, "/tidy/", name, "_tidy-b20.rds"))
 
-b20_species <-b20_mass %>% ##HE check
-  dplyr::filter(class %in% "Actinopterygii") %>%
-  dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
-                              "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
-                              "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
-  dplyr::filter(!length_cm < 20) %>%
-  dplyr::filter(!length_cm > 800) %>% ##HE short term fix for 8m KGW
-  dplyr::group_by(year, scientific_name) %>%
-  dplyr::summarise(b20 = mean(mass_g, na.rm = TRUE),
-                   sd = sd(mass_g, na.rm = TRUE)) %>%
-  ungroup() %>%
-  dplyr::glimpse()
+b20_by_sample <- b20_mass %>%
+  filter(class %in% "Actinopterygii") %>%
+  filter(!order %in% c(
+    "Anguilliformes", "Ophidiiformes", "Notacanthiformes",
+    "Tetraodontiformes", "Syngnathiformes", "Synbranchiformes",
+    "Stomiiformes", "Siluriformes", "Saccopharyngiformes",
+    "Osmeriformes", "Osteoglossiformes", "Lophiiformes",
+    "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes"
+  )) %>%
+  filter(length_cm >= 20, length_cm <= 800) %>%
+  group_by(year, sample, scientific_name) %>%
+  summarise(
+    b20_sample = sum(mass_g, na.rm = TRUE),  # total biomass per BRUV
+    .groups = "drop"
+  )
+
+b20_species <- b20_by_sample %>%
+  group_by(year, scientific_name) %>%
+  summarise(
+    b20 = mean(b20_sample, na.rm = TRUE),
+    sd  = sd(b20_sample, na.rm = TRUE),
+    n   = sum(!is.na(b20_sample)),      # number of BRUVs
+    se  = sd / sqrt(n),
+    .groups = "drop"
+  )
+
 
 saveRDS(b20_species, file = paste0("data/", park, "/tidy/", name, "_b20-species.rds"))

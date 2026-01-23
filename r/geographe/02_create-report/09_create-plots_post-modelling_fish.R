@@ -103,14 +103,14 @@ park_dat.meso    <- purrr::map_dfr(control_all, "meso")
 park_dat.rari    <- purrr::map_dfr(control_all, "rari")
 
 # Shallow plot (both years together)
-p_shallow <- controlplot_fish(data = park_dat.shallow, amp_abbrv = "GMP", state_abbrv = "NCMP",
-                              title = "Shallow (0 - 30 m)")
+(p_shallow <- controlplot_fish(data = park_dat.shallow, amp_abbrv = "GMP", state_abbrv = "NCMP",
+                              title = "Shallow (0 - 30 m)"))
 ggsave(paste0("plots/", park, "/fish/", name, "_shallow-control-plots.png"),
        plot = p_shallow, height = 9, width = 8, dpi = 300, units = "in", bg = "white")
 
 # Mesophotic plot (both years together)
-p_meso <- controlplot_fish(data = park_dat.meso, amp_abbrv = "GMP", state_abbrv = "NCMP",
-                           title = "Mesophotic (30 - 70 m)")
+(p_meso <- controlplot_fish(data = park_dat.meso, amp_abbrv = "GMP", state_abbrv = "NCMP",
+                           title = "Mesophotic (30 - 70 m)"))
 ggsave(paste0("plots/", park, "/fish/", name, "_mesophotic-control-plots.png"),
        plot = p_meso, height = 9, width = 8, dpi = 300, units = "in", bg = "white")
 
@@ -151,7 +151,7 @@ maxn.10 <- maxn %>%
   group_by(year, scientific) %>%
   summarise(
     maxn = mean(count, na.rm = TRUE),
-    sd   = sd(count, na.rm = TRUE),
+    se   = sd(count, na.rm = TRUE) / sqrt(sum(!is.na(count))),
     .groups = "drop") %>%
   # dplyr::filter(!scientific%in%c('Carangoides sp1', 'Unknown spp'))%>%
   group_by(year) %>%
@@ -174,7 +174,7 @@ bar_maxn <- ggplot(
   aes(x = reorder_within(scientific_label, maxn, year), y = maxn)
 ) +
   geom_col() +
-  geom_errorbar(aes(ymin = pmax(maxn - sd, 0), ymax = maxn + sd), width = 0.2) +
+  geom_errorbar(aes(ymin = pmax(maxn - se, 0), ymax = maxn + se), width = 0.2) +
   coord_flip() +
   facet_wrap(~year, scales = "free_y") +
   scale_x_reordered() +
