@@ -122,6 +122,36 @@ ggsave(paste0("plots/", park, "/fish/", name, "_mesophotic-control-plots.png"),
 
 
 # Stacked plots
+
+# Clear your environment
+rm(list = ls())
+
+# Set the study name
+name <- "GeographeAMP"
+park <- "geographe"
+
+# Load libraries
+library(tidyverse)
+library(terra)
+library(sf)
+library(ggplot2)
+library(ggnewscale)
+library(scales)
+library(viridis)
+library(patchwork)
+library(tidyterra)
+library(png)
+library(lwgeom)
+library(tidytext)
+library(ggtext)
+
+# Load functions
+file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
+sapply(file.sources, source, .GlobalEnv)
+
+# Set cropping extent - larger than most zoomed out plot
+e <- ext(114.2, 115.8, -34.7, -33.1)
+
 theme_collapse<-theme(
   panel.grid.major=element_line(colour = "white"),
   panel.grid.minor=element_line(colour = "white", size = 0.25),
@@ -145,13 +175,15 @@ maxn <- readRDS(paste0("data/", park, "/raw/_count-with-zeros.RDS")) %>%
   #               geoscience_roughness < 4) %>% # Remove outliers in roughness
   glimpse()
 
+length(unique(maxn$sample)) * length(unique(maxn$scientific_name))
+
 # workout mean maxn for each species ---
 maxn.10 <- maxn %>%
   mutate(scientific = paste(genus, species, sep = " ")) %>%
   group_by(year, scientific) %>%
   summarise(
     maxn = mean(count, na.rm = TRUE),
-    se   = sd(count, na.rm = TRUE) / sqrt(sum(!is.na(count))),
+    se   = sd(count, na.rm = TRUE) / sqrt(dplyr::n()),
     .groups = "drop") %>%
   # dplyr::filter(!scientific%in%c('Carangoides sp1', 'Unknown spp'))%>%
   group_by(year) %>%

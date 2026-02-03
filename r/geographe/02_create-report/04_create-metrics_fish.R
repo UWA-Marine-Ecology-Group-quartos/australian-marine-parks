@@ -197,44 +197,109 @@ b20_length <- readRDS(paste0("data/", park, "/raw/_length-with-zeros.RDS")) %>%
   dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
   glimpse() ##HE 8 metre KGW?
 
-# Calculate mass from lengths
-b20_mass <- b20_length %>%
-  # Convert to TL if needed
-  dplyr::mutate(adj_length = case_when(
-    fb_length_weight_measure %in% "FL" ~ length_cm, # Leave as FL
-    # Convert into Total Length to match Length-Weight calculations
-    fb_length_weight_measure %in% "TL" & fb_ll_equation_type %in% "FL → TL" ~ (length_cm * fb_b_ll) + fb_a_ll, # Forwards converion
-    fb_length_weight_measure %in% "TL" & fb_ll_equation_type %in% "TL → FL" ~ (length_cm - fb_a_ll) / fb_b_ll  # Inverse conversion
-  )) %>% # Check for NAs: messages below
-  dplyr::mutate(mass_g = (adj_length ^ fb_b) * fb_a * count) %>%
-  dplyr::left_join(metadata) %>%
-  dplyr::left_join(metadata_bathy_derivatives) %>%
-  glimpse()
+# 1) Calculate mass from lengths
+biomass <- b20_length %>%
+  mutate(
+    adj_length = case_when(
+      count == 0 ~ NA_real_,  # length irrelevant for absences
+      fb_length_weight_measure %in% "FL" ~ length_cm,
+      fb_length_weight_measure %in% "TL" & fb_ll_equation_type %in% "FL → TL" ~ (length_cm * fb_b_ll) + fb_a_ll,
+      fb_length_weight_measure %in% "TL" & fb_ll_equation_type %in% "TL → FL" ~ (length_cm - fb_a_ll) / fb_b_ll,
+      TRUE ~ NA_real_
+    ),
+    mass_g = case_when(
+      count == 0 ~ 0,  # absences are zero biomass
+      !is.na(adj_length) & !is.na(fb_a) & !is.na(fb_b) ~ (adj_length ^ fb_b) * fb_a * count,
+      TRUE ~ NA_real_  # present but cannot compute biomass -> NA
+    )
+  ) %>%
+  left_join(metadata, by = c("campaignid","sample")) %>%
+  left_join(metadata_bathy_derivatives,
+            by = c("campaignid","sample","longitude_dd","latitude_dd","status","year"))
+
+# 2) Define inclusion + b20-specific biomass
+b20_mass <- biomass %>%
+  mutate(
+    include_b20 = class == "Actinopterygii" &
+      (is.na(rls_water_column) | rls_water_column != "pelagic non-site attached" ) &
+      (count == 0 | (length_cm >= 20 & length_cm <= 800)),
+
+    b20_mass_g = case_when(
+      count == 0 ~ 0,                        # absence stays zero
+      !include_b20 ~ 0,                      # excluded taxa/sizes contribute 0 to B20
+      include_b20 & !is.na(mass_g) ~ mass_g, # included + computable biomass
+      include_b20 & is.na(mass_g) ~ NA_real_ # included but missing -> NA (flag)
+    )
+  )
+
+sp_watercol <- b20_mass %>%
+  distinct(scientific_name, rls_water_column)
+
+# 3) Per sample × species B20 biomass
+b20_by_sample <- b20_mass %>%
+  group_by(year, sample, scientific_name) %>%
+  summarise(
+    present_n = sum(count, na.rm = TRUE),
+
+    # If species never present on that BRUV => 0
+    b20_sample = if (sum(count, na.rm = TRUE) == 0) 0
+    # If present, but every INCLUDED present record has NA biomass => NA
+    else if (all(is.na(b20_mass_g[count > 0 & include_b20]))) NA_real_
+    # Otherwise sum included biomass (excluded rows are already 0)
+    else sum(b20_mass_g, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  left_join(sp_watercol, by = "scientific_name")
+
+
+# 4) Ensure every BRUV × species exists (zeros for absences)
+all_samples <- metadata %>%
+  distinct(year, sample)
+
+b20_by_sample_complete <- b20_by_sample %>%
+  right_join(all_samples, by = c("year","sample")) %>%
+  tidyr::complete(year, sample, scientific_name,
+                  fill = list(b20_sample = 0, present_n = 0)) %>%
+  left_join(sp_watercol, by = "scientific_name")
+
+# 5) Species summaries per year
+b20_species <- b20_by_sample_complete %>%
+  group_by(year, scientific_name) %>%
+  summarise(
+    b20 = mean(b20_sample, na.rm = TRUE),
+    sd  = sd(b20_sample, na.rm = TRUE),
+    n   = sum(!is.na(b20_sample)),
+    se  = sd / sqrt(n),
+    .groups = "drop"
+  ) %>%
+  left_join(sp_watercol, by = "scientific_name")
+
+saveRDS(b20_species, file = paste0("data/", park, "/tidy/", name, "_b20-species.rds"))
 
 ##HE The below is to work out which species are missing fishbase data
-# message(paste(length(which(!is.na(b20_mass$length_cm))), "measured lengths in data"))
-# message(paste(length(which(!is.na(b20_mass$adj_length))), "adjusted lengths in data"))
-# message(paste(length(which(!is.na(b20_mass$length_cm))) - length(which(!is.na(b20_mass$adj_length))),
+# message(paste(length(which(!is.na(biomass$length_cm))), "measured lengths in data"))
+# message(paste(length(which(!is.na(biomass$adj_length))), "adjusted lengths in data"))
+# message(paste(length(which(!is.na(biomass$length_cm))) - length(which(!is.na(biomass$adj_length))),
 #               "measured lengths not converted to adjusted (missing)"))
 #
-# message(paste(length(which(!is.na(b20_mass$length_cm) &
-#                              is.na(b20_mass$fb_length_weight_measure))), "because fb_length_weight_measure is NA"))
-# message(paste(length(which(!is.na(b20_mass$length_cm) &
-#                              is.na(b20_mass$fb_ll_equation_type) &
-#                              b20_mass$fb_length_weight_measure == "TL")),
+# message(paste(length(which(!is.na(biomass$length_cm) &
+#                              is.na(biomass$fb_length_weight_measure))), "because fb_length_weight_measure is NA"))
+# message(paste(length(which(!is.na(biomass$length_cm) &
+#                              is.na(biomass$fb_ll_equation_type) &
+#                              biomass$fb_length_weight_measure == "TL")),
 #               "because fb_length_weight_measure = TL (good) but fb_ll_equation_type is missing"))
-# message(paste(length(which(b20_mass$fb_length_weight_measure == "SL" & !is.na(b20_mass$length_cm))),
+# message(paste(length(which(biomass$fb_length_weight_measure == "SL" & !is.na(biomass$length_cm))),
 #               "because fb_length_weight_measure is SL (not FL or TL)"))
 #
-# message(paste("These 3x reasons added =", length(which(!is.na(b20_mass$length_cm) &
-#                                                          is.na(b20_mass$fb_length_weight_measure))) +
-#                 length(which(!is.na(b20_mass$length_cm) &
-#                                is.na(b20_mass$fb_ll_equation_type) &
-#                                b20_mass$fb_length_weight_measure == "TL")) +
-#                 length(which(b20_mass$fb_length_weight_measure == "SL" & !is.na(b20_mass$length_cm))),
+# message(paste("These 3x reasons added =", length(which(!is.na(biomass$length_cm) &
+#                                                          is.na(biomass$fb_length_weight_measure))) +
+#                 length(which(!is.na(biomass$length_cm) &
+#                                is.na(biomass$fb_ll_equation_type) &
+#                                biomass$fb_length_weight_measure == "TL")) +
+#                 length(which(biomass$fb_length_weight_measure == "SL" & !is.na(biomass$length_cm))),
 #               "accounting for all missing adjusted lengths"))
 #
-# missing_info <- b20_mass %>%
+# missing_info <- biomass %>%
 #   dplyr::filter(class %in% "Actinopterygii") %>%
 #   dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
 #                               "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
@@ -246,59 +311,54 @@ b20_mass <- b20_length %>%
 #          fb_a, fb_b, fb_ll_equation_type)
 # write.csv(missing_info, file = paste0("data/", park, "/tidy/", name, "_b20_missing_info.csv"))
 
-b20_metadata <- b20_length %>%
-  distinct(campaignid, sample) %>%
+b20_metadata <- biomass %>%
+  distinct(year, sample) %>%
   glimpse()
 
 # Calculate B20* for each sample
-b20_tidy <- b20_mass %>% ##HE this needs tweaking, not working 100% because some lengths have NA mass (fix in b20_mass)
-  dplyr::filter(class %in% "Actinopterygii") %>%
-  dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
-                              "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
-                              "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
-  dplyr::filter(!length_cm < 20) %>%
-  dplyr::group_by(campaignid, sample) %>%
-  dplyr::summarise(count = sum(mass_g)) %>%
-  ungroup() %>%
-  right_join(b20_metadata) %>%
-  dplyr::mutate(count = ifelse(is.na(count), 0, count)) %>%
-  dplyr::mutate(response = "b20") %>%
-  left_join(metadata) %>%
-  left_join(metadata_bathy_derivatives) %>%
-  left_join(benthos) %>%
-  dplyr::filter(!is.na(reef), ##HE need to remove outliers
-                !is.na(geoscience_aspect)) %>%
-  dplyr::glimpse()
+b20_tidy <- biomass %>% ##HE this needs tweaking, not working 100% because some lengths have NA mass (fix in biomass)
+  mutate(
+    include_b20 = class == "Actinopterygii" &
+      # exclude pelagic non-site attached
+      (is.na(rls_water_column) | rls_water_column != "pelagic non-site attached") &
+      # B20 size rule, but keep absences
+      (count == 0 | (length_cm >= 20 & length_cm <= 800)),
+
+    b20_mass_g = case_when(
+      count == 0 ~ 0,                        # absences
+      !include_b20 ~ 0,                      # excluded rows contribute zero to B20
+      include_b20 & !is.na(mass_g) ~ mass_g, # included + computable
+      include_b20 & is.na(mass_g) ~ NA_real_ # included but missing -> NA (flag)
+    )
+  ) %>%
+  group_by(year, sample) %>%
+  summarise(
+    # if you want a diagnostic:
+    n_present = sum(count > 0, na.rm = TRUE),
+    n_present_included = sum(count > 0 & include_b20, na.rm = TRUE),
+    n_missing_mass_included = sum(count > 0 & include_b20 & is.na(b20_mass_g), na.rm = TRUE),
+
+    # sample-level B20 biomass
+    count = if (sum(count, na.rm = TRUE) == 0) 0
+    else if (all(is.na(b20_mass_g[count > 0 & include_b20]))) NA_real_
+    else sum(b20_mass_g, na.rm = TRUE),
+
+    .groups = "drop"
+  ) %>%
+  right_join(b20_metadata, by = c("year","sample")) %>%   # keep all BRUVs
+  mutate(
+    count = ifelse(is.na(count), 0, count),
+    response = "b20"
+  ) %>%
+  left_join(metadata, by = c("year","sample")) %>%
+  left_join(metadata_bathy_derivatives,
+            by = c("campaignid","sample","longitude_dd","latitude_dd","status","year")) %>%
+  left_join(benthos, by = c("campaignid","sample","status","year")) %>%
+  filter(!is.na(reef),
+         !is.na(geoscience_aspect)) %>%
+  glimpse()
+
 # Check number of samples that are > 0
 nrow(filter(b20_tidy, count > 0))/nrow(b20_tidy)
 
 saveRDS(b20_tidy, file = paste0("data/", park, "/tidy/", name, "_tidy-b20.rds"))
-
-b20_by_sample <- b20_mass %>%
-  filter(class %in% "Actinopterygii") %>%
-  filter(!order %in% c(
-    "Anguilliformes", "Ophidiiformes", "Notacanthiformes",
-    "Tetraodontiformes", "Syngnathiformes", "Synbranchiformes",
-    "Stomiiformes", "Siluriformes", "Saccopharyngiformes",
-    "Osmeriformes", "Osteoglossiformes", "Lophiiformes",
-    "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes"
-  )) %>%
-  filter(length_cm >= 20, length_cm <= 800) %>%
-  group_by(year, sample, scientific_name) %>%
-  summarise(
-    b20_sample = sum(mass_g, na.rm = TRUE),  # total biomass per BRUV
-    .groups = "drop"
-  )
-
-b20_species <- b20_by_sample %>%
-  group_by(year, scientific_name) %>%
-  summarise(
-    b20 = mean(b20_sample, na.rm = TRUE),
-    sd  = sd(b20_sample, na.rm = TRUE),
-    n   = sum(!is.na(b20_sample)),      # number of BRUVs
-    se  = sd / sqrt(n),
-    .groups = "drop"
-  )
-
-
-saveRDS(b20_species, file = paste0("data/", park, "/tidy/", name, "_b20-species.rds"))
