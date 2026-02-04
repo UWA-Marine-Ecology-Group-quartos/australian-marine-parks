@@ -144,13 +144,7 @@ library(png)
 library(lwgeom)
 library(tidytext)
 library(ggtext)
-
-# Load functions
-file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
-sapply(file.sources, source, .GlobalEnv)
-
-# Set cropping extent - larger than most zoomed out plot
-e <- ext(114.2, 115.8, -34.7, -33.1)
+library(CheckEM)
 
 theme_collapse<-theme(
   panel.grid.major=element_line(colour = "white"),
@@ -168,8 +162,18 @@ theme.larger.text<-theme(
   legend.text = element_text(family="TN",size=8))
 
 # read in maxn
+sti <- CheckEM::australia_life_history %>%
+  clean_names() %>%
+  dplyr::select(family, genus, species, rls_thermal_niche) %>%
+  mutate(scientific = paste(genus, species, sep = " ")) %>%
+  dplyr::distinct() %>%
+  glimpse()
+
 maxn <- readRDS(paste0("data/", park, "/raw/_count-with-zeros.RDS")) %>%
   mutate(year = year(date_time)) %>%
+  left_join(sti) %>%
+  select(year, sample, scientific_name, family, genus, species, count,
+         rls_thermal_niche) %>%
   # dplyr::filter(!count > 200, # Remove some outliers
   #               # !sample %in% "779", ##HE what was 779?
   #               geoscience_roughness < 4) %>% # Remove outliers in roughness
@@ -189,6 +193,7 @@ maxn.10 <- maxn %>%
   group_by(year) %>%
   slice_max(order_by = maxn, n = 10, with_ties = FALSE) %>%
   ungroup() %>%
+  left_join(sti) %>%
   glimpse()
 
 sp14 <- maxn.10 %>% filter(year == 2014) %>% pull(scientific)
@@ -222,6 +227,45 @@ bar_maxn
 ggsave(paste0("plots/", park, "/fish/", name, "_top_maxn_bar_plot.png"),
        plot = bar_maxn, height = 4, width = 9, dpi = 300, units = "in", bg = "white")
 
+
+# Thermal Index stacked plot
+bar_cti <- ggplot(
+  maxn.10 %>%
+    mutate(
+      scientific_label = if_else(scientific %in% unique_species,
+                                 paste0("**", scientific, "**"),
+                                 scientific),
+      niche_lab = if_else(is.na(rls_thermal_niche),
+                          "NA",
+                          scales::number(rls_thermal_niche, accuracy = 0.01)),
+      niche_sort = if_else(is.na(rls_thermal_niche), -Inf, rls_thermal_niche)
+    ),
+  aes(
+    x = reorder_within(scientific_label, niche_sort, year),
+    y = maxn
+  )
+) +
+  geom_col() +
+  geom_errorbar(aes(ymin = pmax(maxn - se, 0), ymax = maxn + se), width = 0.2) +
+  geom_text(aes(y = 16.5, label = niche_lab), hjust = 0, size = 3) +
+  coord_flip(clip = "off") +
+  facet_wrap(~year, scales = "free_y") +
+  scale_x_reordered() +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
+  labs(
+    x = "Species",
+    y = expression(Average~abundance~(MaxN~per~BRUV))
+  ) +
+  theme_bw() +
+  theme_collapse +
+  theme(axis.text.y = element_markdown())
+
+bar_cti
+
+ggsave(paste0("plots/", park, "/fish/", name, "_top_maxn_cti_bar_plot.png"),
+       plot = bar_cti, height = 4, width = 9, dpi = 300, units = "in", bg = "white")
+
+# B20
 # read in b20 species summaries (already mean + sd per year x species)
 b20 <- readRDS(paste0("data/", park, "/tidy/", name, "_b20-species.rds")) %>%
   glimpse()
