@@ -230,7 +230,11 @@ b20_mass <- biomass %>%
       include_b20 & !is.na(mass_g) ~ mass_g, # included + computable biomass
       include_b20 & is.na(mass_g) ~ NA_real_ # included but missing -> NA (flag)
     )
-  )
+  ) %>%
+  filter(b20_mass_g <= 30000 | is.na(b20_mass_g)) # 190cm Centroberyx lineatus
+
+b20_mass_check <- b20_mass %>%
+  select(sample, year, scientific_name, b20_mass_g, length_cm)
 
 sp_watercol <- b20_mass %>%
   distinct(scientific_name, rls_water_column)
@@ -257,10 +261,10 @@ all_samples <- metadata %>%
   distinct(year, sample)
 
 b20_by_sample_complete <- b20_by_sample %>%
+  # filter(!sample %in% "GB-BV-125") %>% # heaps of huge pinkies
   right_join(all_samples, by = c("year","sample")) %>%
   tidyr::complete(year, sample, scientific_name,
-                  fill = list(b20_sample = 0, present_n = 0)) %>%
-  left_join(sp_watercol, by = "scientific_name")
+                  fill = list(b20_sample = 0, present_n = 0))
 
 # 5) Species summaries per year
 b20_species <- b20_by_sample_complete %>%

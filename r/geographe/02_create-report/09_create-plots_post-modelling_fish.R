@@ -224,12 +224,6 @@ ggsave(paste0("plots/", park, "/fish/", name, "_top_maxn_bar_plot.png"),
 
 # read in b20 species summaries (already mean + sd per year x species)
 b20 <- readRDS(paste0("data/", park, "/tidy/", name, "_b20-species.rds")) %>%
-  mutate(
-    year = as.integer(as.character(year)),                 # your year is a factor
-    b20  = ifelse(is.nan(b20), NA_real_, b20),             # just in case
-    sd   = ifelse(is.nan(sd),  NA_real_, sd),
-    sd   = tidyr::replace_na(sd, 0)                        # avoids NA errorbars
-  ) %>%
   glimpse()
 
 # top 10 b20 per year (2014 & 2024)
@@ -257,11 +251,12 @@ bar_b20 <- ggplot(
   aes(x = reorder_within(scientific_label, b20, year), y = b20)
 ) +
   geom_col() +
-  # geom_errorbar(
-  #   aes(ymin = pmax(b20 - sd, 0), ymax = b20 + sd),
-  #   width = 0.2
-  # ) +
+  geom_errorbar(
+    aes(ymin = pmax(b20 - se, 0), ymax = b20 + se),
+    width = 0.2
+  ) +
   coord_flip() +
+  scale_y_log10() +   # <- log transform biomass axis
   facet_wrap(~year, scales = "free_y") +
   scale_x_reordered() +
   labs(
