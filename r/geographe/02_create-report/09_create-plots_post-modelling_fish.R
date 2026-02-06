@@ -229,32 +229,83 @@ ggsave(paste0("plots/", park, "/fish/", name, "_top_maxn_bar_plot.png"),
 
 
 # Thermal Index stacked plot
+cti.10 <- maxn %>%
+  mutate(scientific = paste(genus, species, sep = " ")) %>%
+  group_by(year, scientific) %>%
+  summarise(
+    maxn = mean(count, na.rm = TRUE),
+    se   = sd(count, na.rm = TRUE) / sqrt(dplyr::n()),
+    .groups = "drop") %>%
+  # dplyr::filter(!scientific%in%c('Carangoides sp1', 'Unknown spp'))%>%
+  left_join(sti) %>%
+  filter(!is.na(rls_thermal_niche)) %>%
+  group_by(year) %>%
+  slice_max(order_by = maxn, n = 10, with_ties = FALSE) %>%
+  ungroup() %>%
+  glimpse()
+
+sp.cti.14 <- cti.10 %>% filter(year == 2014) %>% pull(scientific)
+sp.cti.24 <- cti.10 %>% filter(year == 2024) %>% pull(scientific)
+
+unique_species_cti <- union(
+  setdiff(sp.cti.14, sp.cti.24),
+  setdiff(sp.cti.24, sp.cti.14))
+
+log1p10_trans <- trans_new(
+  name = "log10p1",
+  transform = function(x) log10(x + 1),
+  inverse   = function(x) 10^x - 1
+)
+
+# choose the centering statistic (mean is what you asked for)
+mid_niche <- median(cti.10$rls_thermal_niche, na.rm = TRUE)
+
+# global limits across both facets/years
+niche_limits <- range(cti.10$rls_thermal_niche, na.rm = TRUE)
+
 bar_cti <- ggplot(
-  maxn.10 %>%
+  cti.10 %>%
     mutate(
-      scientific_label = if_else(scientific %in% unique_species,
+      scientific_label = if_else(scientific %in% unique_species_cti,
                                  paste0("**", scientific, "**"),
                                  scientific),
-      niche_lab = if_else(is.na(rls_thermal_niche),
-                          "NA",
-                          scales::number(rls_thermal_niche, accuracy = 0.01)),
-      niche_sort = if_else(is.na(rls_thermal_niche), -Inf, rls_thermal_niche)
+      niche_lab = scales::number(rls_thermal_niche, accuracy = 0.01)
     ),
   aes(
-    x = reorder_within(scientific_label, niche_sort, year),
-    y = maxn
+    x = reorder_within(scientific_label, rls_thermal_niche, year),
+    y = maxn,
+    fill = rls_thermal_niche
   )
 ) +
-  geom_col() +
-  geom_errorbar(aes(ymin = pmax(maxn - se, 0), ymax = maxn + se), width = 0.2) +
+  geom_col(colour = "black", linewidth = 0.25) +
+  geom_errorbar(
+    aes(
+      ymin = pmax(maxn - se, 0),
+      ymax = maxn + se
+    ),
+    width = 0.2
+  ) +
   geom_text(aes(y = 16.5, label = niche_lab), hjust = 0, size = 3) +
   coord_flip(clip = "off") +
   facet_wrap(~year, scales = "free_y") +
   scale_x_reordered() +
-  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
+  scale_y_continuous(
+    trans = log1p10_trans,
+    expand = expansion(mult = c(0, 0.15))
+  ) +
+  # centre GREY at the mean thermal niche
+  scale_fill_gradientn(
+    colours = c("#2b83ba", "grey", "#d7191c"),
+    values  = scales::rescale(c(niche_limits[1],
+                                mid_niche,
+                                niche_limits[2])),
+    limits = niche_limits,
+    na.value = "grey80"
+  ) +
+  guides(fill = "none") +
   labs(
     x = "Species",
-    y = expression(Average~abundance~(MaxN~per~BRUV))
+    y = expression(Log[10]~(Average~abundance~+~1))
   ) +
   theme_bw() +
   theme_collapse +

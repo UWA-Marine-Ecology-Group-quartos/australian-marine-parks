@@ -45,6 +45,13 @@ marine_parks_amp <- marine_parks %>%
 marine_parks_state <- marine_parks %>%
   dplyr::filter(epbc %in% "State")
 
+npz <- marine_parks[marine_parks$zone %in% "National Park Zone", ]
+wasanc <- marine_parks[marine_parks$zone %in% "Sanctuary Zone", ]
+
+cwatr <- st_read("data/south-west network/spatial/shapefiles/amb_coastal_waters_limit.shp") %>%
+  st_make_valid() %>%
+  st_crop(e)
+
 # Read in the data (per year) ----
 pred.years <- c(2014L, 2024L)
 
@@ -130,3 +137,93 @@ ggsave(paste0("plots/", park, "/habitat/", name, "_mesophotic-control-plots.png"
 #                     title = "Rariphotic (70 - 200 m)")
 # ggsave(paste0("plots/", park, "/habitat/", name, "_rariphotic-control-plots.png"),
 #        height = 9, width = 8, dpi = 300, units = "in")
+
+
+# Get depth for Scatterpie plot
+
+# Set the extent of the study
+e <- ext(114.8, 116, -33.8, -33)
+
+# Load the bathymetry data (GA 250m resolution)
+bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
+  crop(e) %>%
+  clamp(upper = 0, lower = -250, values = F) %>%
+  trim() %>%
+  rast()
+
+names(bathy)[1] <- "Depth"
+
+# Scatterpies
+
+metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
+  clean_names() %>%
+  glimpse()
+
+benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")) %>%
+  dplyr::rename(
+    Macroalgae = macroalgae,
+    Seagrass = seagrasses,
+    Sand = sand,
+    Rock = rock,
+    "Sessile invertebrates" = sessile_invertebrates
+  ) %>%
+  left_join(metadata_bathy_derivatives) %>%
+  glimpse()
+
+hab_fills <- scale_fill_manual(values = c("Sand" = "wheat",
+                                          "Sessile invertebrates" = "plum",
+                                          "Rock" = "grey40",
+                                          "Macroalgae" = "darkgoldenrod4",
+                                          "Seagrass" = "forestgreen"))
+
+wampa_fills <- scale_fill_manual(values = c(
+  # "Marine Management Area" = "#b7cfe1",
+  # "Conservation Area" = "#b3a63d",
+  "Sanctuary Zone" = "#bfd054",
+  "General Use Zone" = "#bddde1",
+  # "Recreation Area" = "#f4e952",
+  "Special Purpose Zone" = "#c5bcc9"
+  # "Marine Nature Reserve" = "#bfd054"
+),
+name = "State Marine Parks")
+
+# depth colours
+depth_fills <- scale_fill_manual(values = c("#a7cfe0","#9acbec","#98c4f7",  # Shallow to deep
+                                            "#a3bbff", "#81a1fc"), guide = "none")
+
+site_limits = c(115.0, 115.67,-33.3, -33.65)
+
+ggplot() +
+  geom_contour_filled(data = bathy, aes(x, y, z = Depth, fill = after_stat(level)), color = "black",
+                      breaks = c(-30, -70, -200,-700, -2000, -4000), size = 0.1) +
+  depth_fills +
+  new_scale_fill() +
+  geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
+  # geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, show.legend = F,
+  #         linewidth = 0.75, alpha = 0.5) +
+  # scale_fill_manual(name = "Australian Marine Parks",
+  #                   values = with(marine_parks_amp, setNames(colour, zone))) +
+  geom_sf(data = wasanc ,fill = "#bfd054", alpha = 2/5, color = NA) +
+  wampa_fills +
+  labs(fill = "State Marine Parks") +
+  new_scale_fill() +
+  geom_sf(data = npz, fill = "#7bbc63",alpha = 2/5, color = NA) +
+  geom_sf(data = cwatr, colour = "firebrick", alpha = 4/5, size = 0.3) +
+  new_scale_fill() +
+  geom_scatterpie(data = benthos, aes(x = longitude_dd, y = latitude_dd),
+                  cols = c("Sand",
+                           "Sessile invertebrates",
+                           "Rock",
+                           "Macroalgae",
+                           "Seagrass"),
+                  colour = NA, pie_scale = 0.45) +
+  hab_fills +
+  labs(x = "Longitude", y = "Latitude", fill = "Habitat") +
+  coord_sf(xlim = c(site_limits[1], site_limits[2]), ylim = c(site_limits[3], site_limits[4]), crs = 4326) +
+  theme_minimal() +
+  theme(panel.background = element_rect(fill = "#b9d1d6", colour = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+ggsave(paste0("plots/", park, "/habitat/", name, "_scatterpie.png"),
+       height = 6, width = 10, dpi = 300, bg = "white")
