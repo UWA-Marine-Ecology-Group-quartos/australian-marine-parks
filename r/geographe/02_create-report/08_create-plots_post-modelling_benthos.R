@@ -170,13 +170,21 @@ benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combine
     "Sessile invertebrates" = sessile_invertebrates
   ) %>%
   left_join(metadata_bathy_derivatives) %>%
+  arrange(desc(Sand)) %>% # This plots sand underneath the other pies
   glimpse()
 
-hab_fills <- scale_fill_manual(values = c("Sand" = "wheat",
-                                          "Sessile invertebrates" = "plum",
-                                          "Rock" = "grey40",
-                                          "Macroalgae" = "darkgoldenrod4",
-                                          "Seagrass" = "forestgreen"))
+hab_fills <- scale_fill_manual(
+  name = "Habitat",
+  limits = c("Rock","Sessile invertebrates","Macroalgae","Seagrass","Sand"),
+  values = c(
+    "Rock" = "grey40",
+    "Sessile invertebrates" = "plum",
+    "Macroalgae" = "darkgoldenrod4",
+    "Seagrass" = "forestgreen",
+    "Sand" = "wheat"
+  )
+)
+
 
 wampa_fills <- scale_fill_manual(values = c(
   # "Marine Management Area" = "#b7cfe1",
