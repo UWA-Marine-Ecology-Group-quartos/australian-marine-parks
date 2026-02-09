@@ -21,6 +21,8 @@ library(ggnewscale)
 library(scales)
 library(tidyterra)
 library(patchwork)
+library(scatterpie)
+
 
 # Load functions
 file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
@@ -149,9 +151,9 @@ bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__
   crop(e) %>%
   clamp(upper = 0, lower = -250, values = F) %>%
   trim() %>%
-  rast()
+  as.data.frame(xy = T, na.rm = T)
 
-names(bathy)[1] <- "Depth"
+names(bathy)[3] <- "Depth"
 
 # Scatterpies
 
@@ -198,11 +200,11 @@ ggplot() +
                       breaks = c(-30, -70, -200,-700, -2000, -4000), size = 0.1) +
   depth_fills +
   new_scale_fill() +
-  geom_sf(data = ausc, fill = "seashell2", colour = "grey80", size = 0.1) +
   # geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, show.legend = F,
   #         linewidth = 0.75, alpha = 0.5) +
   # scale_fill_manual(name = "Australian Marine Parks",
   #                   values = with(marine_parks_amp, setNames(colour, zone))) +
+  geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.1) +
   geom_sf(data = wasanc ,fill = "#bfd054", alpha = 2/5, color = NA) +
   wampa_fills +
   labs(fill = "State Marine Parks") +
@@ -217,8 +219,8 @@ ggplot() +
                            "Macroalgae",
                            "Seagrass"),
                   colour = NA, pie_scale = 0.45) +
-  hab_fills +
   labs(x = "Longitude", y = "Latitude", fill = "Habitat") +
+  hab_fills +
   coord_sf(xlim = c(site_limits[1], site_limits[2]), ylim = c(site_limits[3], site_limits[4]), crs = 4326) +
   theme_minimal() +
   theme(panel.background = element_rect(fill = "#b9d1d6", colour = NA),

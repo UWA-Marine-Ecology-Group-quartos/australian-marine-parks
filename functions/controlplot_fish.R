@@ -27,9 +27,9 @@ controlplot_fish <- function(data, amp_abbrv, state_abbrv, title) {
       geom_errorbar(aes(ymin = richness - richness_se,
                         ymax = richness + richness_se),
                     width = 0.8, position = position_dodge(width = 0.6)) +
-      geom_line(aes(group = zone_new, colour = zone_new),
-                position = position_dodge(width = 0.6),
-                linewidth = 0.6, alpha = 0.9) +
+      # geom_line(aes(group = zone_new, colour = zone_new),
+      #           position = position_dodge(width = 0.6),
+      #           linewidth = 0.6, alpha = 0.9) +
       geom_point(size = 3, position = position_dodge(width = 0.6),
                  stroke = 0.2, color = "black", alpha = 0.8) +
       theme_classic() +
@@ -66,10 +66,10 @@ controlplot_fish <- function(data, amp_abbrv, state_abbrv, title) {
                         ymax = cti + cti_se,
                         fill = zone_new, shape = zone_new),
                     width = 0.8, position = position_dodge(width = 0.6)) +
-      geom_line(data = data,
-                aes(x = year, y = cti, group = zone_new, colour = zone_new),
-                position = position_dodge(width = 0.6),
-                linewidth = 0.6, alpha = 0.9) +
+      # geom_line(data = data,
+      #           aes(x = year, y = cti, group = zone_new, colour = zone_new),
+      #           position = position_dodge(width = 0.6),
+      #           linewidth = 0.6, alpha = 0.9) +
       geom_point(data = data,
                  aes(x = year, y = cti, fill = zone_new, shape = zone_new),
                  size = 3, stroke = 0.2, color = "black",
@@ -95,9 +95,9 @@ controlplot_fish <- function(data, amp_abbrv, state_abbrv, title) {
       geom_errorbar(aes(ymin = abundance - abundance_se,
                         ymax = abundance + abundance_se),
                     width = 0.8, position = position_dodge(width = 0.6)) +
-      geom_line(aes(group = zone_new, colour = zone_new),
-                position = position_dodge(width = 0.6),
-                linewidth = 0.6, alpha = 0.9) +
+      # geom_line(aes(group = zone_new, colour = zone_new),
+      #           position = position_dodge(width = 0.6),
+      #           linewidth = 0.6, alpha = 0.9) +
       geom_point(size = 3, position = position_dodge(width = 0.6),
                  stroke = 0.2, color = "black", alpha = 0.8) +
       theme_classic() +
@@ -120,9 +120,9 @@ controlplot_fish <- function(data, amp_abbrv, state_abbrv, title) {
       geom_errorbar(aes(ymin = b20 - b20_se,
                         ymax = b20 + b20_se),
                     width = 0.8, position = position_dodge(width = 0.6)) +
-      geom_line(aes(group = zone_new, colour = zone_new),
-                position = position_dodge(width = 0.6),
-                linewidth = 0.6, alpha = 0.9) +
+      # geom_line(aes(group = zone_new, colour = zone_new),
+      #           position = position_dodge(width = 0.6),
+      #           linewidth = 0.6, alpha = 0.9) +
       geom_point(size = 3, position = position_dodge(width = 0.6),
                  stroke = 0.2, color = "black", alpha = 0.8) +
       theme_classic() +
