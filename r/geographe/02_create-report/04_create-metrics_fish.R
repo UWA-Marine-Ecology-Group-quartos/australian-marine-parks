@@ -65,6 +65,12 @@ count <- readRDS(paste0("data/", park, "/raw/_count-with-zeros.RDS")) %>%
   dplyr::mutate(scientific_name = paste(family, genus, species, sep = " ")) %>%
   glimpse()
 
+spp_list <- count %>%
+  dplyr::distinct(scientific_name, .keep_all = T) %>%
+  dplyr::select(family, genus, species, scientific_name)
+
+write.csv(spp_list, file = paste0("data/", park, "/tidy/", name, "_species_list.csv"))
+
 ta.sr <- count %>%
   dplyr::select(-c(family, genus, species)) %>%
   dplyr::group_by(campaignid, sample, scientific_name) %>%
@@ -91,6 +97,10 @@ tidy_maxn <- bind_rows(ta.sr, cti) %>% ## HE need to check missing aspects
   glimpse()
 
 saveRDS(tidy_maxn, file = paste0("data/", park, "/tidy/", name, "_tidy-count.rds"))
+
+spp_list <- count %>%
+  dplyr::distinct(scientific_name, .keep_all = T) %>%
+  dplyr::select(family, genus, species, scientific_name)
 
 # length <- readRDS(paste0("data/", park, "/raw/_length-with-zeros.RDS")) %>%
 #   dplyr::select(campaignid, sample, family, genus, species, length_mm, count) %>%
