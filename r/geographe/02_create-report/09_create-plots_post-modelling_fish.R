@@ -51,6 +51,11 @@ marine_parks_state <- marine_parks %>% dplyr::filter(epbc %in% "State")
 aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp")
 ausc <- st_crop(aus, e)
 
+cwatr <- st_read("data/south-west network/spatial/shapefiles/amb_coastal_waters_limit.shp") %>%
+  st_make_valid() %>%
+  st_crop(e) %>%
+  st_transform(4326)
+
 # Spatial predictions limits
 prediction_limits <- c(115.0539, 115.5539, -33.64861, -33.35361)
 

@@ -22,6 +22,7 @@ library(scales)
 library(tidyterra)
 library(patchwork)
 library(scatterpie)
+library(CheckEM)
 
 
 # Load functions
@@ -34,7 +35,9 @@ e <- ext(114.2, 115.8,-34.7, -33.1)
 # Load necessary spatial files
 # Australian outline and state and commonwealth marine parks
 aus    <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp")
-ausc <- st_crop(aus, e)
+ausc <- aus %>%
+  st_crop(e) %>%
+  st_transform(4326)
 
 # Australian outline and state and commonwealth marine parks
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
@@ -43,28 +46,31 @@ marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-aust
 plot(marine_parks["zone"])
 
 marine_parks_amp <- marine_parks %>%
-  dplyr::filter(epbc %in% "Commonwealth")
+  dplyr::filter(epbc %in% "Commonwealth") %>%
+  st_transform(4326)
 marine_parks_state <- marine_parks %>%
-  dplyr::filter(epbc %in% "State")
+  dplyr::filter(epbc %in% "State") %>%
+  st_transform(4326)
 
 npz <- marine_parks[marine_parks$zone %in% "National Park Zone", ]
 wasanc <- marine_parks[marine_parks$zone %in% "Sanctuary Zone", ]
 
 cwatr <- st_read("data/south-west network/spatial/shapefiles/amb_coastal_waters_limit.shp") %>%
   st_make_valid() %>%
-  st_crop(e)
+  st_crop(e) %>%
+  st_transform(4326)
 
 # Read in the data (per year) ----
 pred.years <- c(2014L, 2024L)
 
-for(pred_year in pred.years) {
+for (pred_year in pred.years) {
 
-  print(pred_year)
+  message("Year: ", pred_year)
 
   dat <- readRDS(paste0("output/model-output/", park, "/habitat/",
                         name, "_predicted-habitat_", pred_year, ".rds"))
 
-  pred_class <- as.data.frame(dat, xy = T) %>%
+  pred_class <- as.data.frame(dat, xy = TRUE) %>%
     dplyr::mutate(year = pred_year) %>%
     glimpse()
 
@@ -72,11 +78,11 @@ for(pred_year in pred.years) {
   pred_plot <- normalise_se(data = pred_class)
 
   # Set the limits for the plot
-  prediction_limits = c(115.0539, 115.5539, -33.64861, -33.35361)
+  prediction_limits <- c(115.0539, 115.5539, -33.64861, -33.35361)
 
-  # Create the plot
-  dominantbenthos_plot(prediction_limits) + ##HE have to check exclusions in function
-    theme( # Add theme items to sort out the legend
+  # ---- Dominant benthos ggplot (DISPLAY + SAVE) ----
+  p_dom <- dominantbenthos_plot(prediction_limits) +
+    theme(
       legend.position = "bottom",
       legend.direction = "horizontal",
       legend.box = "horizontal",
@@ -84,31 +90,39 @@ for(pred_year in pred.years) {
       legend.text = element_text(size = 5),
       legend.title = element_text(size = 7),
       legend.key.size = unit(0.5, "cm"),
-      legend.margin = margin(t = -0.1, unit = "cm"
-      ))
+      legend.margin = margin(t = -0.1, unit = "cm")
+    )
 
-  # Save the plot
-  ggsave(filename = paste0("plots/", park, "/habitat/", name,
-                           "_predicted-dominant-habitat_", pred_year, ".png"),
-         height = 6, width = 8, dpi = 600, units = "in", bg = "white")
+  print(p_dom)  # <-- this makes it show up when looping
 
-  # Subset the spatraster data to remove reef and standard error
-  pred_rast <- subset(dat, str_detect(names(dat), "(?<!se)\\.fit$") & # fit not preceded by se
-                        str_detect(names(dat), "^(?!.*reef).*$")) # Strings don't contain "reef"
-  names(pred_rast)
+  ggsave(
+    filename = paste0("plots/", park, "/habitat/", name,
+                      "_predicted-dominant-habitat_", pred_year, ".png"),
+    plot = p_dom,
+    height = 6, width = 8, dpi = 600, units = "in", bg = "white"
+  )
 
-  # Set the names - make sure this matches the order
-  # (This assumes you have exactly Sand/Macroalgae/Seagrass remaining)
+  # ---- Build pred_rast for individual plots ----
+  pred_rast <- subset(
+    dat,
+    str_detect(names(dat), "(?<!se)\\.fit$") &     # fit not preceded by se
+      str_detect(names(dat), "^(?!.*reef).*$")    # names don't contain "reef"
+  )
+
   names(pred_rast) <- c("Sand", "Macroalgae", "Seagrasses")
-  plot(pred_rast)
+  # plot(pred_rast)
 
-  # Create the plot - same x and y limits
-  individualbenthic_plot(prediction_limits)
+  # ---- Individual benthos ggplot (DISPLAY + SAVE) ----
+  p_ind <- individualbenthic_plot(prediction_limits)
 
-  # Save the plot
-  ggsave(filename = paste0("plots/", park, "/habitat/", name,
-                           "_predicted-individual-habitat_", pred_year, ".png"),
-         height = 5.5, width = 8, dpi = 900, units = "in", bg = "white")
+  print(p_ind)  # <-- this makes it show up when looping
+
+  ggsave(
+    filename = paste0("plots/", park, "/habitat/", name,
+                      "_predicted-individual-habitat_", pred_year, ".png"),
+    plot = p_ind,
+    height = 5.5, width = 8, dpi = 900, units = "in", bg = "white"
+  )
 }
 
 # Create the data (makes a dataframe for each ecosystem depth contour)

@@ -28,7 +28,8 @@ dominantbenthos_plot <- function(prediction_limits) {
     geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
     labs(x = "", y = "") +
     geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, show.legend = F,
-            linewidth = 0.75) +
+            linewidth = 0.7) +
+    geom_sf(data = cwatr, colour = "firebrick", size = 0.7) +
     scale_colour_manual(name = "Australian Marine Parks",
                         values = with(marine_parks_amp, setNames(colour, zone))) +
     theme_minimal() +

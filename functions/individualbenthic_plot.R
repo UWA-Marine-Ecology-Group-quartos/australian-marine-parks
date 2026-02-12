@@ -5,7 +5,8 @@ individualbenthic_plot <- function(prediction_limits) {
     new_scale_fill() +
     geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
     geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA, show.legend = F,
-            linewidth = 0.75) +
+            linewidth = 0.6) +
+    geom_sf(data = cwatr, colour = "firebrick", size = 0.6) +
     scale_colour_manual(name = "Australian Marine Parks",
                         values = with(marine_parks_amp, setNames(colour, zone))) +
     coord_sf(xlim = c(prediction_limits[1], prediction_limits[2]), ylim = c(prediction_limits[3], prediction_limits[4]), crs = 4326) +
