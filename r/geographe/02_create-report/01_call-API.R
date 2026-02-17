@@ -34,7 +34,7 @@ CheckEM::ga_api_all_data(synthesis_id = "47", # Synthesis ID changes between pro
                          dir = paste0("data/", park, "/raw/"), # Check the directory
                          include_zeros = TRUE)
 
-metadata <- metadata %>%
+metadata <- readRDS(paste0("data/", park, "/raw/metadata.RDS")) %>%
   mutate(year = as.factor(year(date_time)),
          status = as.factor(status)) %>%
   glimpse()
@@ -51,7 +51,9 @@ saveRDS(metadata, paste0("data/", park, "/raw/metadata.RDS"))
 
 ##HE below was done for manually importing 2024 habitat data (not from GA)
 
-benthos_new <- readRDS(paste0("data/", park, "/raw/", name, "_2024_benthos.RDS"))
+benthos_new <- readRDS(paste0("data/", park, "/raw/", name, "_2024_benthos.RDS")) %>%
+  mutate(sample = paste0(sample, "_NA"))
+benthos_summarised <- readRDS(paste0("data/", park, "/raw/benthos_summarised.RDS"))
 
 tidy_habitat <- bind_rows(benthos_summarised,benthos_new) %>%
   left_join(metadata, by = c("campaignid", "sample")) %>% ##HE 2 missing from metadata
