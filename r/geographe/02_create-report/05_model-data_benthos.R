@@ -58,7 +58,12 @@ for(i in 1:length(unique.vars)){
     unique.vars.use = c(unique.vars.use, unique.vars[i])}
 }
 
-unique.vars.use                                                                 # All good
+unique.vars.use   # All good
+unique.vars.use <- c("macroalgae",
+                     "sand",
+                     "rock",
+                     "sessile_invertebrates",
+                     "seagrasses")
 
 # Run the full subset model selection----
 outdir    <- paste0("output/model-output/", park, "/habitat/")
@@ -66,7 +71,7 @@ use.dat   <- model_dat[model_dat$response %in% c(unique.vars.use), ]
 out.all   <- list()
 var.imp   <- list()
 resp.vars <- unique.vars.use
-factor.vars <- c("status", "year")
+factor.vars <- c("year")
 
 # Loop through the FSS function for each Abiotic taxa----
 for(i in 1:length(resp.vars)){
@@ -83,8 +88,8 @@ for(i in 1:length(resp.vars)){
                                   pred.vars.fact = factor.vars,
                                   cyclic.vars = c("geoscience_aspect"),
                                   k = 3,
-                                  cov.cutoff = 0.7,
-                                  max.predictors = 5
+                                  cov.cutoff = 0.7, #HE need to check - maybe loer? Fisher recommends 0.28
+                                  max.predictors = 4 #HE changed from 5
   )
   out.list <- fit.model.set(model.set,
                             max.models = 600,
@@ -126,7 +131,7 @@ write.csv(all.var.imp,         file = paste0(outdir, name, "_abiotic_all.var.imp
 
 # Sand
 m_sand <- gam(cbind(sand, total_pts - sand) ~
-                year + status +
+                year +
                 s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
                 s(geoscience_depth, by = year, k = 5, bs = "cr") +
                 s(geoscience_roughness, by = year, k = 5, bs = "cr"),
@@ -134,10 +139,17 @@ m_sand <- gam(cbind(sand, total_pts - sand) ~
 summary(m_sand)
 
 # Rock - too rare to model
+m_rock <- gam(cbind(rock, total_pts - rock) ~
+                year +
+                s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
+                s(geoscience_depth, by = year, k = 5, bs = "cr") +
+                s(geoscience_roughness, by = year, k = 5, bs = "cr"),
+              data = habi, method = "REML", family = binomial("logit"))
+summary(m_rock)
 
 # Macroalgae
 m_macro <- gam(cbind(macroalgae, total_pts - macroalgae) ~
-                 year + status +
+                 year +
                  s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
                  s(geoscience_depth, by = year, k = 5, bs = "cr") +
                  s(geoscience_detrended, by = year, k = 5, bs = "cr"),
@@ -146,7 +158,7 @@ summary(m_macro)
 
 # Seagrass
 m_seagrass <- gam(cbind(seagrasses, total_pts - seagrasses) ~
-                    year + status +
+                    year +
                     s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
                     s(geoscience_depth, by = year, k = 5, bs = "cr") +
                     s(geoscience_detrended, by = year, k = 5, bs = "cr"),
@@ -154,21 +166,22 @@ m_seagrass <- gam(cbind(seagrasses, total_pts - seagrasses) ~
 summary(m_seagrass)
 
 # Inverts
-# m_inverts <- gam(cbind(sessile_invertebrates, total_pts - sessile_invertebrates) ~
-#                    s(geoscience_aspect,     k = 5, bs = "cc")  +
-#                    s(geoscience_depth, k = 5, bs = "cr") +
-#                    s(geoscience_detrended, k = 5, bs = "cr"),
-#                  data = habi, method = "REML", family = binomial("logit"))
-# summary(m_inverts)
+m_inverts <- gam(cbind(sessile_invertebrates, total_pts - sessile_invertebrates) ~
+                   year +
+                   s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
+                   s(geoscience_depth, by = year, k = 5, bs = "cr") +
+                   s(geoscience_roughness, by = year, k = 5, bs = "cr"),
+                 data = habi, method = "REML", family = binomial("logit"))
+summary(m_inverts)
 
 # Reef
-m_reef <- gam(cbind(reef, total_pts - reef) ~
-                year + status +
-                s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
-                s(geoscience_detrended, by = year, k = 5, bs = "cr") +
-                s(geoscience_roughness, by = year, k = 5, bs = "cr"),
-              data = habi, method = "REML", family = binomial("logit"))
-summary(m_reef)
+# m_reef <- gam(cbind(reef, total_pts - reef) ~
+#                 year +
+#                 s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
+#                 s(geoscience_detrended, by = year, k = 5, bs = "cr") +
+#                 s(geoscience_roughness, by = year, k = 5, bs = "cr"),
+#               data = habi, method = "REML", family = binomial("logit"))
+# summary(m_reef)
 
 # Read predictor rasters to predict onto
 preds <- readRDS(paste0("data/", park, "/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
@@ -202,8 +215,10 @@ predhab <- cbind(preddf_sy,
                  "p_macro"    = predict(m_macro, preddf_sy, type = "response", se.fit = T),
                  "p_sand"     = predict(m_sand, preddf_sy, type = "response", se.fit = T),
                  "p_seagrass" = predict(m_seagrass, preddf_sy, type = "response", se.fit = T),
-                 # "p_inverts"  = predict(m_inverts, preddf_sy, type = "response", se.fit = T),
-                 "p_reef"     = predict(m_reef, preddf_sy, type = "response", se.fit = T)) %>%
+                 "p_inverts"  = predict(m_inverts, preddf_sy, type = "response", se.fit = T),
+                 "p_rock"     = predict(m_rock, preddf_sy, type = "response", se.fit = T)
+                 # "p_reef"     = predict(m_reef, preddf_sy, type = "response", se.fit = T)
+                 ) %>%
   glimpse()
 
 prasts_2014 <- rast(predhab %>%
@@ -221,8 +236,39 @@ plot(prasts_2024)
 summary(prasts_2024)
 
 # Calculate MESS and mask predictions ----
-resp.vars <- c("p_sand", "p_macro", "p_seagrass", "p_reef")
+resp.vars <- c("p_sand", "p_macro", "p_seagrass", "p_inverts", "p_rock")
 pred.years <- c("2014", "2024")
+
+# ---- helper: add dominant class layer from *.fit rasters ----
+benthos_dom_tag <- function(r) {
+  fit_lyrs <- names(r)[grepl("\\.fit$", names(r))]
+  r_fit <- subset(r, fit_lyrs)
+
+  # index of max fit (1..nlyr) per cell
+  dom_idx <- terra::app(r_fit, which.max)
+
+  # turn layer index into a categorical raster with labels
+  dom <- dom_idx
+  levels(dom) <- data.frame(
+    ID = seq_along(fit_lyrs),
+    dom_tag = gsub("^p_", "", gsub("\\.fit$", "", fit_lyrs))
+  )
+  names(dom) <- "dom_tag"
+  list(dom = dom, fit_layers = fit_lyrs)
+}
+
+# optional: pretty labels for plotting
+pretty_dom_labels <- function(x) {
+  dplyr::recode(x,
+                "sand" = "Sand",
+                "macro" = "Macroalgae",
+                "seagrass" = "Seagrass",
+                "reef" = "Reef",
+                "inverts" = "Sessile invertebrates",
+                "rock" = "Rock"
+  )
+}
+
 
 for (y in seq_along(pred.years)) {
 
@@ -266,12 +312,60 @@ for (y in seq_along(pred.years)) {
 
   plot(preddf_m)
 
-  saveRDS(preddf_m,
-          paste0("output/model-output/", park, "/habitat/",
-                 name, "_predicted-habitat_", this_year, ".rds"))
+  # ---- Add dominant habitat layer (like the older scripts) ----
+  dom_out  <- benthos_dom_tag(preddf_m)
+  dom_rast <- dom_out$dom
 
-  writeRaster(preddf_m,
-              paste0("output/model-output/", park, "/habitat/",
-                     names(preddf_m), "_predicted_", this_year, ".tif"),
-              overwrite = TRUE)
+  # Attach dom_tag as an extra layer alongside fits/se.fits
+  preddf_m2 <- c(preddf_m, dom_rast)
+
+  # Optional: make a df for ggplot categorical tiles (old-style map)
+  pred_dom_df <- as.data.frame(dom_rast, xy = TRUE, na.rm = TRUE) %>%
+    dplyr::mutate(
+      dom_tag = as.character(dom_tag),
+      dom_tag = pretty_dom_labels(dom_tag),
+      dom_tag = factor(dom_tag,
+                       levels = c("Sand", "Macroalgae", "Seagrass",
+                                  "Reef", "Rock",
+                                  "Sessile invertebrates"))
+    )
+
+  # ---- KEEP YOUR ORIGINAL RASTER OUTPUT (unchanged) ----
+  writeRaster(
+    preddf_m,
+    paste0("output/model-output/", park, "/habitat/",
+           names(preddf_m), "_predicted_", this_year, ".tif"),
+    overwrite = TRUE
+  )
+
+  # ---- SAVE STACK INCLUDING DOMINANT TAG ----
+  saveRDS(
+    preddf_m2,
+    paste0("output/model-output/", park, "/habitat/",
+           name, "_predicted-habitat_", this_year, ".rds")
+  )
+
+  # ---- SAVE DOMINANT DF (for plotting scripts) ----
+  saveRDS(
+    pred_dom_df,
+    paste0("output/model-output/", park, "/habitat/",
+           name, "_predicted-dominant-habitat_", this_year, ".rds")
+  )
+
+  # ---- WRITE FULL STACK WITH DOMINANT LAYER ----
+  writeRaster(
+    preddf_m2,
+    paste0("output/model-output/", park, "/habitat/",
+           name, "_predicted-habitat-with-dominant_", this_year, ".tif"),
+    overwrite = TRUE
+  )
+
+  # ---- WRITE DOMINANT LAYER ONLY ----
+  writeRaster(
+    dom_rast,
+    paste0("output/model-output/", park, "/habitat/",
+           name, "_predicted-dominant-habitat_", this_year, ".tif"),
+    overwrite = TRUE
+  )
+
 }
