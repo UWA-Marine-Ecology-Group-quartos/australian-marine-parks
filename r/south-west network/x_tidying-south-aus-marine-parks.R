@@ -20,6 +20,7 @@ capad <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Austr
   dplyr::filter(!type %in% "Nature Reserve") %>%
   dplyr::mutate(zone = case_when(
     str_detect(pattern = "Sanctuary", string = zone_type) ~ "Sanctuary Zone",
+    str_detect(pattern = "Reef Observation", string = zone_type) ~ "Sanctuary Zone",
     str_detect(pattern = "IUCN II", string = zone_type) ~ "National Park Zone",
     str_detect(pattern = "National Park", string = zone_type) ~ "National Park Zone",
     str_detect(pattern = "Recreational|Recreation", string = zone_type) ~ "Recreational Use Zone",
