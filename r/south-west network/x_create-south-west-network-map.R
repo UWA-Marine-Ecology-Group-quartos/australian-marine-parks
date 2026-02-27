@@ -8,10 +8,6 @@
 
 # Table of contents
 # 1. Overall location plot (including State and Commonwealth Marine Parks)
-# 2. Sampling location plot
-# 3. Key Ecological Features
-# 4. Historical Sea Levels
-# 5. Bathymetry cross section
 
 # Clear your environment
 rm(list = ls())
@@ -36,7 +32,7 @@ library(geosphere)
 file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
 sapply(file.sources, source, .GlobalEnv)
 
-# Set cropping extent - larger than most zoomed out plot (TEST, might need to change)
+# Set cropping extent - larger than most zoomed out plot (all of aus for this one)
 e <- ext(106.0, 145.0, -45.0, -22.0)
 # e <- ext(ext(110, 155, -45, -10)) # Inset map uses this extent
 
@@ -113,7 +109,7 @@ bathdf <- as.data.frame(bathy, xy = T)
 # amp_cols <- amp_marine_park_cols(marine_parks)
 # state_cols <- state_marine_park_fills(marine_parks)
 
-# 1. No Inset plot network
+# 1. Plot map
 # Set plot inputs
 plot_limits = c(108.0, 138.0, -40.0, -24.0) # Extent of the main plot
 study_limits = NULL # Extent of sampling
@@ -123,6 +119,7 @@ network_map <- function(plot_limits, study_limits, annotation_labels) {
   require(tidyverse)
   require(tidyterra)
   require(patchwork)
+  require(cowplot)
 
   terr_fills_ordered <- scale_fill_manual(values = c("National Park" = "#c4cea6",
                                                      "Nature Reserve" = "#e4d0bb"),
@@ -155,7 +152,7 @@ network_map <- function(plot_limits, study_limits, annotation_labels) {
                       breaks = c("Sanctuary Zone", "General Use Zone", "Recreational Use Zone", "Special Purpose Zone",
                                  "Other State Marine Park Zone")) +
     new_scale_fill() +
-    geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.2, lineend = "round") +
+    geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.1, lineend = "round") +
     labs(x = NULL, y = NULL) +
     {if(!is.null(annotation_labels))
       list(
@@ -173,26 +170,45 @@ network_map <- function(plot_limits, study_limits, annotation_labels) {
     coord_sf(xlim = c(plot_limits[1], plot_limits[2]), ylim = c(plot_limits[3], plot_limits[4]), crs = 4326) +
     theme_minimal() +
     theme(legend.key.size = unit(0.5, "cm"),
-          legend.text = element_text(size = 9),
-          legend.title = element_text(size = 11))
-
+          legend.text = element_text(size = 8),
+          legend.title = element_text(size = 10),
+          legend.position = "bottom",
+          legend.box = "horizontal",
+          legend.direction = "vertical") +
+    guides(fill = guide_legend(ncol = 1))
   # Inset - full australia (ONLY USE IF YOU WANT INSET)
-  # p1.1 <- ggplot(data = aus) +
-  #  geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
-  #  geom_sf(data = capad, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
-  #  coord_sf(xlim = c(105, 160), ylim = c(-48, -8)) +
-  #  annotate("rect", xmin = plot_limits[1], xmax = plot_limits[2], ymin = plot_limits[3], ymax = plot_limits[4],
-  #           colour = "grey25", fill = "white", alpha = 1/5, linewidth = 0.2) +
-  #  theme_bw() +
-  #  theme(axis.text = element_blank(),
-  #        axis.ticks = element_blank(),
-  #        panel.grid.major = element_blank(),
-  #        panel.border = element_rect(colour = "grey70"))
-  # Lines below change where the inset is
-  # p1 + inset_element(p1.1, left = 0.7, bottom = 0.7, right = 1, top = 1)
-  # p1.1 + p1
+   p1.1 <- ggplot(data = aus) +
+    geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
+    geom_sf(data = capad, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
+    coord_sf(xlim = c(105, 160), ylim = c(-48, -8)) +
+    annotate("rect", xmin = plot_limits[1], xmax = plot_limits[2], ymin = plot_limits[3], ymax = plot_limits[4],
+             colour = "grey25", fill = "white", alpha = 1/5, linewidth = 0.2) +
+    theme_bw() +
+    theme(axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.border = element_rect(colour = "grey70"))
 
-  p1
+  # Lines below change where the inset is
+  ## Top right inset (inside map)
+  # p1 + inset_element(p1.1, left = 0.7, bottom = 0.7, right = 1, top = 1)
+  #
+  # Side by side (inset left, map right)
+  # p1.1 + p1
+  #
+  # Bottom left inset (inside map)
+  # p1 + inset_element(p1.1, left = 0, bottom = 0, right = 0.2, top = 0.25)
+   legend <- cowplot::get_legend(p1 + theme(
+     legend.text = element_text(size = 7),
+     legend.title = element_text(size = 8),
+     legend.key.size = unit(0.3, "cm")
+   ))
+
+   p1_no_legend <- p1 + theme(legend.position = "none",
+                              plot.margin = margin(0, 0, 15, 0))
+
+   (p1_no_legend) / (plot_spacer() + p1.1 + legend + plot_spacer() + plot_layout(widths = c(0.1, 0.3, 1, 0.1))) +
+     plot_layout(heights = c(4, 1))
 }
 
 network_map(plot_limits,
@@ -200,7 +216,7 @@ network_map(plot_limits,
             annotation_labels)
 
 # Save plot
-ggsave(paste(paste0('plots/', park, '/spatial/', name) , 'no-inset_network-plot.png',
+ggsave(paste(paste0('plots/', park, '/spatial/', name) , 'bottom-inset_network-plot.png',
              sep = "-"), dpi = 600, width = 8, height = 5, bg = "white")
 
 
