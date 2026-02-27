@@ -29,7 +29,7 @@ library(patchwork)
 library(terra)
 library(tidyterra)
 library(ggnewscale)
- # library(CheckEM) I do not have
+library(CheckEM)
 library(geosphere)
 
 # Load functions
@@ -53,6 +53,7 @@ ausc <- st_crop(aus, e)
 # All australian marine parks - for inset plotting
 aus_marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp")
 
+# STILL MISSING SA and some STATE marine parks
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
   dplyr::filter(name %in% c("Abrolhos", "Bremer", "Eastern Recherche", "Ngari Capes", "Geographe", "South-west Corner",
                             "Great Australian Bight", "Jurien", "Jurien Bay", "Perth Canyon", "Twilight", "Two Rocks")) %>%
