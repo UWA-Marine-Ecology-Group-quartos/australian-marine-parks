@@ -239,133 +239,142 @@ summary(prasts_2024)
 resp.vars <- c("p_sand", "p_macro", "p_seagrass", "p_inverts", "p_rock")
 pred.years <- c("2014", "2024")
 
-# ---- helper: add dominant class layer from *.fit rasters ----
+# Labels and colours for dominant habitat outputs
+dom_labels <- c(
+  sand = "Sand",
+  macro = "Macroalgae",
+  seagrass = "Seagrass",
+  inverts = "Sessile invertebrates",
+  rock = "Rock"
+)
+
+# Helper: create dominant class raster from *.fit layers only
 benthos_dom_tag <- function(r) {
-  fit_lyrs <- names(r)[grepl("\\.fit$", names(r))]
-  r_fit <- subset(r, fit_lyrs)
 
-  # index of max fit (1..nlyr) per cell
-  dom_idx <- terra::app(r_fit, which.max)
+  fit_lyrs <- names(r)[
+    grepl("\\.fit$", names(r)) &
+      !grepl("\\.se\\.fit$", names(r))
+  ]
 
-  # turn layer index into a categorical raster with labels
-  dom <- dom_idx
+  r_fit <- terra::subset(r, fit_lyrs)
+
+  dom <- terra::which.max(r_fit)
+
   levels(dom) <- data.frame(
     ID = seq_along(fit_lyrs),
-    dom_tag = gsub("^p_", "", gsub("\\.fit$", "", fit_lyrs))
+    dom_tag = sub("^p_", "", sub("\\.fit$", "", fit_lyrs))
   )
+
   names(dom) <- "dom_tag"
-  list(dom = dom, fit_layers = fit_lyrs)
+  dom
 }
 
-# optional: pretty labels for plotting
-pretty_dom_labels <- function(x) {
-  dplyr::recode(x,
-                "sand" = "Sand",
-                "macro" = "Macroalgae",
-                "seagrass" = "Seagrass",
-                "reef" = "Reef",
-                "inverts" = "Sessile invertebrates",
-                "rock" = "Rock"
-  )
-}
+for (this_year in pred.years) {
 
-
-for (y in seq_along(pred.years)) {
-
-  this_year <- pred.years[y]
   print(this_year)
 
   xy <- habi %>%
     dplyr::filter(as.character(year) == this_year) %>%
     dplyr::transmute(x = longitude_dd, y = latitude_dd)
 
-  for (i in seq_along(resp.vars)) {
+  preddf_m <- NULL
 
-    print(resp.vars[i])
-    mod <- get(str_replace_all(resp.vars[i], "p_", "m_"))
+  for (resp_var in resp.vars) {
+
+    print(resp_var)
+
+    mod <- get(stringr::str_replace(resp_var, "^p_", "m_"))
 
     temppred <- predhab %>%
       dplyr::filter(as.character(year) == this_year) %>%
-      dplyr::select(x, y,
-                    paste0(resp.vars[i], ".fit"),
-                    paste0(resp.vars[i], ".se.fit")) %>%
-      rast(crs = "epsg:4326")
+      dplyr::select(
+        x, y,
+        dplyr::all_of(paste0(resp_var, ".fit")),
+        dplyr::all_of(paste0(resp_var, ".se.fit"))
+      ) %>%
+      terra::rast(crs = "epsg:4326")
 
     geo.vars <- names(mod$model)[startsWith(names(mod$model), "geoscience")]
 
-    dat <- terra::extract(subset(preds, geo.vars), xy) %>%
+    dat <- terra::extract(terra::subset(preds, geo.vars), xy) %>%
       dplyr::select(-ID)
 
-    messrast <- predicts::mess(subset(preds, geo.vars), dat) %>%
+    messrast <- predicts::mess(terra::subset(preds, geo.vars), dat) %>%
       terra::clamp(lower = -0.01, values = FALSE) %>%
       terra::crop(temppred)
 
     temppred_m <- terra::mask(temppred, messrast)
 
-    if (i == 1) {
-      preddf_m <- temppred_m
-    } else {
-      preddf_m <- c(preddf_m, temppred_m)   # <- combine layers
-    }
-
+    preddf_m <- if (is.null(preddf_m)) temppred_m else c(preddf_m, temppred_m)
   }
 
   plot(preddf_m)
 
-  # ---- Add dominant habitat layer (like the older scripts) ----
-  dom_out  <- benthos_dom_tag(preddf_m)
-  dom_rast <- dom_out$dom
+  # Add dominant habitat layer
+  dom_rast <- benthos_dom_tag(preddf_m)
 
-  # Attach dom_tag as an extra layer alongside fits/se.fits
+  # Stack fits + se.fits + dominant habitat
   preddf_m2 <- c(preddf_m, dom_rast)
 
-  # Optional: make a df for ggplot categorical tiles (old-style map)
+  # Data frame for ggplot categorical tiles
   pred_dom_df <- as.data.frame(dom_rast, xy = TRUE, na.rm = TRUE) %>%
     dplyr::mutate(
-      dom_tag = as.character(dom_tag),
-      dom_tag = pretty_dom_labels(dom_tag),
+      dom_tag = unname(dom_labels[as.character(dom_tag)]),
       dom_tag = factor(dom_tag,
-                       levels = c("Sand", "Macroalgae", "Seagrass",
-                                  "Reef", "Rock",
-                                  "Sessile invertebrates"))
+                       levels = c("Sand","Macroalgae","Seagrass",
+                                  "Rock","Sessile invertebrates"))
     )
 
-  # ---- KEEP YOUR ORIGINAL RASTER OUTPUT (unchanged) ----
+  # Optional sanity check
+  print(table(pred_dom_df$dom_tag, useNA = "ifany"))
+
+  plot(dom_rast)
+
+  # Write original masked prediction rasters
   writeRaster(
     preddf_m,
-    paste0("output/model-output/", park, "/habitat/",
-           names(preddf_m), "_predicted_", this_year, ".tif"),
+    paste0(
+      "output/model-output/", park, "/habitat/",
+      names(preddf_m), "_predicted_", this_year, ".tif"
+    ),
     overwrite = TRUE
   )
 
-  # ---- SAVE STACK INCLUDING DOMINANT TAG ----
+  # Save stack including dominant habitat layer
   saveRDS(
     preddf_m2,
-    paste0("output/model-output/", park, "/habitat/",
-           name, "_predicted-habitat_", this_year, ".rds")
+    paste0(
+      "output/model-output/", park, "/habitat/",
+      name, "_predicted-habitat_", this_year, ".rds"
+    )
   )
 
-  # ---- SAVE DOMINANT DF (for plotting scripts) ----
+  # Save dominant habitat dataframe for plotting scripts
   saveRDS(
     pred_dom_df,
-    paste0("output/model-output/", park, "/habitat/",
-           name, "_predicted-dominant-habitat_", this_year, ".rds")
+    paste0(
+      "output/model-output/", park, "/habitat/",
+      name, "_predicted-dominant-habitat_", this_year, ".rds"
+    )
   )
 
-  # ---- WRITE FULL STACK WITH DOMINANT LAYER ----
+  # Write full raster stack including dominant habitat
   writeRaster(
     preddf_m2,
-    paste0("output/model-output/", park, "/habitat/",
-           name, "_predicted-habitat-with-dominant_", this_year, ".tif"),
+    paste0(
+      "output/model-output/", park, "/habitat/",
+      name, "_predicted-habitat-with-dominant_", this_year, ".tif"
+    ),
     overwrite = TRUE
   )
 
-  # ---- WRITE DOMINANT LAYER ONLY ----
+  # Write dominant habitat raster only
   writeRaster(
     dom_rast,
-    paste0("output/model-output/", park, "/habitat/",
-           name, "_predicted-dominant-habitat_", this_year, ".tif"),
+    paste0(
+      "output/model-output/", park, "/habitat/",
+      name, "_predicted-dominant-habitat_", this_year, ".tif"
+    ),
     overwrite = TRUE
   )
-
 }

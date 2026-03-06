@@ -63,6 +63,14 @@ cwatr <- st_read("data/south-west network/spatial/shapefiles/amb_coastal_waters_
 # Read in the data (per year) ----
 pred.years <- c(2014L, 2024L)
 
+# hab_cols <- c(
+#   "Sand" = "wheat",
+#   "Macroalgae" = "darkgoldenrod4",
+#   "Seagrass" = "forestgreen",
+#   "Rock" = "grey40",
+#   "Sessile invertebrates" = "plum"
+# )
+
 for (pred_year in pred.years) {
 
   message("Year: ", pred_year)
@@ -109,7 +117,7 @@ for (pred_year in pred.years) {
       str_detect(names(dat), "^(?!.*reef).*$")    # names don't contain "reef"
   )
 
-  names(pred_rast) <- c("Sand", "Macroalgae", "Seagrasses")
+  names(pred_rast) <- c("Sand", "Macroalgae", "Seagrasses", "Sessile Invertebrates", "Rock")
   # plot(pred_rast)
 
   # ---- Individual benthos ggplot (DISPLAY + SAVE) ----
