@@ -207,7 +207,7 @@ network_map <- function(plot_limits, study_limits, annotation_labels) {
    p1_no_legend <- p1 + theme(legend.position = "none",
                               plot.margin = margin(0, 0, 15, 0))
 
-   (p1_no_legend) / (plot_spacer() + p1.1 + legend + plot_spacer() + plot_layout(widths = c(0.1, 0.3, 1, 0.1))) +
+   (p1_no_legend) / (plot_spacer() + p1.1 + legend + plot_spacer() + plot_layout(widths = c(0.139, 0.3, 1, 0.08))) +
      plot_layout(heights = c(4, 1))
 }
 
