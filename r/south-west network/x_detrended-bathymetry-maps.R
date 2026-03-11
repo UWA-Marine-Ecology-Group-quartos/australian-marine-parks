@@ -49,11 +49,6 @@ terr_fills <- scale_fill_manual(values = c("National Park" = "#c4cea6",         
 aus    <- st_read("data/south-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
   st_make_valid()
 
-ausc_union <- ausc %>%
-  st_transform(crs = st_crs(4326)) %>%   # reproject to WGS84 to match raster
-  st_union()
-
-
 # Load marine parks
 capad <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp")
 
@@ -288,30 +283,34 @@ plot(new_detre_geo[[1]])
 old_detre_geo_layer <- old_detre_geo[["geoscience_detrended"]]
 new_detre_geo_layer <- new_detre_geo[["geoscience_detrended"]]
 
-make_detrend_map_zoom <- function(detre_rast, bathy_contour, title_str) {
+make_detrend_map_zoom <- function(detre_rast, bathy_contour, title_str,
+                                  xlim, ylim) {
 
   names(detre_rast) <- "detrended"
 
-  # Create contour dataframe from raw bathymetry
   bathy_df <- as.data.frame(bathy_contour, xy = TRUE)
   names(bathy_df)[3] <- "depth"
 
-  # Replace the contour label extraction with this
   contour_labels <- do.call(rbind, lapply(c(-30, -70, -200), function(lvl) {
-
     bathy_wide <- bathy_df %>%
       tidyr::pivot_wider(names_from = x, values_from = depth)
-
     x_vals <- sort(unique(bathy_df$x))
     y_vals <- sort(unique(bathy_df$y))
     z_mat  <- as.matrix(bathy_wide[, -1])
-
     cl <- contourLines(x = x_vals, y = y_vals, z = z_mat, levels = lvl)
-
     if (length(cl) == 0) return(NULL)
-    longest <- cl[[which.max(sapply(cl, function(x) length(x$x)))]]
-    mid <- length(longest$x) %/% 2
-    data.frame(x = longest$x[mid], y = longest$y[mid], level = lvl)
+
+    # Crop to map extent
+    longest_in_extent <- do.call(rbind, lapply(cl, function(line) {
+      data.frame(x = line$x, y = line$y)
+    })) %>%
+      dplyr::filter(x >= xlim[1], x <= xlim[2],
+                    y >= ylim[1], y <= ylim[2])
+
+    if (nrow(longest_in_extent) == 0) return(NULL)
+    # Default midpoint of longest line within extent
+    mid <- nrow(longest_in_extent) %/% 2
+    data.frame(x = longest_in_extent$x[mid], y = longest_in_extent$y[mid], level = lvl)
   }))
 
   ggplot() +
@@ -344,7 +343,7 @@ make_detrend_map_zoom <- function(detre_rast, bathy_contour, title_str) {
                                  "Nature Reserve" = "#e4d0bb"),
                       name = "Terrestrial Parks",
                       guide = "none") +
-    coord_sf(xlim = c(114.9, 115.75), ylim = c(-33.7, -33.25), expand = FALSE) +
+    coord_sf(xlim = xlim, ylim = ylim, expand = FALSE) +   # ← dynamic
     labs(x = "Longitude", y = "Latitude") +
     theme_minimal() +
     theme(
@@ -359,10 +358,16 @@ make_detrend_map_zoom <- function(detre_rast, bathy_contour, title_str) {
     )
 }
 
-# Usage
-p_detre_old_geo <- make_detrend_map_zoom(old_detre_geo_layer, old_bathy_geo, "Detrended Bathymetry 2009 - Geographe")
-p_detre_new_geo <- make_detrend_map_zoom(new_detre_geo_layer, new_bathy_geo, "Detrended Bathymetry 2024 - Geographe")
+# Geographe zoom
+p_detre_old_geo <- make_detrend_map_zoom(old_detre_geo_layer, old_bathy_geo,
+                                         "Geographe 2009",
+                                         xlim = c(114.9, 115.75),
+                                         ylim = c(-33.7, -33.25))
 
+p_detre_new_geo <- make_detrend_map_zoom(new_detre_geo_layer, new_bathy_geo,
+                                           "Perth Canyon 2009",
+                                           xlim = c(114.5, 116.0),
+                                           ylim = c(-33.6, -33.3))
 #2009
 print(p_detre_old_geo)
 ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'old-geographe-detrended-bathymetry-plot.png',
@@ -375,4 +380,52 @@ print(p_detre_new_geo)
 ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'new-geographe-detrended-bathymetry-plot.png',
              sep = "-"),
        plot = p_detre_new_geo,   #
+       dpi = 600, width = 12, height = 6, bg = "white")
+
+# South-West Corner zoom
+# crop to swc extent
+e_swc <- ext(110.0, 116.5, -34.5, -33.4)
+
+old_bathy_swc <- crop(old_full_bathy, e_swc) %>%
+  clamp(upper = 0, values = F) %>%
+  trim()
+
+new_bathy_swc <- crop(new_full_bathy, e_swc) %>%
+  clamp(upper = 0, values = F) %>%
+  trim()
+
+# Detrend on local extent
+old_zstar_swc <- st_as_stars(old_bathy_swc)
+old_detre_swc <- detrend(old_zstar_swc, parallel = 8)
+old_detre_swc <- as(object = old_detre_swc, Class = "SpatRaster")
+names(old_detre_swc) <- c("geoscience_detrended", "lineartrend")
+
+new_zstar_swc <- st_as_stars(new_bathy_swc)
+new_detre_swc <- detrend(new_zstar_swc, parallel = 8)
+new_detre_swc <- as(object = new_detre_swc, Class = "SpatRaster")
+names(new_detre_swc) <- c("geoscience_detrended", "lineartrend")
+
+old_detre_swc_layer <- old_detre_swc[["geoscience_detrended"]]
+new_detre_swc_layer <- new_detre_swc[["geoscience_detrended"]]
+
+p_detre_old_swc <- make_detrend_map_zoom(old_detre_swc_layer, old_bathy_swc,
+                                         "SWC 2009",
+                                         xlim = c(114.2, 116),
+                                         ylim = c(-34.5, -33.4))
+
+p_detre_new_swc <- make_detrend_map_zoom(new_detre_swc_layer, new_bathy_swc,
+                                         "SWC 2024",
+                                         xlim = c(114.2, 116),
+                                         ylim = c(-34.5, -33.4))
+
+print(p_detre_old_swc)
+ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'old-swc-detrended-bathymetry-plot.png',
+             sep = "-"),
+       plot = p_detre_old_swc,
+       dpi = 600, width = 12, height = 6, bg = "white")
+
+print(p_detre_new_swc)
+ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'new-swc-detrended-bathymetry-plot.png',
+             sep = "-"),
+       plot = p_detre_new_swc,
        dpi = 600, width = 12, height = 6, bg = "white")
