@@ -9,6 +9,13 @@ controlplot_fish <- function(data, amp_abbrv, state_abbrv, title) {
                    paste(state_abbrv, "SZ (IUCN II)"),
                    paste(state_abbrv, "other zones"))
 
+  data <- data %>%
+    dplyr::mutate(
+      year = as.numeric(year),
+      zone_new = factor(zone_new, levels = zone_levels)
+    ) %>%
+    tidyr::complete(zone_new, year = c(2014, 2024))
+
   fill_vals <- setNames(
     c("#b9e6fb", "#fff8a3", "#7bbc63", "#bfd054", "#bddde1"),
     zone_levels
@@ -37,9 +44,9 @@ controlplot_fish <- function(data, amp_abbrv, state_abbrv, title) {
                          breaks = c(2013, 2015, 2017, 2019, 2021, 2023)) +
       geom_vline(xintercept = 2018, linetype = "dashed", color = "black",
                  linewidth = 0.5, alpha = 0.5) +
-      scale_fill_manual(values = fill_vals, name = "Marine Parks") +
-      scale_shape_manual(values = shape_vals, name = "Marine Parks") +
-      scale_colour_manual(values = fill_vals, guide = "none") +
+      scale_fill_manual(values = fill_vals, name = "Marine Parks", drop = FALSE) +
+      scale_shape_manual(values = shape_vals, name = "Marine Parks", drop = FALSE) +
+      scale_colour_manual(values = fill_vals, guide = "none", drop = FALSE) +
       labs(x = "Year", y = "Species richness")
 
     plot_list[["species.richness"]] <- gg_sr
@@ -80,9 +87,9 @@ controlplot_fish <- function(data, amp_abbrv, state_abbrv, title) {
                          breaks = c(2013, 2015, 2017, 2019, 2021, 2023)) +
       geom_vline(xintercept = 2018, linetype = "dashed", color = "black",
                  linewidth = 0.5, alpha = 0.5) +
-      scale_fill_manual(values = fill_vals, name = "Marine Parks") +
-      scale_shape_manual(values = shape_vals, name = "Marine Parks") +
-      scale_colour_manual(values = fill_vals, guide = "none") +
+      scale_fill_manual(values = fill_vals, name = "Marine Parks", drop = FALSE) +
+      scale_shape_manual(values = shape_vals, name = "Marine Parks", drop = FALSE) +
+      scale_colour_manual(values = fill_vals, guide = "none", drop = FALSE) +
       labs(x = "Year", y = "Community Temperature Index")
 
     plot_list[["cti"]] <- gg_cti
@@ -105,9 +112,9 @@ controlplot_fish <- function(data, amp_abbrv, state_abbrv, title) {
                          breaks = c(2013, 2015, 2017, 2019, 2021, 2023)) +
       geom_vline(xintercept = 2018, linetype = "dashed", color = "black",
                  linewidth = 0.5, alpha = 0.5) +
-      scale_fill_manual(values = fill_vals, name = "Marine Parks") +
-      scale_shape_manual(values = shape_vals, name = "Marine Parks") +
-      scale_colour_manual(values = fill_vals, guide = "none") +
+      scale_fill_manual(values = fill_vals, name = "Marine Parks", drop = FALSE) +
+      scale_shape_manual(values = shape_vals, name = "Marine Parks", drop = FALSE) +
+      scale_colour_manual(values = fill_vals, guide = "none", drop = FALSE) +
       labs(x = "Year", y = "Total abundance")
 
     plot_list[["abundance"]] <- gg_ab
@@ -130,9 +137,9 @@ controlplot_fish <- function(data, amp_abbrv, state_abbrv, title) {
                          breaks = c(2013, 2015, 2017, 2019, 2021, 2023)) +
       geom_vline(xintercept = 2018, linetype = "dashed", color = "black",
                  linewidth = 0.5, alpha = 0.5) +
-      scale_fill_manual(values = fill_vals, name = "Marine Parks") +
-      scale_shape_manual(values = shape_vals, name = "Marine Parks") +
-      scale_colour_manual(values = fill_vals, guide = "none") +
+      scale_fill_manual(values = fill_vals, name = "Marine Parks", drop = FALSE) +
+      scale_shape_manual(values = shape_vals, name = "Marine Parks", drop = FALSE) +
+      scale_colour_manual(values = fill_vals, guide = "none", drop = FALSE) +
       labs(x = "Year", y = "B20")
 
     plot_list[["b20"]] <- gg_b20

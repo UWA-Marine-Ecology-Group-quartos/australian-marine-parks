@@ -94,7 +94,6 @@ controldata_fish <- function(dat, year, amp_abbrv, state_abbrv) {
       dplyr::select(zone_new, status, year,
                     cti, cti_se, richness, richness_se,
                     abundance, abundance_se, b20, b20_se) %>%
-      dplyr::filter(!is.na(b20)) %>%
       dplyr::group_by(zone_new, status, year) %>%
       dplyr::summarise(across(everything(), ~mean(.x, na.rm = TRUE)), .groups = "drop")
   }
@@ -131,7 +130,6 @@ controldata_fish <- function(dat, year, amp_abbrv, state_abbrv) {
       dplyr::select(zone_new, status, year,
                     cti, cti_se, richness, richness_se,
                     abundance, abundance_se, b20, b20_se) %>%
-      dplyr::filter(!is.na(b20)) %>%
       dplyr::group_by(zone_new, status, year) %>%
       dplyr::summarise(across(everything(), ~mean(.x, na.rm = TRUE)), .groups = "drop")
   }
@@ -168,7 +166,6 @@ controldata_fish <- function(dat, year, amp_abbrv, state_abbrv) {
       dplyr::select(zone_new, status, year,
                     cti, cti_se, richness, richness_se,
                     abundance, abundance_se, b20, b20_se) %>%
-      dplyr::filter(!is.na(b20)) %>%
       dplyr::group_by(zone_new, status, year) %>%
       dplyr::summarise(across(everything(), ~mean(.x, na.rm = TRUE)), .groups = "drop")
   }

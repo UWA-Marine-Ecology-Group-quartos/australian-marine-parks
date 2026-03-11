@@ -1,4 +1,4 @@
-scatterpie_plot <- function(site_limits, pie_scale = 0.45) {
+scatterpie_plot <- function(site_limits, pie_radius = 0.004) {
 
   ggplot() +
     geom_contour_filled(
@@ -20,7 +20,7 @@ scatterpie_plot <- function(site_limits, pie_scale = 0.45) {
     new_scale_fill() +
     geom_scatterpie(
       data = benthos_year,
-      aes(x = longitude_dd, y = latitude_dd),
+      aes(x = longitude_dd, y = latitude_dd, r = pie_radius),
       cols = c(
         "Sand",
         "Sessile invertebrates",
@@ -28,8 +28,7 @@ scatterpie_plot <- function(site_limits, pie_scale = 0.45) {
         "Macroalgae",
         "Seagrass"
       ),
-      colour = NA,
-      pie_scale = pie_scale
+      colour = NA
     ) +
     labs(x = "Longitude", y = "Latitude", fill = "Habitat") +
     hab_fills +

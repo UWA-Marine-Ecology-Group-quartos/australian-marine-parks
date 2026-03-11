@@ -56,6 +56,16 @@ cwatr <- st_read("data/south-west network/spatial/shapefiles/amb_coastal_waters_
   st_crop(e) %>%
   st_transform(4326)
 
+# Load the bathymetry data (GA 250m resolution)
+bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
+  crop(e) %>%
+  clamp(upper = 0, lower = -250, values = F) %>%
+  trim() %>%
+  as.data.frame(xy = T, na.rm = T) %>%
+  glimpse()
+
+names(bathy)[3] <- "Depth"
+
 # Spatial predictions limits
 prediction_limits <- c(115.0539, 115.5539, -33.64861, -33.35361)
 

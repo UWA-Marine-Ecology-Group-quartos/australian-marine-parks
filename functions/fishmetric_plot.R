@@ -10,6 +10,13 @@ fishmetric_plot <- function(prediction_limits, dat, year = NULL) {
       labs(fill = "Species\nRichness", x = NULL, y = NULL,
            title = paste0("Whole assemblage", yr_lab)) +
       new_scale_fill() +
+      geom_contour(
+        data = bathy,
+        aes(x = x, y = y, z = Depth),
+        colour = "black",
+        breaks = c(-30, -70, -200),
+        linewidth = 0.2
+      ) +
       geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
       geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA,
               show.legend = FALSE, linewidth = 0.6) +
@@ -28,6 +35,13 @@ fishmetric_plot <- function(prediction_limits, dat, year = NULL) {
       scale_fill_viridis_c(na.value = "transparent", direction = -1) +
       labs(fill = "CTI", x = NULL, y = NULL, title = paste0("CTI", yr_lab)) +
       new_scale_fill() +
+      geom_contour(
+        data = bathy,
+        aes(x = x, y = y, z = Depth),
+        colour = "black",
+        breaks = c(-30, -70, -200),
+        linewidth = 0.2
+      ) +
       geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
       geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA,
               show.legend = FALSE, linewidth = 0.6) +
@@ -47,6 +61,13 @@ fishmetric_plot <- function(prediction_limits, dat, year = NULL) {
       labs(fill = "B20*", x = NULL, y = NULL,
            title = paste0("Biomass non-pelagic bony fish > 20cm", yr_lab)) +
       new_scale_fill() +
+      geom_contour(
+        data = bathy,
+        aes(x = x, y = y, z = Depth),
+        colour = "black",
+        breaks = c(-30, -70, -200),
+        linewidth = 0.2
+      ) +
       geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
       geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA,
               show.legend = FALSE, linewidth = 0.6) +
@@ -66,6 +87,13 @@ fishmetric_plot <- function(prediction_limits, dat, year = NULL) {
       labs(fill = "Abundance", x = NULL, y = NULL,
            title = paste0("Total abundance", yr_lab)) +
       new_scale_fill() +
+      geom_contour(
+        data = bathy,
+        aes(x = x, y = y, z = Depth),
+        colour = "black",
+        breaks = c(-30, -70, -200),
+        linewidth = 0.2
+      ) +
       geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
       geom_sf(data = marine_parks_amp, aes(colour = zone), fill = NA,
               show.legend = FALSE, linewidth = 0.6) +

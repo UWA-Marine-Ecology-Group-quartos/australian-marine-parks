@@ -260,7 +260,7 @@ for (yr in years) {
     ) %>%
     arrange(desc(Sand))
 
-  p_scatterpie <- scatterpie_plot(site_limits = site_limits, pie_scale = 0.45)
+  p_scatterpie <- scatterpie_plot(site_limits = site_limits, pie_radius = 0.005)
 
   print(p_scatterpie)
 

@@ -24,6 +24,13 @@ dominantbenthos_plot <- function(prediction_limits) {
     scale_alpha_continuous(range = c(0, 1), guide = "none", name = "Seagrass") +
     scale_fill_gradient(low = "white", high = "forestgreen", name = "Seagrass", na.value = "transparent") +
     new_scale_fill() +
+    geom_contour(
+      data = bathy,
+      aes(x = x, y = y, z = Depth),
+      colour = "black",
+      breaks = c(-30, -70, -200),
+      linewidth = 0.2
+    ) +
     new_scale("alpha") +
     geom_sf(data = ausc, fill = "seashell2", colour = "black", size = 0.2) +
     labs(x = "", y = "") +
