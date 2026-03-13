@@ -13,8 +13,9 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
       geom_point(size = 3, position = position_dodge(width = 0.6),
                  stroke = 0.2, color = "black", alpha = 0.8) +
       theme_classic() +
-      scale_x_continuous(limits = c(2013, 2024),
-                         breaks = c(2013, 2015, 2017, 2019, 2021, 2023)) +
+      scale_x_continuous(
+        breaks = c(2014, 2024)) +
+      coord_cartesian(xlim = c(2013, 2025), ylim = c(0, NA)) +
       geom_vline(xintercept = 2018, linetype = "dashed", color = "black", linewidth = 0.5, alpha = 0.5) +
       scale_fill_manual(values = setNames(
         c("#b9e6fb", "#fff8a3", "#7bbc63", "#bfd054", "#bddde1"),
@@ -56,8 +57,9 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
       geom_point(size = 3, position = position_dodge(width = 0.6),
                  stroke = 0.2, color = "black", alpha = 0.8) +
       theme_classic() +
-      scale_x_continuous(limits = c(2013, 2024),
-                         breaks = c(2013, 2015, 2017, 2019, 2021, 2023)) +
+      scale_x_continuous(
+        breaks = c(2014, 2024)) +
+      coord_cartesian(xlim = c(2013, 2025), ylim = c(0, NA)) +
       geom_vline(xintercept = 2018, linetype = "dashed", color = "black", linewidth = 0.5, alpha = 0.5) +
       scale_fill_manual(values = setNames(
         c("#b9e6fb", "#fff8a3", "#7bbc63", "#bfd054", "#bddde1"),
@@ -99,8 +101,9 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
       geom_point(size = 3, position = position_dodge(width = 0.6),
                  stroke = 0.2, color = "black", alpha = 0.8) +
       theme_classic() +
-      scale_x_continuous(limits = c(2013, 2024),
-                         breaks = c(2013, 2015, 2017, 2019, 2021, 2023)) +
+      scale_x_continuous(
+        breaks = c(2014, 2024)) +
+      coord_cartesian(xlim = c(2013, 2025), ylim = c(0, NA)) +
       geom_vline(xintercept = 2018, linetype = "dashed", color = "black", linewidth = 0.5, alpha = 0.5) +
       scale_fill_manual(values = setNames(
         c("#b9e6fb", "#fff8a3", "#7bbc63", "#bfd054", "#bddde1"),
@@ -142,8 +145,9 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
       geom_point(size = 3, position = position_dodge(width = 0.6),
                  stroke = 0.2, color = "black", alpha = 0.8) +
       theme_classic() +
-      scale_x_continuous(limits = c(2013, 2024),
-                         breaks = c(2013, 2015, 2017, 2019, 2021, 2023)) +
+      scale_x_continuous(
+        breaks = c(2014, 2024)) +
+      coord_cartesian(xlim = c(2013, 2025), ylim = c(0, NA)) +
       geom_vline(xintercept = 2018, linetype = "dashed", color = "black", linewidth = 0.5, alpha = 0.5) +
       scale_fill_manual(values = setNames(
         c("#b9e6fb", "#fff8a3", "#7bbc63", "#bfd054", "#bddde1"),
@@ -185,8 +189,9 @@ controlplot_benthos <- function(data, amp_abbrv, state_abbrv, title) {
       geom_point(size = 3, position = position_dodge(width = 0.6),
                  stroke = 0.2, color = "black", alpha = 0.8) +
       theme_classic() +
-      scale_x_continuous(limits = c(2013, 2024),
-                         breaks = c(2013, 2015, 2017, 2019, 2021, 2023)) +
+      scale_x_continuous(
+        breaks = c(2014, 2024)) +
+      coord_cartesian(xlim = c(2013, 2025), ylim = c(0, NA)) +
       geom_vline(xintercept = 2018, linetype = "dashed", color = "black", linewidth = 0.5, alpha = 0.5) +
       scale_fill_manual(values = setNames(
         c("#b9e6fb", "#fff8a3", "#7bbc63", "#bfd054", "#bddde1"),

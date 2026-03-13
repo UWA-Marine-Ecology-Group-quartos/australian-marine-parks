@@ -121,19 +121,19 @@ park_dat.rari    <- purrr::map_dfr(control_all, "rari")
 (p_shallow <- controlplot_fish(data = park_dat.shallow, amp_abbrv = "GMP", state_abbrv = "NCMP",
                               title = "Shallow (0 - 30 m)"))
 ggsave(paste0("plots/", park, "/fish/", name, "_shallow-control-plots.png"),
-       plot = p_shallow, height = 9, width = 8, dpi = 300, units = "in", bg = "white")
+       plot = p_shallow, height = 9, width = 6, dpi = 300, units = "in", bg = "white")
 
 # Mesophotic plot (both years together)
 (p_meso <- controlplot_fish(data = park_dat.meso, amp_abbrv = "GMP", state_abbrv = "NCMP",
                            title = "Mesophotic (30 - 70 m)"))
 ggsave(paste0("plots/", park, "/fish/", name, "_mesophotic-control-plots.png"),
-       plot = p_meso, height = 9, width = 8, dpi = 300, units = "in", bg = "white")
+       plot = p_meso, height = 9, width = 6, dpi = 300, units = "in", bg = "white")
 
 # Rariphotic:
 # p_rari <- controlplot_fish(data = park_dat.rari, amp_abbrv = "GMP", state_abbrv = "NCMP",
 #                            title = "Rariphotic (70 - 200 m)")
 # ggsave(paste0("plots/", park, "/fish/", name, "_rariphotic-control-plots.png"),
-#        plot = p_rari, height = 9, width = 8, dpi = 300, units = "in", bg = "white")
+#        plot = p_rari, height = 9, width = 6, dpi = 300, units = "in", bg = "white")
 
 
 # Stacked plots

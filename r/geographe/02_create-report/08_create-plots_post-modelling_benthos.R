@@ -169,19 +169,19 @@ park_dat.rari    <- purrr::map_dfr(control_all, "rari")
 controlplot_benthos(data = park_dat.shallow, amp_abbrv = "GMP", state_abbrv = "NCMP",
                     title = "Shallow (0 - 30 m)")
 ggsave(paste0("plots/", park, "/habitat/", name, "_shallow-control-plots.png"),
-       height = 9, width = 8, dpi = 300, units = "in")
+       height = 9, width = 6, dpi = 300, units = "in")
 
 # Mesophotic plot
 controlplot_benthos(data = park_dat.meso, amp_abbrv = "GMP", state_abbrv = "NCMP",
                     title = "Mesophotic (30 - 70 m)")
 ggsave(paste0("plots/", park, "/habitat/", name, "_mesophotic-control-plots.png"),
-       height = 9, width = 8, dpi = 300, units = "in")
+       height = 9, width = 6, dpi = 300, units = "in")
 
 # (Optional) Rariphotic plot if you want it too:
 # controlplot_benthos(data = park_dat.rari, amp_abbrv = "GMP", state_abbrv = "NCMP",
 #                     title = "Rariphotic (70 - 200 m)")
 # ggsave(paste0("plots/", park, "/habitat/", name, "_rariphotic-control-plots.png"),
-#        height = 9, width = 8, dpi = 300, units = "in")
+#        height = 9, width = 6, dpi = 300, units = "in")
 
 
 # ---- Scatterpie data prep ----
