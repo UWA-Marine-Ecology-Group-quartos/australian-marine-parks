@@ -59,7 +59,7 @@ fishmetric_plot <- function(prediction_limits, dat, year = NULL) {
       geom_spatraster(data = dat, aes(fill = p_b20.fit)) +
       scale_fill_viridis_c(na.value = "transparent", direction = -1) +
       labs(fill = "B20*", x = NULL, y = NULL,
-           title = paste0("Biomass non-pelagic bony fish > 20cm", yr_lab)) +
+           title = paste0("Large Reef Fish Index*", yr_lab)) +
       new_scale_fill() +
       geom_contour(
         data = bathy,

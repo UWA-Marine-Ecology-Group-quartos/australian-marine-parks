@@ -137,7 +137,7 @@ controlplot_fish <- function(data, amp_abbrv, state_abbrv, title) {
       scale_fill_manual(values = fill_vals, name = "Marine Parks") +
       scale_shape_manual(values = shape_vals, name = "Marine Parks") +
       scale_colour_manual(values = fill_vals, guide = "none") +
-      labs(x = "Year", y = "B20")
+      labs(x = "Year", y = "Large Reef Fish Index*")
 
     plot_list[["b20"]] <- gg_b20
   }
