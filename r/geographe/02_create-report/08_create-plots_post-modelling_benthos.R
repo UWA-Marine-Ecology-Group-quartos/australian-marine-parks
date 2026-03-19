@@ -23,31 +23,28 @@ library(tidyterra)
 library(patchwork)
 library(scatterpie)
 library(CheckEM)
-
+library(grid)
 
 # Load functions
-file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
+file.sources <- list.files(pattern = "*.R", path = "functions/", full.names = TRUE)
 sapply(file.sources, source, .GlobalEnv)
 
 # Set cropping extent - larger than most zoomed out plot
-e <- ext(114.2, 115.8,-34.7, -33.1)
+e <- ext(114.2, 115.8, -34.7, -33.1)
 
 # Load necessary spatial files
-# Australian outline and state and commonwealth marine parks
-aus    <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp")
+aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp")
 ausc <- aus %>%
   st_crop(e) %>%
   st_transform(4326)
 
-# Australian outline and state and commonwealth marine parks
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
-  glimpse()
-plot(marine_parks["zone"])
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner"))
 
 marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth") %>%
   st_transform(4326)
+
 marine_parks_state <- marine_parks %>%
   dplyr::filter(epbc %in% "State") %>%
   st_transform(4326)
@@ -63,16 +60,25 @@ cwatr <- st_read("data/south-west network/spatial/shapefiles/amb_coastal_waters_
 # Load the bathymetry data (GA 250m resolution)
 bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
   crop(e) %>%
-  clamp(upper = 0, lower = -250, values = F) %>%
+  clamp(upper = 0, lower = -250, values = FALSE) %>%
   trim() %>%
-  as.data.frame(xy = T, na.rm = T) %>%
-  glimpse()
+  as.data.frame(xy = TRUE, na.rm = TRUE)
 
 names(bathy)[3] <- "Depth"
 
-# Read in the data (per year) ----
+# Years to compare
 years <- c(2014L, 2024L)
 
+# Map pretty habitat names to raster layer prefixes in dat
+habitat_lookup <- c(
+  "Sand" = "sand",
+  "Macroalgae" = "macro",
+  "Seagrasses" = "seagrass",
+  "Sessile Invertebrates" = "inverts",
+  "Rock" = "rock"
+)
+
+# Optional habitat colours for other functions if needed
 hab_cols <- c(
   "Sand" = "wheat",
   "Macroalgae" = "darkgoldenrod4",
@@ -81,22 +87,37 @@ hab_cols <- c(
   "Sessile invertebrates" = "plum"
 )
 
+# Plot extent
+prediction_limits <- c(115.035, 115.57, -33.665, -33.34)
+
+# Read all years once
+dat_list <- setNames(vector("list", length(years)), years)
+
+for (yr in years) {
+  message("Reading year: ", yr)
+
+  dat_list[[as.character(yr)]] <- readRDS(
+    paste0(
+      "output/model-output/", park, "/habitat/",
+      name, "_predicted-habitat_", yr, ".rds"
+    )
+  )
+}
+
+# -------------------------------------------------------------------
+# PART 1: Per-year plots (categorical + dominant benthos)
+# -------------------------------------------------------------------
 for (yr in years) {
 
-  message("Year: ", yr)
+  message("Building per-year plots for: ", yr)
 
-  dat <- readRDS(paste0("output/model-output/", park, "/habitat/",
-                        name, "_predicted-habitat_", yr, ".rds"))
+  dat <- dat_list[[as.character(yr)]]
 
   pred_class <- as.data.frame(dat, xy = TRUE) %>%
-    dplyr::mutate(year = yr) %>%
-    glimpse()
+    dplyr::mutate(year = yr)
 
   # Normalise the inverse of standard error
   pred_plot <- normalise_se(data = pred_class)
-
-  # Set the limits for the plot
-  prediction_limits <- c(115.0539, 115.5539, -33.64861, -33.35361)
 
   # ---- Dominant habitat categorical map (DISPLAY + SAVE) ----
   p_cat <- categoricalhabitat_plot(prediction_limits)
@@ -104,10 +125,16 @@ for (yr in years) {
   print(p_cat)
 
   ggsave(
-    filename = paste0("plots/", park, "/habitat/", name,
-                      "_predicted-habitat-categorical_", yr, ".png"),
+    filename = paste0(
+      "plots/", park, "/habitat/", name,
+      "_predicted-habitat-categorical_", yr, ".png"
+    ),
     plot = p_cat,
-    height = 6, width = 8, dpi = 600, units = "in", bg = "white"
+    height = 6,
+    width = 8,
+    dpi = 600,
+    units = "in",
+    bg = "white"
   )
 
   # ---- Dominant benthos ggplot (DISPLAY + SAVE) ----
@@ -126,31 +153,55 @@ for (yr in years) {
   print(p_dom)
 
   ggsave(
-    filename = paste0("plots/", park, "/habitat/", name,
-                      "_predicted-dominant-habitat_", yr, ".png"),
+    filename = paste0(
+      "plots/", park, "/habitat/", name,
+      "_predicted-dominant-habitat_", yr, ".png"
+    ),
     plot = p_dom,
-    height = 6, width = 8, dpi = 600, units = "in", bg = "white"
+    height = 6,
+    width = 8,
+    dpi = 600,
+    units = "in",
+    bg = "white"
+  )
+}
+
+# -------------------------------------------------------------------
+# PART 2: Multi-year individual habitat plots
+# -------------------------------------------------------------------
+for (habitat_name in names(habitat_lookup)) {
+
+  message("Building individual habitat plot for: ", habitat_name)
+
+  layer_stub <- habitat_lookup[[habitat_name]]
+
+  p_hab <- individualbenthic_plot(
+    habitat_name = habitat_name,
+    layer_stub = layer_stub,
+    dat_list = dat_list,
+    prediction_limits = prediction_limits,
+    pred_limits = NULL,   # use c(0, 1) for a fixed probability scale across taxa
+    se_limits = NULL      # auto-scale within habitat across years
   )
 
-  # ---- Build pred_rast for individual plots ----
-  pred_rast <- subset(
-    dat,
-    str_detect(names(dat), "(?<!se)\\.fit$") &     # fit not preceded by se
-      str_detect(names(dat), "^(?!.*reef).*$")    # names don't contain "reef"
-  )
+  print(p_hab)
 
-  names(pred_rast) <- c("Sand", "Macroalgae", "Seagrasses", "Sessile Invertebrates", "Rock")
-
-  # ---- Individual benthos ggplot (DISPLAY + SAVE) ----
-  p_ind <- individualbenthic_plot(prediction_limits)
-
-  print(p_ind)  # <-- this makes it show up when looping
+  out_name <- habitat_name %>%
+    str_to_lower() %>%
+    str_replace_all("\\s+", "-")
 
   ggsave(
-    filename = paste0("plots/", park, "/habitat/", name,
-                      "_predicted-individual-habitat_", yr, ".png"),
-    plot = p_ind,
-    height = 5.5, width = 8, dpi = 900, units = "in", bg = "white"
+    filename = paste0(
+      "plots/", park, "/habitat/", name,
+      "_predicted-individual-habitat_", out_name, "_",
+      paste(years, collapse = "-"), ".png"
+    ),
+    plot = p_hab,
+    height = 5,
+    width = 8,
+    dpi = 900,
+    units = "in",
+    bg = "white"
   )
 }
 

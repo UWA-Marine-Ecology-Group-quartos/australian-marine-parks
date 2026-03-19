@@ -27,29 +27,35 @@ library(png)
 library(lwgeom)
 library(tidytext)
 library(ggtext)
+library(grid)
 
 # Load functions
-file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
+file.sources <- list.files(pattern = "*.R", path = "functions/", full.names = TRUE)
 sapply(file.sources, source, .GlobalEnv)
 
 # Set cropping extent - larger than most zoomed out plot
 e <- ext(114.2, 115.8, -34.7, -33.1)
 
 # Load necessary spatial files
-sf_use_s2(FALSE)  # Switch off spatial geometry for cropping
+sf_use_s2(FALSE)
 
 # Australian outline and state and commonwealth marine parks
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
-  glimpse()
-plot(marine_parks["zone"])
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner"))
 
-marine_parks_amp <- marine_parks %>% dplyr::filter(epbc %in% "Commonwealth")
-marine_parks_state <- marine_parks %>% dplyr::filter(epbc %in% "State")
+marine_parks_amp <- marine_parks %>%
+  dplyr::filter(epbc %in% "Commonwealth") %>%
+  st_transform(4326)
+
+marine_parks_state <- marine_parks %>%
+  dplyr::filter(epbc %in% "State") %>%
+  st_transform(4326)
 
 # Australian outline
 aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp")
-ausc <- st_crop(aus, e)
+ausc <- aus %>%
+  st_crop(e) %>%
+  st_transform(4326)
 
 cwatr <- st_read("data/south-west network/spatial/shapefiles/amb_coastal_waters_limit.shp") %>%
   st_make_valid() %>%
@@ -59,40 +65,96 @@ cwatr <- st_read("data/south-west network/spatial/shapefiles/amb_coastal_waters_
 # Load the bathymetry data (GA 250m resolution)
 bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
   crop(e) %>%
-  clamp(upper = 0, lower = -250, values = F) %>%
+  clamp(upper = 0, lower = -250, values = FALSE) %>%
   trim() %>%
-  as.data.frame(xy = T, na.rm = T) %>%
-  glimpse()
+  as.data.frame(xy = TRUE, na.rm = TRUE)
 
 names(bathy)[3] <- "Depth"
 
 # Spatial predictions limits
-prediction_limits <- c(115.0539, 115.5539, -33.64861, -33.35361)
+prediction_limits <- c(115.035, 115.57, -33.665, -33.34)
 
-# ------------------------------------------------------------
-# PLOTS: loop years (mirrors habitat Script 08)
-# ------------------------------------------------------------
-pred.years <- c(2014L, 2024L)
+# Years to compare
+years <- c(2014L, 2024L)
 
-for (pred_year in pred.years) {
+# Pretty fish metric names mapped to raster layer stubs
+fish_metric_lookup <- c(
+  "Whole assemblage" = "richness",
+  "CTI" = "cti",
+  "Large Reef Fish Index*" = "b20",
+  "Total abundance" = "abundance"
+)
 
-  print(pred_year)
+# Read all years once
+dat_list <- setNames(vector("list", length(years)), years)
 
-  # Read year-specific predictions
-  dat <- readRDS(paste0("output/model-output/", park, "/fish/",
-                        name, "_predicted-fish_", pred_year, ".rds"))
+for (yr in years) {
+  message("Reading year: ", yr)
 
-  # Ensure SpatRaster + CRS (fixes the unused crs arg error)
+  dat <- readRDS(
+    paste0(
+      "output/model-output/", park, "/fish/",
+      name, "_predicted-fish_", yr, ".rds"
+    )
+  )
+
   if (!inherits(dat, "SpatRaster")) dat <- terra::rast(dat)
   terra::crs(dat) <- "EPSG:4326"
 
-  plot(dat)
+  dat_list[[as.character(yr)]] <- dat
+}
 
-  fishmetric_plot(prediction_limits, dat = dat, year = pred_year)
+# -------------------------------------------------------------------
+# Fish metric plots
+# -------------------------------------------------------------------
+for (metric_name in names(fish_metric_lookup)) {
 
-  ggsave(paste0("plots/", park, "/fish/", name,
-                "_individual-predictions_", pred_year, ".png"),
-         width = 9, height = 5, dpi = 300, units = "in", bg = "white")
+  message("Building fish metric plot for: ", metric_name)
+
+  layer_stub <- fish_metric_lookup[[metric_name]]
+
+  # Only build plot if every year has both prediction and SE layers
+  has_all_layers <- all(unlist(lapply(dat_list, function(x) {
+    c(
+      paste0("p_", layer_stub, ".fit") %in% names(x),
+      paste0("p_", layer_stub, ".se.fit") %in% names(x)
+    )
+  })))
+
+  if (!has_all_layers) {
+    message("Skipping ", metric_name, ": missing .fit or .se.fit layer in one or more years")
+    next
+  }
+
+  p_metric <- fishmetric_plot(
+    metric_name = metric_name,
+    layer_stub = layer_stub,
+    dat_list = dat_list,
+    prediction_limits = prediction_limits,
+    pred_limits = NULL,   # set numeric vector if you want fixed limits
+    se_limits = NULL      # auto-scale within metric across years
+  )
+
+  print(p_metric)
+
+  out_name <- metric_name %>%
+    str_to_lower() %>%
+    str_replace_all("[^a-z0-9]+", "-") %>%
+    str_replace_all("(^-|-$)", "")
+
+  ggsave(
+    filename = paste0(
+      "plots/", park, "/fish/", name,
+      "_predicted-individual-fish-metric_", out_name, "_",
+      paste(years, collapse = "-"), ".png"
+    ),
+    plot = p_metric,
+    height = 5,
+    width = 8,
+    dpi = 900,
+    units = "in",
+    bg = "white"
+  )
 }
 
 # ------------------------------------------------------------
