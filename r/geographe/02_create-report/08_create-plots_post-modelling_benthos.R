@@ -205,35 +205,88 @@ for (habitat_name in names(habitat_lookup)) {
   )
 }
 
+# -------------------------------------------------------------------
+# PART 3: Control plots by taxa, facetted by depth class
+# -------------------------------------------------------------------
+
 # Create the data (makes a dataframe for each ecosystem depth contour)
 control_all <- purrr::map(years, \(yy) {
-  dat_yy <- readRDS(paste0("output/model-output/", park, "/habitat/",
-                           name, "_predicted-habitat_", yy, ".rds"))
+  dat_yy <- readRDS(
+    paste0(
+      "output/model-output/", park, "/habitat/",
+      name, "_predicted-habitat_", yy, ".rds"
+    )
+  )
   controldata_benthos(dat = dat_yy, year = yy, amp_abbrv = "GMP", state_abbrv = "NCMP")
 })
 
-park_dat.shallow <- purrr::map_dfr(control_all, "shallow")
-park_dat.meso    <- purrr::map_dfr(control_all, "meso")
-park_dat.rari    <- purrr::map_dfr(control_all, "rari")
+park_dat.shallow <- purrr::map_dfr(control_all, "shallow") %>%
+  dplyr::mutate(depth_class = "Shallow (0 - 30 m)")
 
-# Shallow plot
-controlplot_benthos(data = park_dat.shallow, amp_abbrv = "GMP", state_abbrv = "NCMP",
-                    title = "Shallow (0 - 30 m)")
-ggsave(paste0("plots/", park, "/habitat/", name, "_shallow-control-plots.png"),
-       height = 9, width = 6, dpi = 300, units = "in")
+park_dat.meso <- purrr::map_dfr(control_all, "meso") %>%
+  dplyr::mutate(depth_class = "Mesophotic (30 - 70 m)")
 
-# Mesophotic plot
-controlplot_benthos(data = park_dat.meso, amp_abbrv = "GMP", state_abbrv = "NCMP",
-                    title = "Mesophotic (30 - 70 m)")
-ggsave(paste0("plots/", park, "/habitat/", name, "_mesophotic-control-plots.png"),
-       height = 9, width = 6, dpi = 300, units = "in")
+park_dat.rari <- purrr::map_dfr(control_all, "rari") %>%
+  dplyr::mutate(depth_class = "Rariphotic (70 - 200 m)")
 
-# (Optional) Rariphotic plot if you want it too:
-# controlplot_benthos(data = park_dat.rari, amp_abbrv = "GMP", state_abbrv = "NCMP",
-#                     title = "Rariphotic (70 - 200 m)")
-# ggsave(paste0("plots/", park, "/habitat/", name, "_rariphotic-control-plots.png"),
-#        height = 9, width = 6, dpi = 300, units = "in")
+park_dat.control <- dplyr::bind_rows(
+  park_dat.shallow,
+  park_dat.meso,
+  park_dat.rari
+) %>%
+  dplyr::mutate(
+    depth_class = factor(
+      depth_class,
+      levels = c(
+        "Shallow (0 - 30 m)",
+        "Mesophotic (30 - 70 m)",
+        "Rariphotic (70 - 200 m)"
+      )
+    )
+  )
 
+# Taxa to plot
+taxa_lookup <- c(
+  "seagrass"   = "Seagrass",
+  "macroalgae" = "Macroalgae",
+  "rock"       = "Rock",
+  "sand"       = "Sand",
+  "inverts"    = "Sessile invertebrates"
+)
+
+for (taxa_code in names(taxa_lookup)) {
+
+  message("Building control plot for taxon: ", taxa_lookup[[taxa_code]])
+
+  p_taxa <- controlplot_benthos(
+    data = park_dat.control,
+    taxa = taxa_code,
+    amp_abbrv = "GMP",
+    state_abbrv = "NCMP",
+    taxa_label = taxa_lookup[[taxa_code]]
+  )
+
+  if (!is.null(p_taxa)) {
+
+    print(p_taxa)
+
+    out_name <- taxa_lookup[[taxa_code]] %>%
+      stringr::str_to_lower() %>%
+      stringr::str_replace_all("\\s+", "-")
+
+    ggsave(
+      filename = paste0(
+        "plots/", park, "/habitat/", name, "_control-plot_", out_name, ".png"
+      ),
+      plot = p_taxa,
+      height = 4,
+      width = 6,
+      dpi = 300,
+      units = "in",
+      bg = "white"
+    )
+  }
+}
 
 # ---- Scatterpie data prep ----
 

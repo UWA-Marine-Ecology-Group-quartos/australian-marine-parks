@@ -49,22 +49,25 @@ controldata_benthos <- function(dat, year, amp_abbrv, state_abbrv) {
     as.data.frame() %>%
     dplyr::select(-geometry)
 
-  # Tiny change: reduce to one row per zone so joins don't create many-to-many warnings
   areas_shallow <- dplyr::filter(areas, depth_contour %in% "shallow") %>% dplyr::distinct(zone, filter, .keep_all = TRUE)
   areas_meso    <- dplyr::filter(areas, depth_contour %in% "mesophotic") %>% dplyr::distinct(zone, filter, .keep_all = TRUE)
   areas_rari    <- dplyr::filter(areas, depth_contour %in% "rariphotic") %>% dplyr::distinct(zone, filter, .keep_all = TRUE)
 
-  replacement_se <- c("seagrass_se"   = "p_seagrass.fit",
-                      "macroalgae_se" = "p_macro.fit",
-                      "rock_se"       = "p_rock.fit",
-                      "sand_se"       = "p_sand.fit",
-                      "inverts_se"    = "p_inverts.fit")
+  replacement_se <- c(
+    "seagrass_se"   = "p_seagrass.se.fit",
+    "macroalgae_se" = "p_macro.se.fit",
+    "rock_se"       = "p_rock.se.fit",
+    "sand_se"       = "p_sand.se.fit",
+    "inverts_se"    = "p_inverts.se.fit"
+  )
 
-  replacement_mean <- c("seagrass"   = "p_seagrass.fit",
-                        "macroalgae" = "p_macro.fit",
-                        "rock"       = "p_rock.fit",
-                        "sand"       = "p_sand.fit",
-                        "inverts"    = "p_inverts.fit")
+  replacement_mean <- c(
+    "seagrass"   = "p_seagrass.fit",
+    "macroalgae" = "p_macro.fit",
+    "rock"       = "p_rock.fit",
+    "sand"       = "p_sand.fit",
+    "inverts"    = "p_inverts.fit"
+  )
 
   out <- list(shallow = NULL, meso = NULL, rari = NULL)
 
@@ -76,14 +79,20 @@ controldata_benthos <- function(dat, year, amp_abbrv, state_abbrv) {
 
     errors.shallow <- terra::extract(dat.shallow, marine_parks) %>%
       dplyr::group_by(ID) %>%
-      dplyr::summarise(dplyr::across(dplyr::starts_with("p"), se), .groups = "drop") %>%
+      dplyr::summarise(
+        dplyr::across(dplyr::ends_with(".se.fit"), \(x) mean(x, na.rm = TRUE)),
+        .groups = "drop"
+      ) %>%
       dplyr::mutate(ID = as.character(ID), year = year) %>%
       dplyr::rename(dplyr::any_of(replacement_se)) %>%
       dplyr::select(ID, year, dplyr::any_of(c("seagrass_se", "macroalgae_se", "rock_se", "sand_se", "inverts_se")))
 
     means.shallow <- terra::extract(dat.shallow, marine_parks) %>%
       dplyr::group_by(ID) %>%
-      dplyr::summarise(dplyr::across(dplyr::starts_with("p"), \(x) mean(x, na.rm = TRUE)), .groups = "drop") %>%
+      dplyr::summarise(
+        dplyr::across(dplyr::matches("^p_.*(?<!\\.se)\\.fit$", perl = TRUE), \(x) mean(x, na.rm = TRUE)),
+        .groups = "drop"
+      ) %>%
       dplyr::mutate(ID = as.character(ID), year = year) %>%
       dplyr::rename(dplyr::any_of(replacement_mean)) %>%
       dplyr::select(ID, year, dplyr::any_of(c("seagrass", "macroalgae", "rock", "sand", "inverts")))
@@ -95,11 +104,18 @@ controldata_benthos <- function(dat, year, amp_abbrv, state_abbrv) {
       dplyr::left_join(means.shallow,  by = c("ID", "year")) %>%
       dplyr::left_join(areas_shallow,  by = "zone") %>%
       dplyr::filter(filter == "no") %>%
-      dplyr::select(zone_new, year, dplyr::any_of(c("seagrass", "seagrass_se", "macroalgae", "macroalgae_se",
-                                                    "rock", "rock_se", "sand", "sand_se", "inverts", "inverts_se"))) %>%
+      dplyr::select(zone_new, year, dplyr::any_of(c(
+        "seagrass", "seagrass_se",
+        "macroalgae", "macroalgae_se",
+        "rock", "rock_se",
+        "sand", "sand_se",
+        "inverts", "inverts_se"
+      ))) %>%
       dplyr::group_by(zone_new, year) %>%
-      dplyr::summarise(dplyr::across(dplyr::everything(), .fns = list(mean = \(x) mean(x, na.rm = TRUE))),
-                       .groups = "drop")
+      dplyr::summarise(
+        dplyr::across(dplyr::everything(), \(x) mean(x, na.rm = TRUE)),
+        .groups = "drop"
+      )
 
     out$shallow <- park_dat.shallow
   }
@@ -112,14 +128,20 @@ controldata_benthos <- function(dat, year, amp_abbrv, state_abbrv) {
 
     errors.meso <- terra::extract(dat.meso, marine_parks) %>%
       dplyr::group_by(ID) %>%
-      dplyr::summarise(dplyr::across(dplyr::starts_with("p"), se), .groups = "drop") %>%
+      dplyr::summarise(
+        dplyr::across(dplyr::ends_with(".se.fit"), \(x) mean(x, na.rm = TRUE)),
+        .groups = "drop"
+      ) %>%
       dplyr::mutate(ID = as.character(ID), year = year) %>%
       dplyr::rename(dplyr::any_of(replacement_se)) %>%
       dplyr::select(ID, year, dplyr::any_of(c("seagrass_se", "macroalgae_se", "rock_se", "sand_se", "inverts_se")))
 
     means.meso <- terra::extract(dat.meso, marine_parks) %>%
       dplyr::group_by(ID) %>%
-      dplyr::summarise(dplyr::across(dplyr::starts_with("p"), \(x) mean(x, na.rm = TRUE)), .groups = "drop") %>%
+      dplyr::summarise(
+        dplyr::across(dplyr::matches("^p_.*(?<!\\.se)\\.fit$", perl = TRUE), \(x) mean(x, na.rm = TRUE)),
+        .groups = "drop"
+      ) %>%
       dplyr::mutate(ID = as.character(ID), year = year) %>%
       dplyr::rename(dplyr::any_of(replacement_mean)) %>%
       dplyr::select(ID, year, dplyr::any_of(c("seagrass", "macroalgae", "rock", "sand", "inverts")))
@@ -131,11 +153,18 @@ controldata_benthos <- function(dat, year, amp_abbrv, state_abbrv) {
       dplyr::left_join(means.meso,  by = c("ID", "year")) %>%
       dplyr::left_join(areas_meso,  by = "zone") %>%
       dplyr::filter(filter == "no") %>%
-      dplyr::select(zone_new, year, dplyr::any_of(c("seagrass", "seagrass_se", "macroalgae", "macroalgae_se",
-                                                    "rock", "rock_se", "sand", "sand_se", "inverts", "inverts_se"))) %>%
+      dplyr::select(zone_new, year, dplyr::any_of(c(
+        "seagrass", "seagrass_se",
+        "macroalgae", "macroalgae_se",
+        "rock", "rock_se",
+        "sand", "sand_se",
+        "inverts", "inverts_se"
+      ))) %>%
       dplyr::group_by(zone_new, year) %>%
-      dplyr::summarise(dplyr::across(dplyr::everything(), .fns = list(mean = \(x) mean(x, na.rm = TRUE))),
-                       .groups = "drop")
+      dplyr::summarise(
+        dplyr::across(dplyr::everything(), \(x) mean(x, na.rm = TRUE)),
+        .groups = "drop"
+      )
 
     out$meso <- park_dat.meso
   }
@@ -148,14 +177,20 @@ controldata_benthos <- function(dat, year, amp_abbrv, state_abbrv) {
 
     errors.rari <- terra::extract(dat.rari, marine_parks) %>%
       dplyr::group_by(ID) %>%
-      dplyr::summarise(dplyr::across(dplyr::starts_with("p"), se), .groups = "drop") %>%
+      dplyr::summarise(
+        dplyr::across(dplyr::ends_with(".se.fit"), \(x) mean(x, na.rm = TRUE)),
+        .groups = "drop"
+      ) %>%
       dplyr::mutate(ID = as.character(ID), year = year) %>%
       dplyr::rename(dplyr::any_of(replacement_se)) %>%
       dplyr::select(ID, year, dplyr::any_of(c("seagrass_se", "macroalgae_se", "rock_se", "sand_se", "inverts_se")))
 
     means.rari <- terra::extract(dat.rari, marine_parks) %>%
       dplyr::group_by(ID) %>%
-      dplyr::summarise(dplyr::across(dplyr::starts_with("p"), \(x) mean(x, na.rm = TRUE)), .groups = "drop") %>%
+      dplyr::summarise(
+        dplyr::across(dplyr::matches("^p_.*(?<!\\.se)\\.fit$", perl = TRUE), \(x) mean(x, na.rm = TRUE)),
+        .groups = "drop"
+      ) %>%
       dplyr::mutate(ID = as.character(ID), year = year) %>%
       dplyr::rename(dplyr::any_of(replacement_mean)) %>%
       dplyr::select(ID, year, dplyr::any_of(c("seagrass", "macroalgae", "rock", "sand", "inverts")))
@@ -167,11 +202,18 @@ controldata_benthos <- function(dat, year, amp_abbrv, state_abbrv) {
       dplyr::left_join(means.rari,  by = c("ID", "year")) %>%
       dplyr::left_join(areas_rari,  by = "zone") %>%
       dplyr::filter(filter == "no") %>%
-      dplyr::select(zone_new, year, dplyr::any_of(c("seagrass", "seagrass_se", "macroalgae", "macroalgae_se",
-                                                    "rock", "rock_se", "sand", "sand_se", "inverts", "inverts_se"))) %>%
+      dplyr::select(zone_new, year, dplyr::any_of(c(
+        "seagrass", "seagrass_se",
+        "macroalgae", "macroalgae_se",
+        "rock", "rock_se",
+        "sand", "sand_se",
+        "inverts", "inverts_se"
+      ))) %>%
       dplyr::group_by(zone_new, year) %>%
-      dplyr::summarise(dplyr::across(dplyr::everything(), .fns = list(mean = \(x) mean(x, na.rm = TRUE))),
-                       .groups = "drop")
+      dplyr::summarise(
+        dplyr::across(dplyr::everything(), \(x) mean(x, na.rm = TRUE)),
+        .groups = "drop"
+      )
 
     out$rari <- park_dat.rari
   }
