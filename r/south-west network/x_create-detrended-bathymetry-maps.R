@@ -6,6 +6,8 @@
 # Date:    June 2026
 ###
 
+## This script is not finished
+
 # Clear the environment
 rm(list = ls())
 
@@ -72,7 +74,7 @@ old_full_bathy <- rast("data/south-west network/spatial/rasters/ausbath_09_v4") 
 old_bathy <- old_full_bathy %>%
   clamp(upper = 0, lower = -250, values = F) %>%
   trim()
-plot(old_bathy)
+# plot(old_bathy)
 
 # Load the new bathymetry data (GA 250m resolution)
 new_full_bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
@@ -81,7 +83,7 @@ new_full_bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Au
 new_bathy <- new_full_bathy %>%
   clamp(upper = 0, lower = -250, values = F) %>%
   trim()
-plot(new_bathy)
+# plot(new_bathy)
 
 # Create detrended bathymetry for 2009 bathy
 old_zstar <- st_as_stars(old_bathy)
@@ -105,7 +107,6 @@ make_hillshade <- function(bathy_rast) {
 
 old_hill <- make_hillshade(old_full_bathy)
 new_hill <- make_hillshade(new_full_bathy)
-
 
 
 bathy_cols <- c("#1a1530", "#1a1530", "#1a1530", "#2a2050",
@@ -384,7 +385,7 @@ ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'new-geograph
 
 # South-West Corner zoom
 # crop to swc extent
-e_swc <- ext(110.0, 116.5, -34.5, -33.4)
+e_swc <- ext(112.0, 116.5, -34.5, -33.4)
 
 old_bathy_swc <- crop(old_full_bathy, e_swc) %>%
   clamp(upper = 0, values = F) %>%
@@ -408,12 +409,12 @@ names(new_detre_swc) <- c("geoscience_detrended", "lineartrend")
 old_detre_swc_layer <- old_detre_swc[["geoscience_detrended"]]
 new_detre_swc_layer <- new_detre_swc[["geoscience_detrended"]]
 
-p_detre_old_swc <- make_detrend_map_zoom(old_detre_swc_layer, old_bathy_swc,
+p_detre_old_swc <- make_detrend_map_zoom(old_detre_layer, old_bathy_swc,
                                          "SWC 2009",
                                          xlim = c(114.2, 116),
                                          ylim = c(-34.5, -33.4))
 
-p_detre_new_swc <- make_detrend_map_zoom(new_detre_swc_layer, new_bathy_swc,
+p_detre_new_swc <- make_detrend_map_zoom(new_detre_layer, new_bathy_swc,
                                          "SWC 2024",
                                          xlim = c(114.2, 116),
                                          ylim = c(-34.5, -33.4))
@@ -429,3 +430,4 @@ ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'new-swc-detr
              sep = "-"),
        plot = p_detre_new_swc,
        dpi = 600, width = 12, height = 6, bg = "white")
+
