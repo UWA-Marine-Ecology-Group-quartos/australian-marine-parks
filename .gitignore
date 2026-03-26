@@ -2,7 +2,6 @@
 .Rhistory
 .RData
 .Ruserdata
-
 secrets
-
 secrets/
+.RDataTmp

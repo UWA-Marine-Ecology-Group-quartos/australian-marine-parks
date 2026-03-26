@@ -14,8 +14,6 @@ rm(list = ls())
 name <- "south-west"
 park <- "network"
 
-# Set cropping extent
-e <- ext(108.0, 138.0, -40.0, -23.0)
 
 # Load libraries
 library(sf)
@@ -33,6 +31,9 @@ library(cowplot)
 
 terraOptions(progress = 3)
 sf_use_s2(T)
+
+# Set cropping extent
+e <- ext(108.0, 138.0, -40.0, -23.0)
 
 # Load all spatial files
 terrnp <- st_read("data/south-west network/spatial/shapefiles/Legislated_Lands_and_Waters_DBCA_011.shp") %>%
@@ -116,6 +117,38 @@ bathy_palette_geo <- colorRampPalette(c(
 ))(500)
 
 bathy_palette_even <- scales::viridis_pal(option = "viridis")(8)
+
+bathy_palette_swc <- colorRampPalette(c(
+  v[1],    # dark purple  — -200 m
+  v[2],
+  v[3],
+  v[4],
+  v[5],
+  v[6],
+  v[7],
+  v[8],
+  v[9],
+  v[10],
+  v[11],
+  v[13],
+  v[16],
+  v[20],
+  v[24],
+  v[28],
+  v[32],
+  v[36],
+  v[40],
+  v[44],
+  v[48],   # teal         — ~-100 m
+  v[58],
+  v[68],
+  v[76],
+  v[83],
+  v[89],
+  v[94],
+  v[98],
+  v[100]   # bright yellow — 0 m
+))(500)
 
 # Create and compute hillshade
 make_hillshade <- function(bathy_rast, altitude = 35, azimuth = 270) {
@@ -420,7 +453,7 @@ ggsave(paste(paste0("plots/", park, "/spatial/bathymetry/", name),
 
 
 
-# TWO ROCKS AND GEOGRAPHE 2009 v 2024 FACETED PLOTS
+# SWC 2009 v 2024 FACETED PLOTS
 # Similar steps asabove, just without two rows
 
 p_swc_old <- make_bathy_panel(old_full_bathy, hill_old,
@@ -428,7 +461,7 @@ p_swc_old <- make_bathy_panel(old_full_bathy, hill_old,
                               ylim          = swc_limits[3:4],
                               depth_limits  = c(-200, 0),
                               depth_breaks  = c(0, -50, -100, -150, -200),
-                              palette       = bathy_palette_geo,
+                              palette       = bathy_palette_swc,
                               clip_to_limit = TRUE,
                               break_step    = 0.2)
 
@@ -437,16 +470,15 @@ p_swc_new <- make_bathy_panel(new_full_bathy, hill_new,
                               ylim          = swc_limits[3:4],
                               depth_limits  = c(-200, 0),
                               depth_breaks  = c(0, -50, -100, -150, -200),
-                              palette       = bathy_palette_geo,
+                              palette       = bathy_palette_swc,
                               clip_to_limit = TRUE,
                               break_step    = 0.2)
 
 legend_swc <- make_bathy_legend(
   depth_limits = c(-200, 0),
   depth_breaks = c(0, -50, -100, -150, -200),
-  palette      = bathy_palette_geo
+  palette      = bathy_palette_swc
 )
-
 
 title_row_swc <- cowplot::plot_grid(
   title_2009, NULL, title_2024,

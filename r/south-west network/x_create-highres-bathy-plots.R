@@ -547,3 +547,65 @@ p_gorbilyup_hr <- make_swc_zoom_map_hr(xlim = c(114.8, 115.4),
 print(p_gorbilyup_hr)
 ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'corner_gorbilyup-zoom-lidar.png', sep = "-"),
        plot = p_gorbilyup_hr, dpi = 600, width = 9, height = 6, bg = "white")
+
+###################################################################################################
+###################################################################################################
+# 2009 data
+geo_multibeam_raw <- rast("data/south-west network/spatial/rasters/GeographeBayMarineFuturesMultibeamDepth_WGS84z50s.tif")
+geo_multibeam     <- project(geo_multibeam_raw, "EPSG:7844", method = "bilinear")
+geo_multibeam     <- clamp(geo_multibeam, upper = 0, values = FALSE)
+
+# Plot using the same function
+p_multibeam_geo <- make_lidar_map(geo_multibeam,
+                                  xlim = c(114.9, 115.75),
+                                  ylim = c(-33.7, -33.25))
+print(p_multibeam_geo)
+
+# ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'geographe_multibeam.png', sep = "-"),
+#       plot = p_multibeam_geo, dpi = 600, width = 10, height = 6, bg = "white")
+
+
+make_swc_context_map <- function(xlim, ylim) {
+  ggplot() +
+    new_scale_fill() +
+    geom_sf(data = marine_parks_swc, aes(fill = zone, colour = zone),
+            linewidth = 0.3, alpha = 0.2) +
+    scale_fill_manual(values = with(marine_parks_swc, setNames(colour, zone)),
+                      name = "Zone",
+                      guide = "none") +
+    scale_colour_manual(values = with(marine_parks_swc, setNames(colour, zone)),
+                        guide = "none") +
+    geom_sf(data = aus, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
+    new_scale_fill() +
+    geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
+    scale_fill_manual(
+      values = c("National Park"  = "#c4cea6",
+                 "Nature Reserve" = "#e4d0bb"),
+      name   = "Terrestrial Parks",
+      guide  = guide_legend(
+        order          = 2,
+        title.position = "top"
+      )
+    ) +
+    coord_sf(xlim = xlim, ylim = ylim, expand = FALSE) +
+    labs(x = NULL, y = NULL) +
+    theme_minimal() +
+    theme(
+      legend.position    = "right",
+      legend.title       = element_text(size = 14),
+      legend.text        = element_text(size = 13),
+      axis.title         = element_text(size = 15),
+      axis.text          = element_text(size = 13),
+      panel.grid.major   = element_blank(),
+      panel.grid.minor   = element_blank(),
+      panel.background   = element_rect(fill = "white", colour = NA),
+      panel.border       = element_rect(fill = NA, colour = "grey60", linewidth = 0.4)
+    )
+}
+
+p_swc_context <- make_swc_context_map(xlim = c(114.2, 115.8),
+                                      ylim = c(-34.7, -33.45))
+print(p_swc_context)
+
+# ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'corner_context-map.png', sep = "-"),
+#       plot = p_swc_context, dpi = 600, width = 10, height = 8, bg = "white")
