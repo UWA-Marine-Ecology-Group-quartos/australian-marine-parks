@@ -220,4 +220,135 @@ ggsave(paste(paste0('plots/', park, '/spatial/', name) , 'bottom-inset_network-p
              sep = "-"), dpi = 600, width = 8, height = 5, bg = "white")
 
 
-# -END-------------------------------------------------------------------------#
+# SWC extent  -----------------------------------------------------------------
+
+marine_parks_wa <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c(
+    "Abrolhos", "Abrolhos Islands",
+    "Bremer",
+    "Ngari Capes",
+    "Geographe",
+    "South-west Corner",
+    "Jurien", "Jurien Bay",
+    "Murat",
+    "Perth Canyon",
+    "Twilight",
+    "Two Rocks",
+    "West coast Bays",
+    "Cottesloe Reef",
+    "Rottnest",
+    "Shoalwater Islands"
+  ))
+
+marine_parks_amp <- marine_parks_wa %>%
+  dplyr::filter(epbc %in% "Commonwealth")
+
+marine_parks_state <- marine_parks_wa %>%
+  dplyr::filter(epbc %in% "State") %>%
+  dplyr::mutate(zone = case_when(
+    zone == "Reef Observation Area"   ~ "Sanctuary Zone",
+    zone == "National Park Zone"      ~ "Sanctuary Zone",
+    zone == "Habitat Protection Zone" ~ "Recreational Use Zone",
+    TRUE                              ~ zone
+  ))
+
+# Note: marine_parks_wa_amp and marine_parks_wa_state are the same as
+# marine_parks_amp and marine_parks_state above — assign for compatibility
+# with park_map_panel() and legend_source_plot() which use the _wa_ names
+marine_parks_wa_amp   <- marine_parks_amp
+marine_parks_wa_state <- marine_parks_state
+
+swc_limits <- c(113.5, 116.4, -34.7857, -33.2643)
+
+network_map_swc <- function(plot_limits, study_limits, annotation_labels) {
+  require(tidyverse)
+  require(tidyterra)
+  require(patchwork)
+  require(cowplot)
+
+  terr_fills_ordered <- scale_fill_manual(values = c("National Park" = "#c4cea6",
+                                                     "Nature Reserve" = "#e4d0bb"),
+                                          name = "Terrestrial Parks",
+                                          guide = guide_legend(order = 2))
+
+  p1 <- ggplot() +
+    geom_spatraster_contour_filled(data = bathy,
+                                   breaks = c(0, -30, -70, -200, -700, -2000, -4000, -6000),
+                                   colour = NA, show.legend = F, maxcell = 5e6) +
+    scale_fill_manual(values = c("#FFFFFF", "#EFEFEF", "#DEDEDE", "#CCCCCC", "#B6B6B6", "#9E9E9E", "#808080")) +
+    new_scale_fill() +
+    geom_spatraster_contour(data = bathy,
+                            breaks = c(-30, -70, -200, -700, -2000, -4000, -6000), colour = "white",
+                            alpha = 3/5, linewidth = 0.1, show.legend = F, maxcell = 5e6) +
+    geom_sf(data = ausc, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
+    geom_sf(data = marine_parks_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
+    scale_fill_manual(name = "Australian Marine Parks",
+                      guide = guide_legend(order = 1),
+                      values = with(marine_parks_amp, setNames(colour, zone)),
+                      breaks = c("National Park Zone", "Habitat Protection Zone", "Multiple Use Zone", "Special Purpose Zone")) +
+    new_scale_fill() +
+    geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
+    terr_fills_ordered +
+    new_scale_fill() +
+    geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.6) +
+    scale_fill_manual(name = "State Marine Parks",
+                      guide = guide_legend(order = 3),
+                      values = with(marine_parks_state, setNames(colour, zone)),
+                      breaks = c("Sanctuary Zone", "General Use Zone", "Recreational Use Zone", "Special Purpose Zone",
+                                 "Other State Marine Park Zone")) +
+    new_scale_fill() +
+    geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.1, lineend = "round") +
+    labs(x = NULL, y = NULL) +
+    {if(!is.null(annotation_labels))
+      list(
+        geom_point(data = annotation_labels, aes(x = x, y = y),
+                   shape = 4, size = 1, stroke = 0.5, colour = "black"),
+        geom_text(data = annotation_labels, aes(x = x, y = y, label = label),
+                  size = 1.65, fontface = "italic", nudge_y = -0.03)
+      )} +
+    {if(!is.null(study_limits))
+      annotate("rect", xmin = study_limits[1], xmax = study_limits[2],
+               ymin = study_limits[3], ymax = study_limits[4],
+               fill = NA, colour = "goldenrod2", linewidth = 0.4)} +
+    coord_sf(xlim = c(plot_limits[1], plot_limits[2]), ylim = c(plot_limits[3], plot_limits[4]), crs = 4326) +
+    theme_minimal() +
+    theme(legend.key.size = unit(0.5, "cm"),
+          legend.text = element_text(size = 8),
+          legend.title = element_text(size = 10),
+          legend.position = "bottom",
+          legend.box = "horizontal",
+          legend.direction = "vertical") +
+    guides(fill = guide_legend(ncol = 1))
+
+  # Inset - zoomed to full south west network extent
+  p1.1 <- ggplot(data = aus) +
+    geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
+    geom_sf(data = capad, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
+    coord_sf(xlim = c(108, 138), ylim = c(-40, -24)) +
+    annotate("rect", xmin = plot_limits[1], xmax = plot_limits[2], ymin = plot_limits[3], ymax = plot_limits[4],
+             colour = "grey25", fill = "white", alpha = 1/5, linewidth = 0.2) +
+    theme_bw() +
+    theme(axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid.major = element_blank(),
+          panel.border = element_rect(colour = "grey70"))
+
+  legend <- cowplot::get_legend(p1 + theme(
+    legend.text = element_text(size = 7),
+    legend.title = element_text(size = 8),
+    legend.key.size = unit(0.3, "cm")
+  ))
+
+  p1_no_legend <- p1 + theme(legend.position = "none",
+                             plot.margin = margin(0, 0, 15, 0))
+
+  (p1_no_legend) / (plot_spacer() + p1.1 + legend + plot_spacer() + plot_layout(widths = c(0.139, 0.3, 1, 0.08))) +
+    plot_layout(heights = c(4, 1))
+}
+
+network_map_swc(plot_limits = swc_limits,
+                study_limits = NULL,
+                annotation_labels = NULL)
+
+ggsave(paste(paste0('plots/', park, '/spatial/', name), 'swc-network-style.png', sep = "-"),
+       dpi = 600, width = 8, height = 5, bg = "white")
