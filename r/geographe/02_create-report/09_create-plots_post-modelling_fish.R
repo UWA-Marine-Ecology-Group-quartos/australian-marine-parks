@@ -157,45 +157,92 @@ for (metric_name in names(fish_metric_lookup)) {
   )
 }
 
-# ------------------------------------------------------------
-# CONTROL DATA: mirrors habitat Script 08 (combine years on plots)
-# ------------------------------------------------------------
+# -------------------------------------------------------------------
+# Control plots by metric, facetted by depth class
+# -------------------------------------------------------------------
 
-pred.years <- c(2014L, 2024L)
+control_all <- purrr::map(years, \(yy) {
+  dat_yy <- readRDS(
+    paste0(
+      "output/model-output/", park, "/fish/",
+      name, "_predicted-fish_", yy, ".rds"
+    )
+  )
 
-# Create the data (returns a list per year: shallow/meso/rari)
-control_all <- purrr::map(pred.years, \(yy) {
-
-  dat_yy <- readRDS(paste0("output/model-output/", park, "/fish/",
-                           name, "_predicted-fish_", yy, ".rds"))
   if (!inherits(dat_yy, "SpatRaster")) dat_yy <- terra::rast(dat_yy)
   terra::crs(dat_yy) <- "EPSG:4326"
 
   controldata_fish(dat = dat_yy, year = yy, amp_abbrv = "GMP", state_abbrv = "NCMP")
 })
 
-# Bind years together per depth band (so year is combined on plots)
-park_dat.shallow <- purrr::map_dfr(control_all, "shallow")
-park_dat.meso    <- purrr::map_dfr(control_all, "meso")
-park_dat.rari    <- purrr::map_dfr(control_all, "rari")
+park_dat.shallow <- purrr::map_dfr(control_all, "shallow") %>%
+  dplyr::mutate(depth_class = "Shallow (0 - 30 m)")
 
-# Shallow plot (both years together)
-(p_shallow <- controlplot_fish(data = park_dat.shallow, amp_abbrv = "GMP", state_abbrv = "NCMP",
-                              title = "Shallow (0 - 30 m)"))
-ggsave(paste0("plots/", park, "/fish/", name, "_shallow-control-plots.png"),
-       plot = p_shallow, height = 9, width = 6, dpi = 300, units = "in", bg = "white")
+park_dat.meso <- purrr::map_dfr(control_all, "meso") %>%
+  dplyr::mutate(depth_class = "Mesophotic (30 - 70 m)")
 
-# Mesophotic plot (both years together)
-(p_meso <- controlplot_fish(data = park_dat.meso, amp_abbrv = "GMP", state_abbrv = "NCMP",
-                           title = "Mesophotic (30 - 70 m)"))
-ggsave(paste0("plots/", park, "/fish/", name, "_mesophotic-control-plots.png"),
-       plot = p_meso, height = 9, width = 6, dpi = 300, units = "in", bg = "white")
+park_dat.rari <- purrr::map_dfr(control_all, "rari") %>%
+  dplyr::mutate(depth_class = "Rariphotic (70 - 200 m)")
 
-# Rariphotic:
-# p_rari <- controlplot_fish(data = park_dat.rari, amp_abbrv = "GMP", state_abbrv = "NCMP",
-#                            title = "Rariphotic (70 - 200 m)")
-# ggsave(paste0("plots/", park, "/fish/", name, "_rariphotic-control-plots.png"),
-#        plot = p_rari, height = 9, width = 6, dpi = 300, units = "in", bg = "white")
+park_dat.control <- dplyr::bind_rows(
+  park_dat.shallow,
+  park_dat.meso,
+  park_dat.rari
+) %>%
+  dplyr::mutate(
+    depth_class = factor(
+      depth_class,
+      levels = c(
+        "Shallow (0 - 30 m)",
+        "Mesophotic (30 - 70 m)",
+        "Rariphotic (70 - 200 m)"
+      )
+    )
+  )
+
+metric_lookup <- c(
+  "richness"  = "Species richness (per BRUV)",
+  "cti"       = "Community Thermal Index (\u00B0C)",
+  "b20"       = "Large reef fish index* (biomass g per BRUV)",
+  "abundance" = "Total abundance (per BRUV)"
+)
+
+for (metric_code in names(metric_lookup)) {
+
+  message("Building control plot for metric: ", metric_lookup[[metric_code]])
+
+  p_metric <- controlplot_fish(
+    data = park_dat.control,
+    metric = metric_code,
+    amp_abbrv = "GMP",
+    state_abbrv = "NCMP",
+    metric_label = metric_lookup[[metric_code]]
+  )
+
+  if (!is.null(p_metric)) {
+
+    print(p_metric)
+
+    out_name <- metric_lookup[[metric_code]] %>%
+      stringr::str_to_lower() %>%
+      stringr::str_replace_all("\u00b0", "") %>%
+      stringr::str_replace_all("\\*", "") %>%
+      stringr::str_replace_all("[()]", "") %>%
+      stringr::str_replace_all("[[:space:]]+", "-")
+
+    ggsave(
+      filename = paste0(
+        "plots/", park, "/fish/", name, "_control-plot_", out_name, ".png"
+      ),
+      plot = p_metric,
+      height = 4,
+      width = 6,
+      dpi = 300,
+      units = "in",
+      bg = "white"
+    )
+  }
+}
 
 
 # Stacked plots

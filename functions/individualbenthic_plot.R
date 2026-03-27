@@ -117,8 +117,8 @@ individualbenthic_plot <- function(habitat_name,
     ggplot() +
       geom_spatraster(data = se_list[[i]]) +
       scale_fill_viridis_c(
+        option = "A",
         name = "SE",
-        direction = -1,
         na.value = "transparent",
         limits = se_limits,
         oob = scales::squish
