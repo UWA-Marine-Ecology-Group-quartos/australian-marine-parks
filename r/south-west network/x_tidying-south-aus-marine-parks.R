@@ -5,6 +5,7 @@
 # Date:    Feb 2026
 ###
 
+library(CheckEM)
 library(sf)
 library(tidyverse)
 
@@ -73,3 +74,4 @@ combined <- dplyr::bind_rows(list(capad,wa)) %>%
 
 # Save combined shapefile
 st_write(combined, "data/south-west network/spatial/shapefiles/south-and-western-australia_marine-parks-all.shp", append = F)
+
