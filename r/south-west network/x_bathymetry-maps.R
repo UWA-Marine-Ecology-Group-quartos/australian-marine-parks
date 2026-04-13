@@ -160,6 +160,24 @@ make_hillshade <- function(bathy_rast, altitude = 35, azimuth = 270) {
 hill_old <- make_hillshade(old_full_bathy)
 hill_new <- make_hillshade(new_full_bathy)
 
+# Rotated polygon (so that it can be a diagonal box)
+rotated_rect <- function(cx, cy, width, height, angle_deg, xlim, ylim, plot_width, plot_height) {
+  # Compute the pixel-to-degree scaling ratio so the shape is square on screen
+  x_range    <- diff(xlim)
+  y_range    <- diff(abs(ylim))
+  aspect     <- (y_range / x_range) * (plot_width / plot_height)
+
+  angle_rad  <- angle_deg * pi / 180
+  dx         <- c(-width/2,  width/2,  width/2, -width/2)
+  dy         <- c(-height/2, -height/2, height/2,  height/2)
+
+  # Scale dy by aspect before rotating, then unscale after
+  x <- cx + dx * cos(angle_rad) - (dy / aspect) * sin(angle_rad)
+  y <- cy + (dx * sin(angle_rad) + (dy / aspect) * cos(angle_rad)) * aspect
+
+  list(x = x, y = y)
+}
+
 # Define plot function
 make_bathy_panel <- function(bathy_rast,
                              hill_rast,
@@ -218,7 +236,7 @@ make_bathy_panel <- function(bathy_rast,
     ) +
     geom_sf(data = marine_parks,
             fill      = NA,
-            colour    = "grey90",
+            colour    = alpha("white", 0.3),
             linewidth = 0.4) +
     coord_sf(xlim = xlim, ylim = ylim, expand = FALSE) +
     scale_x_continuous(breaks = x_breaks) +
@@ -233,7 +251,7 @@ make_bathy_panel <- function(bathy_rast,
                ymax      = highlight_box$ymax,
                fill      = NA,
                colour    = "orange",
-               linewidth = 0.9)
+               linewidth = 0.8)
   }
 
   p <- p +
@@ -353,8 +371,6 @@ p_geo_old <- make_bathy_panel(old_full_bathy, hill_old,
                               depth_breaks  = c(0, -10, -20, -30, -40, -50),
                               palette       = bathy_palette_geo,
                               clip_to_limit = FALSE,
-                              highlight_box = list(xmin = 115.55, xmax = 115.42,
-                                                   ymin = -33.52, ymax = -33.42),
                               break_step    = 0.1)
 
 p_geo_new <- make_bathy_panel(new_full_bathy, hill_new,
@@ -364,9 +380,34 @@ p_geo_new <- make_bathy_panel(new_full_bathy, hill_new,
                               depth_breaks  = c(0, -10, -20, -30, -40, -50),
                               palette       = bathy_palette_geo,
                               clip_to_limit = FALSE,
-                              highlight_box = list(xmin = 115.55, xmax = 115.42,
-                                                   ymin = -33.52, ymax = -33.42),
                               break_step    = 0.1)
+
+
+geo_box <- rotated_rect(cx        = 115.445, cy = -33.505,
+                        width     = 0.09,
+                        height    = 0.18,
+                        angle_deg = 40,
+                        xlim      = geographe_limits[1:2],
+                        ylim      = geographe_limits[3:4],
+                        plot_width  = 15 * (1 / 2.09),
+                        plot_height = 10 * (1 / 2.06) * (1 / 1.06)) #adjust plot width and height to make polygon
+                                                                    # look like rectangle and not uneven
+
+p_geo_old <- p_geo_old +
+  annotate("polygon",
+           x         = geo_box$x,
+           y         = geo_box$y,
+           fill      = NA,
+           colour    = "orange",
+           linewidth = 0.8)
+
+p_geo_new <- p_geo_new +
+  annotate("polygon",
+           x         = geo_box$x,
+           y         = geo_box$y,
+           fill      = NA,
+           colour    = "orange",
+           linewidth = 0.8)
 
 # Facet the plots and make them look pretty
 # column and row labels

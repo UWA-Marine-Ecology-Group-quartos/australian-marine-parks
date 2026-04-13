@@ -46,12 +46,7 @@ marine_parks <- st_read("data/south-west network/spatial/shapefiles/south-and-we
                             "Nuyts Archipelgo", "Thorny Passage", "Sir Joseph Banks Group",
                             "Investigator", "West coast Bays", "Southern Spencer Gulf",
                             "Upper Spencer Gulf", "Cottesloe Reef", "Rottnest",
-                            "Shoalwater Islands")) %>%
-  dplyr::mutate(colour = case_when(
-    zone == "Special Purpose Zone" ~ "#ffb6c1",
-    zone == "Sanctuary Zone"       ~ "#f5e642",
-    TRUE ~ colour
-  ))
+                            "Shoalwater Islands"))
 
 marine_parks_swc <- marine_parks %>%
   dplyr::filter(name %in% c("South-west Corner", "Ngari Capes"))
@@ -59,6 +54,11 @@ marine_parks_swc <- marine_parks %>%
 # ==============================================================================
 # 2. LOAD AND PREPARE RASTER DATA
 # ==============================================================================
+
+# --- Background bathymetry for grey hillshade context ---
+bg_bathy_raw <- rast("data/south-west network/spatial/rasters/ausbath_09_v4") %>%
+  crop(ext(113.0, 117.0, -35.5, -32.5)) %>%
+  clamp(upper = 0, values = FALSE)
 
 # --- Geographe LiDAR (2024) ---
 lidar_geo_raw <- rast("data/south-west network/spatial/rasters/Geographe-bay_lidar.tif")
@@ -88,30 +88,30 @@ names(multibeam) <- "depth"
 # ==============================================================================
 # 3. DEFINE EXTENTS
 # ------------------------------------------------------------------------------
-# Geographe ratio used as reference for both regions so panels facet cleanly.
-# Geographe: xlim = c(114.9, 115.75)  -> width  = 0.85 deg
-#            ylim = c(-33.7, -33.25)  -> height = 0.45 deg
-# aspect ratio (width/height) = 0.85 / 0.45 = ~1.889
+# Geographe: xlim = c(114.9, 115.75) -> width  = 0.85 deg
+#            ylim = c(-33.7, -33.25) -> height = 0.45 deg
+#            aspect ratio (width/height) = 0.85 / 0.45 = 1.889
 #
-# SWC extent matched to same aspect ratio:
-#   desired width  = 1.6 deg  -> height = 1.6 / 1.889 = ~0.847
-#   centre lat     = -34.075  -> ylim = c(-34.499, -33.652) ~ c(-34.5, -33.65)
+# SWC matched to same aspect ratio:
+#   height = 34.6 - 33.3 = 1.3 deg
+#   width  = 1.3 * 1.889 = 2.456 deg
+#   centre = 115.0 -> xlim = c(113.77, 116.23)
 # ==============================================================================
 
-geo_xlim <- c(114.9,  115.75)
-geo_ylim <- c(-33.7,  -33.25)
+geo_xlim <- c(114.9,   115.75)
+geo_ylim <- c(-33.7,   -33.25)
 
-swc_xlim <- c(114.0,  116.0)
-swc_ylim <- c(-34.6,  -33.3)
+swc_xlim <- c(113.77,  116.23)
+swc_ylim <- c(-34.6,   -33.3)
 
-# Crop rasters to extents
 e_geo <- ext(geo_xlim[1], geo_xlim[2], geo_ylim[1], geo_ylim[2])
 e_swc <- ext(swc_xlim[1], swc_xlim[2], swc_ylim[1], swc_ylim[2])
 
-lidar_geo_crop    <- crop(lidar_geo,    e_geo)
+lidar_geo_crop     <- crop(lidar_geo,     e_geo)
 geo_multibeam_crop <- crop(geo_multibeam, e_geo)
-lidar_swc_crop    <- crop(lidar_swc,    e_swc)
-multibeam_crop    <- crop(multibeam,    e_swc)
+lidar_swc_crop     <- crop(lidar_swc,     e_swc)
+multibeam_crop     <- crop(multibeam,     e_swc)
+lidar_geo_swc_crop <- crop(lidar_geo,     e_swc)
 
 # ==============================================================================
 # 4. HILLSHADES
@@ -125,25 +125,28 @@ make_hillshade <- function(bathy_rast, altitude = 40, azimuth = 270) {
   hill
 }
 
-hill_geo_lidar    <- make_hillshade(lidar_geo_crop)
-hill_geo_mb       <- make_hillshade(geo_multibeam_crop)
-hill_swc_lidar    <- make_hillshade(lidar_swc_crop)
-hill_swc_mb       <- make_hillshade(multibeam_crop)
+# Background hillshades from ausbath_09 (full coverage)
+hill_bg_geo <- make_hillshade(crop(bg_bathy_raw, e_geo))
+hill_bg_swc <- make_hillshade(crop(bg_bathy_raw, e_swc))
+
+# Highres hillshades from survey rasters
+hill_geo_lidar <- make_hillshade(lidar_geo_crop)
+hill_geo_mb    <- make_hillshade(geo_multibeam_crop)
+hill_swc_lidar <- make_hillshade(lidar_swc_crop)
+hill_swc_mb    <- make_hillshade(multibeam_crop)
 
 # ==============================================================================
-# 5. COLOUR PALETTES  (matching original script style)
+# 5. COLOUR PALETTES
 # ==============================================================================
 
 v <- scales::viridis_pal(option = "viridis")(100)
 
-# Geographe: shallow shelf, -30 to -15 m range
 bathy_palette_geo <- colorRampPalette(c(
   v[1], v[3], v[6], v[9], v[12], v[15], v[18], v[22], v[26], v[30],
   v[34], v[38], v[42], v[46], v[52], v[58], v[65], v[72], v[79],
   v[86], v[92], v[96], v[100]
 ))(500)
 
-# SWC: deeper range including multibeam
 bathy_palette_swc <- colorRampPalette(c(
   v[1],  v[2],  v[3],  v[4],  v[5],  v[6],  v[7],  v[8],  v[9],  v[10],
   v[11], v[13], v[16], v[20], v[24], v[28], v[32], v[36], v[40], v[44],
@@ -151,62 +154,69 @@ bathy_palette_swc <- colorRampPalette(c(
 ))(500)
 
 # ==============================================================================
-# 6. MPA ZONE FILL/COLOUR SCALES (SWC style — same approach for both regions)
+# 6. PANEL PLOT FUNCTION
 # ==============================================================================
 
-# Helper: build named colour vectors for fill + outline from a marine_parks sf
-mpa_colours <- function(mp) {
-  setNames(mp$colour, mp$zone)
-}
-
-# ==============================================================================
-# 7. PANEL PLOT FUNCTION
-# ==============================================================================
-
-# All panels share this look:
-#   - hillshade base
-#   - viridis depth overlay (alpha 0.65)
-#   - MPA zones filled + outlined (SWC style)
-#   - aus outline
-#   - terrnp overlay
-#   - NO individual legends (all suppressed; shared legends added via cowplot)
-
-make_panel <- function(depth_rast,        # primary depth raster (cropped)
-                       hill_rast,         # hillshade raster (cropped)
+make_panel <- function(depth_rast,
+                       hill_rast,
+                       hill_bg,
                        xlim,
                        ylim,
-                       depth_limits,      # e.g. c(-30, -15) for Geo, c(-100, 0) for SWC
+                       depth_limits,
                        palette,
-                       marine_parks_sf,   # filtered marine parks for this region
-                       depth_rast2 = NULL # optional second raster (lidar over multibeam)
-) {
-
-  mp_cols <- mpa_colours(marine_parks_sf)
+                       marine_parks_sf,
+                       depth_rast2 = NULL,
+                       depth_rast3 = NULL) {
 
   p <- ggplot() +
 
-    # --- Hillshade base ---
-    geom_spatraster(data = hill_rast, aes(fill = hillshade),
-                    alpha = 0.4, show.legend = FALSE) +
-    scale_fill_gradient(low = "#1a1a2e", high = "#e8e8e8",
-                        na.value = NA, guide = "none") +
+    # --- Grey background hillshade (ausbath_09, full coverage) ---
+    geom_spatraster(data = hill_bg, aes(fill = hillshade),
+                    alpha = 0.45, show.legend = FALSE) +
+    scale_fill_gradient(low      = "#1a1a2e",
+                        high     = "#ffffff",
+                        na.value = NA,
+                        guide    = "none") +
 
-    # --- Primary depth raster ---
+    # --- Primary depth raster (coloured, no alpha) ---
     new_scale_fill() +
-    geom_spatraster(data = depth_rast, aes(fill = depth), alpha = 0.8) +
+    geom_spatraster(data = depth_rast, aes(fill = depth), alpha = 1) +
     scale_fill_gradientn(
       colours  = palette,
       limits   = depth_limits,
       oob      = scales::squish,
       na.value = NA,
       guide    = "none"
-    )
+    ) +
 
-  # --- Optional second raster (LiDAR draped over multibeam for SWC 2024) ---
+    # --- Highres hillshade overlay on coloured bathy ---
+    new_scale_fill() +
+    geom_spatraster(data = hill_rast, aes(fill = hillshade),
+                    alpha = 0.3, show.legend = FALSE) +
+    scale_fill_gradient(low      = "#000000",
+                        high     = "#ffffff",
+                        na.value = NA,
+                        guide    = "none")
+
+  # --- Optional second raster ---
   if (!is.null(depth_rast2)) {
     p <- p +
       new_scale_fill() +
-      geom_spatraster(data = depth_rast2, aes(fill = depth), alpha = 0.8) +
+      geom_spatraster(data = depth_rast2, aes(fill = depth), alpha = 1) +
+      scale_fill_gradientn(
+        colours  = palette,
+        limits   = depth_limits,
+        oob      = scales::squish,
+        na.value = NA,
+        guide    = "none"
+      )
+  }
+
+  # --- Optional third raster ---
+  if (!is.null(depth_rast3)) {
+    p <- p +
+      new_scale_fill() +
+      geom_spatraster(data = depth_rast3, aes(fill = depth), alpha = 1) +
       scale_fill_gradientn(
         colours  = palette,
         limits   = depth_limits,
@@ -218,13 +228,11 @@ make_panel <- function(depth_rast,        # primary depth raster (cropped)
 
   p <- p +
 
-    # --- MPA zones (SWC style: filled + outlined, low alpha) ---
-    new_scale_fill() +
-    geom_sf(data = marine_parks_sf,
-            aes(fill = zone, colour = zone),
-            linewidth = 0.35, alpha = 0.25) +
-    scale_fill_manual(values   = mp_cols, guide = "none") +
-    scale_colour_manual(values = mp_cols, guide = "none") +
+    # --- MPA boundaries: no fill, white outline, alpha 0.3 ---
+    geom_sf(data      = marine_parks_sf,
+            fill      = NA,
+            colour    = alpha("white", 0.4),
+            linewidth = 0.4) +
 
     # --- Australia outline ---
     geom_sf(data = aus_hr, fill = "seashell2", colour = "grey30", linewidth = 0.25) +
@@ -255,24 +263,13 @@ make_panel <- function(depth_rast,        # primary depth raster (cropped)
 }
 
 # ==============================================================================
-# 8. BUILD THE FOUR PANELS
+# 7. BUILD THE FOUR PANELS
 # ==============================================================================
 
-# Top-left:  Geographe 2009 (multibeam only)
 p_geo_2009 <- make_panel(
-  depth_rast     = geo_multibeam_crop,
-  hill_rast      = hill_geo_mb,
-  xlim           = geo_xlim,
-  ylim           = geo_ylim,
-  depth_limits   = c(-30, -15),
-  palette        = bathy_palette_geo,
-  marine_parks_sf = marine_parks %>% dplyr::filter(name %in% "Geographe")
-)
-
-# Top-right: Geographe 2024 (LiDAR)
-p_geo_2024 <- make_panel(
-  depth_rast      = lidar_geo_crop,
-  hill_rast       = hill_geo_lidar,
+  depth_rast      = geo_multibeam_crop,
+  hill_rast       = hill_geo_mb,
+  hill_bg         = hill_bg_geo,
   xlim            = geo_xlim,
   ylim            = geo_ylim,
   depth_limits    = c(-30, -15),
@@ -280,20 +277,36 @@ p_geo_2024 <- make_panel(
   marine_parks_sf = marine_parks %>% dplyr::filter(name %in% "Geographe")
 )
 
-# Bottom-left: SWC 2009 (context only — no raster, just MPA zones + land)
-# Built manually so we can omit depth raster and hillshade entirely
+p_geo_2024 <- make_panel(
+  depth_rast      = lidar_geo_crop,
+  hill_rast       = hill_geo_lidar,
+  hill_bg         = hill_bg_geo,
+  xlim            = geo_xlim,
+  ylim            = geo_ylim,
+  depth_limits    = c(-30, -15),
+  palette         = bathy_palette_geo,
+  marine_parks_sf = marine_parks %>% dplyr::filter(name %in% "Geographe")
+)
+
 marine_parks_swc_filtered <- marine_parks %>%
   dplyr::filter(name %in% c("South-west Corner", "Ngari Capes"))
-mp_cols_swc <- mpa_colours(marine_parks_swc_filtered)
 
 p_swc_2009 <- ggplot() +
 
+  # --- Grey background hillshade ---
+  geom_spatraster(data = hill_bg_swc, aes(fill = hillshade),
+                  alpha = 0.45, show.legend = FALSE) +
+  scale_fill_gradient(low      = "#1a1a2e",
+                      high     = "#ffffff",
+                      na.value = NA,
+                      guide    = "none") +
+
+  # --- MPA boundaries ---
   new_scale_fill() +
-  geom_sf(data = marine_parks_swc_filtered,
-          aes(fill = zone, colour = zone),
-          linewidth = 0.35, alpha = 0.25) +
-  scale_fill_manual(values   = mp_cols_swc, guide = "none") +
-  scale_colour_manual(values = mp_cols_swc, guide = "none") +
+  geom_sf(data      = marine_parks_swc_filtered,
+          fill      = NA,
+          colour    = alpha("white", 0.4),
+          linewidth = 0.4) +
 
   geom_sf(data = aus_hr, fill = "seashell2", colour = "grey30", linewidth = 0.25) +
 
@@ -318,20 +331,21 @@ p_swc_2009 <- ggplot() +
     plot.margin      = margin(2, 2, 2, 2)
   )
 
-# Bottom-right: SWC 2024 (multibeam + LiDAR draped on top)
 p_swc_2024 <- make_panel(
   depth_rast      = multibeam_crop,
   hill_rast       = hill_swc_mb,
+  hill_bg         = hill_bg_swc,
   xlim            = swc_xlim,
   ylim            = swc_ylim,
   depth_limits    = c(-100, 0),
   palette         = bathy_palette_swc,
   marine_parks_sf = marine_parks_swc_filtered,
-  depth_rast2     = lidar_swc_crop     # LiDAR draped over multibeam
+  depth_rast2     = lidar_swc_crop,
+  depth_rast3     = lidar_geo_swc_crop
 )
 
 # ==============================================================================
-# 9. STANDALONE LEGEND HELPERS  (cowplot approach from faceting script)
+# 8. LEGENDS
 # ==============================================================================
 
 make_bathy_legend <- function(depth_limits, depth_breaks, palette, title = "Depth (m)") {
@@ -358,111 +372,57 @@ make_bathy_legend <- function(depth_limits, depth_breaks, palette, title = "Dept
     theme_void() +
     theme(
       legend.position = "right",
-      legend.title    = element_text(size = 10),
-      legend.text     = element_text(size = 9)
+      legend.title    = element_text(size = 10, face = "plain"),
+      legend.text     = element_text(size = 9,  face = "plain")
     )
   cowplot::get_legend(p_leg)
 }
 
-# Geographe depth legend
 legend_geo <- make_bathy_legend(
   depth_limits = c(-30, -15),
   depth_breaks = c(-15, -20, -25, -30),
   palette      = bathy_palette_geo
 )
 
-# SWC depth legend
 legend_swc <- make_bathy_legend(
   depth_limits = c(-100, 0),
   depth_breaks = c(0, -25, -50, -75, -100),
   palette      = bathy_palette_swc
 )
 
-# MPA zone legends — split into Commonwealth and State, built from visible zones
-relevant_parks <- marine_parks %>%
-  dplyr::filter(name %in% c("Geographe", "South-west Corner", "Ngari Capes"))
-
-cwlth_zones <- relevant_parks %>%
-  dplyr::filter(epbc == "Commonwealth") %>%
-  dplyr::distinct(zone, colour) %>%
-  dplyr::arrange(zone)
-
-state_zones <- relevant_parks %>%
-  dplyr::filter(epbc == "State") %>%
-  dplyr::distinct(zone, colour) %>%
-  dplyr::arrange(zone)
-
-make_mpa_legend <- function(zones_df, title) {
-  leg_df <- data.frame(
-    x    = 1, y = seq_len(nrow(zones_df)),
-    zone = factor(zones_df$zone, levels = zones_df$zone)
-  )
-  p <- ggplot(leg_df, aes(x = x, y = y, fill = zone)) +
-    geom_tile() +
-    scale_fill_manual(
-      name   = title,
-      values = setNames(zones_df$colour, zones_df$zone),
-      guide  = guide_legend(
-        direction      = "horizontal",
-        title.position = "top",
-        title.hjust    = 0.5,
-        nrow           = 2
-      )
-    ) +
-    theme_void() +
-    theme(
-      legend.position = "bottom",
-      legend.title    = element_text(size = 11, face = "bold"),
-      legend.text     = element_text(size = 10),
-      legend.key.size = unit(0.45, "cm")
-    )
-  cowplot::get_legend(p)
-}
-
-legend_cwlth_mpa <- make_mpa_legend(cwlth_zones, "Commonwealth Marine Park Zones")
-legend_state_mpa <- make_mpa_legend(state_zones,  "State Marine Park Zones")
-
-# Terrestrial parks legend — single column (vertical)
+# Terrestrial parks legend only — 2 columns, no bold
 tp_df <- data.frame(
   x  = 1, y = 1,
   tp = factor(c("National Park", "Nature Reserve"),
               levels = c("National Park", "Nature Reserve"))
 )
+
 p_tp <- ggplot(tp_df, aes(x = x, y = y, fill = tp)) +
   geom_tile() +
   scale_fill_manual(
     name   = "Terrestrial Parks",
     values = c("National Park" = "#c4cea6", "Nature Reserve" = "#e4d0bb"),
     guide  = guide_legend(
-      direction      = "vertical",
+      direction      = "horizontal",
       title.position = "top",
-      title.hjust    = 0,
-      ncol           = 1
+      title.hjust    = 0.5,
+      ncol           = 2
     )
   ) +
   theme_void() +
   theme(
     legend.position = "bottom",
-    legend.title    = element_text(size = 11, face = "bold"),
-    legend.text     = element_text(size = 10),
+    legend.title    = element_text(size = 10, face = "plain"),
+    legend.text     = element_text(size = 9,  face = "plain"),
     legend.key.size = unit(0.45, "cm")
   )
-terrp_legend <- cowplot::get_legend(p_tp)
 
-# Combined bottom legend row: Commonwealth | State | Terrestrial
-bottom_legend <- cowplot::plot_grid(
-  legend_cwlth_mpa,
-  legend_state_mpa,
-  terrp_legend,
-  nrow       = 1,
-  rel_widths = c(1.4, 1.0, 0.5)
-)
+bottom_legend <- cowplot::get_legend(p_tp)
 
 # ==============================================================================
-# 10. ASSEMBLE FACETED FIGURE  (cowplot, matching the faceting script style)
+# 9. ASSEMBLE FIGURE
 # ==============================================================================
 
-# Column headers
 title_2009 <- ggdraw() + draw_label("2009", fontface = "bold", size = 16, hjust = 0.5)
 title_2024 <- ggdraw() + draw_label("2024", fontface = "bold", size = 16, hjust = 0.5)
 
@@ -471,11 +431,9 @@ title_row <- cowplot::plot_grid(
   nrow = 1, rel_widths = c(0.05, 1, 0.03, 1)
 )
 
-# Row labels
-label_geo <- ggdraw() + draw_label("Geographe",    fontface = "plain", size = 13, angle = 90)
+label_geo <- ggdraw() + draw_label("Geographe",          fontface = "plain", size = 13, angle = 90)
 label_swc <- ggdraw() + draw_label("South-west\nCorner", fontface = "plain", size = 13, angle = 90)
 
-# Depth legend column: Geo legend on top row, SWC legend on bottom row
 depth_legends <- cowplot::plot_grid(
   legend_geo,
   legend_swc,
@@ -483,7 +441,6 @@ depth_legends <- cowplot::plot_grid(
   rel_heights = c(1, 1)
 )
 
-# Map rows
 row_geo <- cowplot::plot_grid(
   label_geo, p_geo_2009, NULL, p_geo_2024,
   nrow = 1, rel_widths = c(0.05, 1, 0.03, 1),
@@ -496,7 +453,6 @@ row_swc <- cowplot::plot_grid(
   align = "h", axis = "tb"
 )
 
-# Stack title + rows
 maps_grid <- cowplot::plot_grid(
   title_row,
   row_geo,
@@ -505,7 +461,6 @@ maps_grid <- cowplot::plot_grid(
   rel_heights = c(0.05, 1, 1)
 )
 
-# Attach depth legend column on the right
 maps_with_legends <- cowplot::plot_grid(
   maps_grid,
   depth_legends,
@@ -513,7 +468,6 @@ maps_with_legends <- cowplot::plot_grid(
   rel_widths = c(1, 0.07)
 )
 
-# Attach shared MPA + terrestrial legends at bottom
 figure_final <- cowplot::plot_grid(
   maps_with_legends,
   bottom_legend,
@@ -526,7 +480,7 @@ figure_final <- cowplot::plot_grid(
   )
 
 # ==============================================================================
-# 11. SAVE
+# 10. SAVE
 # ==============================================================================
 
 ggsave(
@@ -534,7 +488,227 @@ ggsave(
         "lidar-multibeam-facet-comparison.png", sep = "-"),
   plot   = figure_final,
   dpi    = 600,
-  width  = 16,
-  height = 11,
+  width  = 13.5,
+  height = 8.5,
   bg     = "white"
 )
+
+# ==============================================================================
+# 11. EASTERN EXTENTS — SWC EASTERN ARM & EASTERN RECHERCHE
+# ==============================================================================
+
+# --- Load DoT LiDAR uncropped (covers eastern areas) ---
+lidar_east_raw <- rast("data/south-west network/spatial/rasters/DoT_south-coastal-lidar.tif")
+lidar_east     <- -lidar_east_raw
+lidar_east     <- clamp(lidar_east, upper = 0, values = FALSE)
+names(lidar_east) <- "depth"
+
+# Check depth ranges to set limits — adjust depth_limits below accordingly
+# minmax(lidar_east)
+
+# --- Define extents ---
+swc_east_xlim <- c(120.6, 121.4)
+swc_east_ylim <- c(-34.15, -33.75)
+
+er_xlim <- c(122.8, 124.8)
+er_ylim <- c(-34.5, -33.5)
+
+e_swc_east <- ext(swc_east_xlim[1], swc_east_xlim[2], swc_east_ylim[1], swc_east_ylim[2])
+e_er       <- ext(er_xlim[1],       er_xlim[2],       er_ylim[1],       er_ylim[2])
+
+# --- Crop LiDAR to each extent ---
+lidar_swc_east_crop <- crop(lidar_east, e_swc_east)
+lidar_er_crop       <- crop(lidar_east, e_er)
+
+# --- Background hillshades ---
+hill_bg_swc_east <- make_hillshade(crop(bg_bathy_raw, e_swc_east))
+hill_bg_er       <- make_hillshade(crop(bg_bathy_raw, e_er))
+
+# --- Highres hillshades ---
+hill_swc_east <- make_hillshade(lidar_swc_east_crop)
+hill_er       <- make_hillshade(lidar_er_crop)
+
+# --- Marine parks filtered for eastern areas ---
+marine_parks_swc_east <- marine_parks %>%
+  dplyr::filter(name %in% c("South-west Corner"))
+
+marine_parks_er <- marine_parks %>%
+  dplyr::filter(name %in% c("Eastern Recherche"))
+
+# --- Colour palettes ---
+# Adjust depth_limits after checking minmax(lidar_east) output
+bathy_palette_swc_east <- bathy_palette_swc  # reuse SWC palette as starting point
+bathy_palette_er       <- bathy_palette_swc  # reuse SWC palette as starting point
+
+# --- 2009 panels (empty — no LiDAR coverage) ---
+p_swc_east_2009 <- ggplot() +
+  geom_spatraster(data = hill_bg_swc_east, aes(fill = hillshade),
+                  alpha = 0.45, show.legend = FALSE) +
+  scale_fill_gradient(low      = "#1a1a2e",
+                      high     = "#ffffff",
+                      na.value = NA,
+                      guide    = "none") +
+  new_scale_fill() +
+  geom_sf(data      = marine_parks_swc_east,
+          fill      = NA,
+          colour    = alpha("white", 0.3),
+          linewidth = 0.35) +
+  geom_sf(data = aus_hr, fill = "seashell2", colour = "grey30", linewidth = 0.25) +
+  new_scale_fill() +
+  geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
+  scale_fill_manual(
+    values = c("National Park"  = "#c4cea6",
+               "Nature Reserve" = "#e4d0bb"),
+    guide  = "none"
+  ) +
+  coord_sf(xlim = swc_east_xlim, ylim = swc_east_ylim, expand = FALSE) +
+  labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  theme(
+    axis.text        = element_text(size = 8, colour = "grey40"),
+    axis.ticks       = element_line(colour = "grey60"),
+    panel.grid       = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA),
+    plot.background  = element_rect(fill = "white", colour = NA),
+    panel.border     = element_rect(fill = NA, colour = "grey60", linewidth = 0.4),
+    plot.margin      = margin(2, 2, 2, 2)
+  )
+
+p_er_2009 <- ggplot() +
+  geom_spatraster(data = hill_bg_er, aes(fill = hillshade),
+                  alpha = 0.45, show.legend = FALSE) +
+  scale_fill_gradient(low      = "#1a1a2e",
+                      high     = "#ffffff",
+                      na.value = NA,
+                      guide    = "none") +
+  new_scale_fill() +
+  geom_sf(data      = marine_parks_er,
+          fill      = NA,
+          colour    = alpha("white", 0.3),
+          linewidth = 0.35) +
+  geom_sf(data = aus_hr, fill = "seashell2", colour = "grey30", linewidth = 0.25) +
+  new_scale_fill() +
+  geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
+  scale_fill_manual(
+    values = c("National Park"  = "#c4cea6",
+               "Nature Reserve" = "#e4d0bb"),
+    guide  = "none"
+  ) +
+  coord_sf(xlim = er_xlim, ylim = er_ylim, expand = FALSE) +
+  labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  theme(
+    axis.text        = element_text(size = 8, colour = "grey40"),
+    axis.ticks       = element_line(colour = "grey60"),
+    panel.grid       = element_blank(),
+    panel.background = element_rect(fill = "white", colour = NA),
+    plot.background  = element_rect(fill = "white", colour = NA),
+    panel.border     = element_rect(fill = NA, colour = "grey60", linewidth = 0.4),
+    plot.margin      = margin(2, 2, 2, 2)
+  )
+
+# --- 2024 panels ---
+# NOTE: check minmax(lidar_swc_east_crop) and minmax(lidar_er_crop) and
+#       adjust depth_limits below accordingly before saving final version
+
+p_swc_east_2024 <- make_panel(
+  depth_rast      = lidar_swc_east_crop,
+  hill_rast       = hill_swc_east,
+  hill_bg         = hill_bg_swc_east,
+  xlim            = swc_east_xlim,
+  ylim            = swc_east_ylim,
+  depth_limits    = c(-100, 0),   # adjust after checking minmax
+  palette         = bathy_palette_swc_east,
+  marine_parks_sf = marine_parks_swc_east
+)
+
+p_er_2024 <- make_panel(
+  depth_rast      = lidar_er_crop,
+  hill_rast       = hill_er,
+  hill_bg         = hill_bg_er,
+  xlim            = er_xlim,
+  ylim            = er_ylim,
+  depth_limits    = c(-100, 0),   # adjust after checking minmax
+  palette         = bathy_palette_er,
+  marine_parks_sf = marine_parks_er
+)
+
+# --- Legends ---
+# Adjust depth_limits to match above once confirmed
+legend_swc_east <- make_bathy_legend(
+  depth_limits = c(-100, 0),
+  depth_breaks = c(0, -25, -50, -75, -100),
+  palette      = bathy_palette_swc_east
+)
+
+legend_er <- make_bathy_legend(
+  depth_limits = c(-100, 0),
+  depth_breaks = c(0, -25, -50, -75, -100),
+  palette      = bathy_palette_er
+)
+
+# --- Assemble figure ---
+title_row_east <- cowplot::plot_grid(
+  NULL, title_2009, NULL, title_2024,
+  nrow = 1, rel_widths = c(0.05, 1, 0.03, 1)
+)
+
+label_swc_east <- ggdraw() + draw_label("SWC\nEastern Arm", fontface = "plain", size = 13, angle = 90)
+label_er       <- ggdraw() + draw_label("Eastern\nRecherche", fontface = "plain", size = 13, angle = 90)
+
+depth_legends_east <- cowplot::plot_grid(
+  legend_swc_east,
+  legend_er,
+  ncol        = 1,
+  rel_heights = c(1, 1)
+)
+
+row_swc_east <- cowplot::plot_grid(
+  label_swc_east, p_swc_east_2009, NULL, p_swc_east_2024,
+  nrow = 1, rel_widths = c(0.05, 1, 0.03, 1),
+  align = "h", axis = "tb"
+)
+
+row_er <- cowplot::plot_grid(
+  label_er, p_er_2009, NULL, p_er_2024,
+  nrow = 1, rel_widths = c(0.05, 1, 0.03, 1),
+  align = "h", axis = "tb"
+)
+
+maps_grid_east <- cowplot::plot_grid(
+  title_row_east,
+  row_swc_east,
+  row_er,
+  ncol        = 1,
+  rel_heights = c(0.05, 1, 1)
+)
+
+maps_with_legends_east <- cowplot::plot_grid(
+  maps_grid_east,
+  depth_legends_east,
+  nrow       = 1,
+  rel_widths = c(1, 0.07)
+)
+
+figure_east <- cowplot::plot_grid(
+  maps_with_legends_east,
+  bottom_legend,
+  ncol        = 1,
+  rel_heights = c(1, 0.10)
+) +
+  theme(
+    plot.background = element_rect(fill = "white", colour = NA),
+    plot.margin     = margin(t = 5, r = 5, b = 5, l = 5)
+  )
+
+# --- Save ---
+ggsave(
+  paste(paste0("plots/", park, "/spatial/bathymetry/", name),
+        "lidar-eastern-facet-comparison.png", sep = "-"),
+  plot   = figure_east,
+  dpi    = 600,
+  width  = 14,
+  height = 9.63,
+  bg     = "white"
+)
+

@@ -80,13 +80,13 @@ old_detre_layer <- old_detre[["geoscience_detrended"]]
 
 # ── Shared colour scales ──────────────────────────────────────────────────────
 
-bathy_cols <- c("#1a1530", "#1a1530", "#1a1530", "#2a2050",
-                "#2a2050", "#2a2050", "#2a2050", "#352860",
-                "#352860", "#304878", "#304878", "#304878",
-                "#285a8a", "#285a8a", "#3878a0", "#3878a0",
-                "#5898b0", "#78b8c8", "#98ccc0",
-                "#98ccc0", "#b8d898", "#b8d898", "#c8cc70",
-                "#c8cc70", "#c8cc70", "#d8e464", "#EEfC5E", "#c08060", "#b89070")
+bathy_cols <- c("#090d1f", "#090d1f", "#090d1f", "#121a3d",
+                "#121a3d", "#121a3d", "#121a3d", "#1a2860",
+                "#1a2860", "#1e3870", "#1e3870", "#1e3870",
+                "#244e88", "#244e88", "#2e66a0", "#2e66a0",
+                "#3d80b8", "#5aa0c8", "#7dbece", "#7dbece",
+                "#a2d4a8", "#a2d4a8", "#b8d878", "#b8d878",
+                "#b8d878", "#d0e050", "#e8f040", "#d4b060", "#c8a080")
 
 hill_scale <- scale_fill_gradient(
   low      = "#1a1a2e",
@@ -190,6 +190,11 @@ p_detre <- ggplot() +
     values = c("National Park" = "#c4cea6", "Nature Reserve" = "#e4d0bb"),
     guide  = "none"
   ) +
+  # Marine parks
+  geom_sf(data = marine_parks,
+          fill      = NA,
+          colour    = alpha("white", 0.3),
+          linewidth = 0.5) +
   # Map outline
   annotate("rect",
            xmin = xlim_shared[1], xmax = xlim_shared[2],
@@ -211,11 +216,11 @@ p_detre <- ggplot() +
 p_combined <- p_bathy + p_detre +
   plot_layout(ncol = 2)
 
-print(p_combined)
+# print(p_combined)
 
 # ── Save ──────────────────────────────────────────────────────────────────────
-
-dir.create(paste0("plots/", park, "/spatial/bathymetry/"), recursive = TRUE, showWarnings = FALSE)
+# Only unhash if folder doesn't exist yet
+# dir.create(paste0("plots/", park, "/spatial/bathymetry/"), recursive = TRUE, showWarnings = FALSE)
 
 ggsave(
   filename = paste0("plots/", park, "/spatial/bathymetry/", name, "-network-bathy-detrended-panel.png"),
