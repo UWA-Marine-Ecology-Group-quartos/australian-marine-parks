@@ -290,4 +290,7 @@
       <Category></Category>
     </CategoryNames>
   </PAMRasterBand>
+  <PAMRasterBand band="12">
+    <Description>mean_se</Description>
+  </PAMRasterBand>
 </PAMDataset>

@@ -269,6 +269,17 @@ benthos_dom_tag <- function(r) {
   dom
 }
 
+normalise <- function(x) {
+  xmin <- terra::global(x, "min", na.rm = TRUE)[1, 1]
+  xmax <- terra::global(x, "max", na.rm = TRUE)[1, 1]
+
+  if (isTRUE(all.equal(xmin, xmax))) {
+    return(x * NA_real_)
+  }
+
+  (x - xmin) / (xmax - xmin)
+}
+
 for (this_year in pred.years) {
 
   print(this_year)
@@ -313,22 +324,43 @@ for (this_year in pred.years) {
   # Add dominant habitat layer
   dom_rast <- benthos_dom_tag(preddf_m)
 
-  # Stack fits + se.fits + dominant habitat
-  preddf_m2 <- c(preddf_m, dom_rast)
+  # ---------------------------
+  # Combined standard error
+  # ---------------------------
+
+  se_rasts <- terra::subset(
+    preddf_m,
+    c("p_macro.se.fit", "p_rock.se.fit", "p_sand.se.fit",
+      "p_seagrass.se.fit", "p_inverts.se.fit")
+  )
+
+  se_rasts_norm <- terra::rast(
+    lapply(1:terra::nlyr(se_rasts), function(i) normalise(se_rasts[[i]]))
+  )
+  names(se_rasts_norm) <- names(se_rasts)
+
+  mean_se <- terra::mean(se_rasts_norm, na.rm = TRUE)
+  names(mean_se) <- "mean_se"
+
+  # Stack fits + se.fits + dominant habitat + combined SE
+  preddf_m2 <- c(preddf_m, dom_rast, mean_se)
 
   # Data frame for ggplot categorical tiles
   pred_dom_df <- as.data.frame(dom_rast, xy = TRUE, na.rm = TRUE) %>%
     dplyr::mutate(
       dom_tag = unname(dom_labels[as.character(dom_tag)]),
-      dom_tag = factor(dom_tag,
-                       levels = c("Sand","Macroalgae","Seagrass",
-                                  "Rock","Sessile invertebrates"))
+      dom_tag = factor(
+        dom_tag,
+        levels = c("Sand", "Macroalgae", "Seagrass",
+                   "Rock", "Sessile invertebrates")
+      )
     )
 
   # Optional sanity check
   print(table(pred_dom_df$dom_tag, useNA = "ifany"))
 
   plot(dom_rast)
+  plot(mean_se)
 
   # Write original masked prediction rasters
   writeRaster(
@@ -340,7 +372,43 @@ for (this_year in pred.years) {
     overwrite = TRUE
   )
 
-  # Save stack including dominant habitat layer
+  # Save normalised SE rasters
+  saveRDS(
+    se_rasts_norm,
+    paste0(
+      "output/model-output/", park, "/habitat/",
+      name, "_predicted-se-normalised_", this_year, ".rds"
+    )
+  )
+
+  writeRaster(
+    se_rasts_norm,
+    paste0(
+      "output/model-output/", park, "/habitat/",
+      name, "_predicted-se-normalised_", this_year, ".tif"
+    ),
+    overwrite = TRUE
+  )
+
+  # Save combined SE raster
+  saveRDS(
+    mean_se,
+    paste0(
+      "output/model-output/", park, "/habitat/",
+      name, "_predicted-mean-se_", this_year, ".rds"
+    )
+  )
+
+  writeRaster(
+    mean_se,
+    paste0(
+      "output/model-output/", park, "/habitat/",
+      name, "_predicted-mean-se_", this_year, ".tif"
+    ),
+    overwrite = TRUE
+  )
+
+  # Save stack including dominant habitat layer + combined SE
   saveRDS(
     preddf_m2,
     paste0(
@@ -358,7 +426,7 @@ for (this_year in pred.years) {
     )
   )
 
-  # Write full raster stack including dominant habitat
+  # Write full raster stack including dominant habitat + combined SE
   writeRaster(
     preddf_m2,
     paste0(
@@ -378,3 +446,16 @@ for (this_year in pred.years) {
     overwrite = TRUE
   )
 }
+
+
+### Combined Standard Error
+###########################
+
+ggplot() +
+  geom_sf(data = aus, fill = "seashell") +
+  geom_spatraster(data = mean_se, maxcell = Inf) +
+  scale_fill_viridis_c(option = "A", na.value = "transparent", name = "Normalised\nSE") +
+  theme_minimal() +
+  coord_sf(xlim = c(115, 115.7),
+           ylim = c(-33.75, -33.3),
+           crs = 4326)

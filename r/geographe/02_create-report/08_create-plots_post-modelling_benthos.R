@@ -24,6 +24,7 @@ library(patchwork)
 library(scatterpie)
 library(CheckEM)
 library(grid)
+library(viridis)
 
 # Load functions
 file.sources <- list.files(pattern = "*.R", path = "functions/", full.names = TRUE)
@@ -33,8 +34,7 @@ sapply(file.sources, source, .GlobalEnv)
 e <- ext(114.2, 115.8, -34.7, -33.1)
 
 # Load necessary spatial files
-aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp")
-ausc <- aus %>%
+ausc <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp") %>%
   st_crop(e) %>%
   st_transform(4326)
 
@@ -73,8 +73,8 @@ years <- c(2014L, 2024L)
 habitat_lookup <- c(
   "Sand" = "sand",
   "Macroalgae" = "macro",
-  "Seagrasses" = "seagrass",
-  "Sessile Invertebrates" = "inverts",
+  "Seagrass" = "seagrass",
+  "Sessile invertebrates" = "inverts",
   "Rock" = "rock"
 )
 
@@ -105,7 +105,7 @@ for (yr in years) {
 }
 
 # -------------------------------------------------------------------
-# PART 1: Per-year plots (categorical + dominant benthos)
+# PART 1: Single-year plots (categorical + dominant benthos)
 # -------------------------------------------------------------------
 for (yr in years) {
 
@@ -116,11 +116,12 @@ for (yr in years) {
   pred_class <- as.data.frame(dat, xy = TRUE) %>%
     dplyr::mutate(year = yr)
 
-  # Normalise the inverse of standard error
   pred_plot <- normalise_se(data = pred_class)
 
-  # ---- Dominant habitat categorical map (DISPLAY + SAVE) ----
-  p_cat <- categoricalhabitat_plot(prediction_limits)
+  p_cat <- categoricalhabitat_plot_single(
+    pred_plot = pred_plot,
+    prediction_limits = prediction_limits
+  )
 
   print(p_cat)
 
@@ -137,8 +138,10 @@ for (yr in years) {
     bg = "white"
   )
 
-  # ---- Dominant benthos ggplot (DISPLAY + SAVE) ----
-  p_dom <- dominantbenthos_plot(prediction_limits) +
+  p_dom <- dominantbenthos_plot_single(
+    pred_plot = pred_plot,
+    prediction_limits = prediction_limits
+  ) +
     theme(
       legend.position = "bottom",
       legend.direction = "horizontal",
@@ -167,7 +170,53 @@ for (yr in years) {
 }
 
 # -------------------------------------------------------------------
-# PART 2: Multi-year individual habitat plots
+# PART 2: Multi-year categorical and dominant benthos + combined SE plot
+# -------------------------------------------------------------------
+p_dom_se <- dominantbenthos_plot_multi(
+  dat_list = dat_list,
+  prediction_limits = prediction_limits
+)
+
+print(p_dom_se)
+
+ggsave(
+  filename = paste0(
+    "plots/", park, "/habitat/", name,
+    "_predicted-dominant-benthos-and-combined-se_",
+    paste(years, collapse = "-"), ".png"
+  ),
+  plot = p_dom_se,
+  height = 7,
+  width = 8,
+  dpi = 900,
+  units = "in",
+  bg = "white"
+)
+
+
+p_cat_multi <- categoricalhabitat_plot_multi(
+  dat_list = dat_list,
+  prediction_limits = prediction_limits
+)
+
+print(p_cat_multi)
+
+ggsave(
+  filename = paste0(
+    "plots/", park, "/habitat/", name,
+    "_predicted-habitat-categorical_",
+    paste(years, collapse = "-"), ".png"
+  ),
+  plot = p_cat_multi,
+  height = 5,
+  width = 10,
+  dpi = 600,
+  units = "in",
+  bg = "white"
+)
+
+# -------------------------------------------------------------------
+# PART 3: Multi-year individual habitat plots
 # -------------------------------------------------------------------
 for (habitat_name in names(habitat_lookup)) {
 
@@ -206,7 +255,7 @@ for (habitat_name in names(habitat_lookup)) {
 }
 
 # -------------------------------------------------------------------
-# PART 3: Control plots by taxa, facetted by depth class
+# PART 4: Control plots by taxa, facetted by depth class
 # -------------------------------------------------------------------
 
 # Create the data (makes a dataframe for each ecosystem depth contour)
@@ -362,9 +411,13 @@ for (yr in years) {
       is.finite(longitude_dd),
       is.finite(latitude_dd)
     ) %>%
-    arrange(desc(Sand))
+    dplyr::arrange(desc(Sand))
 
-  p_scatterpie <- scatterpie_plot(site_limits = site_limits, pie_radius = 0.005)
+  p_scatterpie <- scatterpie_plot_single(
+    benthos_year = benthos_year,
+    site_limits = site_limits,
+    pie_radius = 0.005
+  )
 
   print(p_scatterpie)
 
@@ -379,3 +432,25 @@ for (yr in years) {
     bg = "white"
   )
 }
+
+
+p_scatterpie_multi <- scatterpie_plot_multi(
+  benthos = benthos,
+  years = years,
+  site_limits = site_limits,
+  pie_radius = 0.005
+)
+
+print(p_scatterpie_multi)
+
+ggsave(
+  filename = paste0(
+    "plots/", park, "/habitat/", name, "_scatterpie_",
+    paste(years, collapse = "-"), ".png"
+  ),
+  plot = p_scatterpie_multi,
+  height = 6,
+  width = 10,
+  dpi = 300,
+  bg = "white"
+)

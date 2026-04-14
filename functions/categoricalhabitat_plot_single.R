@@ -1,6 +1,5 @@
-categoricalhabitat_plot <- function(prediction_limits) {
+categoricalhabitat_plot_single <- function(pred_plot, prediction_limits) {
 
-  # Make sure dom_tag matches the palette names
   pred_cat <- pred_plot %>%
     dplyr::mutate(
       dom_tag = as.character(dom_tag),

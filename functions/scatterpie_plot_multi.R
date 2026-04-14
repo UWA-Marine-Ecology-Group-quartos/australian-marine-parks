@@ -1,4 +1,15 @@
-scatterpie_plot <- function(site_limits, pie_radius = 0.004) {
+scatterpie_plot_multi <- function(benthos, years, site_limits, pie_radius = 0.004) {
+
+  benthos_plot <- benthos %>%
+    dplyr::filter(as.character(year) %in% as.character(years)) %>%
+    dplyr::filter(
+      is.finite(longitude_dd),
+      is.finite(latitude_dd)
+    ) %>%
+    dplyr::mutate(
+      year = factor(year, levels = years)
+    ) %>%
+    dplyr::arrange(year, desc(Sand))
 
   ggplot() +
     geom_contour_filled(
@@ -19,7 +30,7 @@ scatterpie_plot <- function(site_limits, pie_radius = 0.004) {
     geom_sf(data = cwatr, colour = "firebrick", alpha = 4/5, linewidth = 0.3) +
     new_scale_fill() +
     geom_scatterpie(
-      data = benthos_year,
+      data = benthos_plot,
       aes(x = longitude_dd, y = latitude_dd, r = pie_radius),
       cols = c(
         "Sand",
@@ -32,6 +43,7 @@ scatterpie_plot <- function(site_limits, pie_radius = 0.004) {
     ) +
     labs(x = "Longitude", y = "Latitude", fill = "Habitat") +
     hab_fills +
+    facet_wrap(~year, nrow = 1) +
     coord_sf(
       xlim = c(site_limits[1], site_limits[2]),
       ylim = c(site_limits[3], site_limits[4]),
@@ -42,6 +54,8 @@ scatterpie_plot <- function(site_limits, pie_radius = 0.004) {
       panel.background = element_rect(fill = "#b9d1d6", colour = NA),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
-      legend.position = "bottom"
+      legend.position = "bottom",
+      legend.direction = "horizontal",
+      legend.box = "horizontal"
     )
 }
