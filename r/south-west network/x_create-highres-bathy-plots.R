@@ -6,6 +6,8 @@
 # Date:    March 2026
 ###
 
+## this script still needs to be cleaned/edited
+
 rm(list = ls())
 
 # Set study name
@@ -279,25 +281,46 @@ aus_hr <- st_read("data/south-west network/spatial/shapefiles/AusOutline_HighRes
   st_crop(st_bbox(c(xmin = 113.0, xmax = 117.0, ymin = -35.5, ymax = -32.5),
                   crs = st_crs(4283)))
 
-marine_parks <- marine_parks %>%
-  dplyr::mutate(colour = case_when(
-    zone == "Sanctuary Zone"       ~ "#f5e642",
-    TRUE ~ colour
-  ))
-
 # --- Compute hillshade from Geographe LiDAR ---
 slope_geo  <- terrain(lidar_geo_crop, v = "slope",  unit = "radians")
 aspect_geo <- terrain(lidar_geo_crop, v = "aspect", unit = "radians")
 hill_geo   <- shade(slope_geo, aspect_geo, angle = 40, direction = 270)
 names(hill_geo) <- "hillshade"
 
+# --- Prepare marine park layers with consistent zones and colours for zoom maps ---
+# Geographe zoom: only parks visible in that extent
+# Geographe zoom
+# Geographe zoom
+marine_parks_cwlth_geo <- marine_parks %>%
+  dplyr::filter(epbc == "Commonwealth", name %in% c("Geographe"))
+
+marine_parks_state_geo <- marine_parks %>%
+  dplyr::filter(epbc == "State", name %in% c("Geographe", "Ngari Capes")) %>%
+  dplyr::mutate(zone = case_when(
+    zone == "Reef Observation Area"   ~ "Sanctuary Zone",
+    zone == "National Park Zone"      ~ "Sanctuary Zone",
+    zone == "Habitat Protection Zone" ~ "Recreational Use Zone",
+    TRUE                              ~ zone
+  ))
+
+# SWC zoom
+marine_parks_cwlth_swc <- marine_parks %>%
+  dplyr::filter(epbc == "Commonwealth", name %in% c("South-west Corner"))
+
+marine_parks_state_swc <- marine_parks %>%
+  dplyr::filter(epbc == "State", name %in% c("South-west Corner", "Ngari Capes")) %>%
+  dplyr::mutate(zone = case_when(
+    zone == "Reef Observation Area"   ~ "Sanctuary Zone",
+    zone == "National Park Zone"      ~ "Sanctuary Zone",
+    zone == "Habitat Protection Zone" ~ "Recreational Use Zone",
+    TRUE                              ~ zone
+  )) %>%
+  dplyr::filter(zone %in% c("Sanctuary Zone", "General Use Zone"))
+
 # ---  Geographe zoom function with high res outline ---
 make_geo_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
   lidar_rast <- clamp(lidar_geo_crop, upper = 0, values = FALSE)
   names(lidar_rast) <- "depth"
-
-  marine_parks_state <- marine_parks %>% filter(epbc == "State")
-  marine_parks_cwlth <- marine_parks %>% filter(epbc == "Commonwealth")
 
   visible_zones <- function(mp) {
     mp %>%
@@ -332,6 +355,30 @@ make_geo_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
     ) +
     geom_sf(data = aus_hr, fill = "seashell2", colour = "grey50", linewidth = 0.3) +
     new_scale_fill() +
+    new_scale_colour() +
+    geom_sf(data = marine_parks_cwlth_geo, aes(fill = zone, colour = zone),
+            linewidth = 0.7, alpha = 0.3) +
+    scale_fill_manual(values = with(marine_parks_cwlth_geo, setNames(colour, zone)),
+                      name   = "Australian Marine Parks",
+                      breaks = visible_zones(marine_parks_cwlth_geo),
+                      guide  = guide_legend(
+                        order        = 2,
+                        override.aes = list(alpha = 1, colour = NA))) +
+    scale_colour_manual(values = with(marine_parks_cwlth_geo, setNames(colour, zone)),
+                        guide  = "none") +
+    new_scale_fill() +
+    new_scale_colour() +
+    geom_sf(data = marine_parks_state_geo, aes(fill = zone, colour = zone),
+            linewidth = 0.7, alpha = 0.3) +
+    scale_fill_manual(values = with(marine_parks_state_geo, setNames(colour, zone)),
+                      name   = "State Marine Parks",
+                      breaks = visible_zones(marine_parks_state_geo),
+                      guide  = guide_legend(
+                        order        = 3,
+                        override.aes = list(alpha = 1, colour = NA))) +
+    scale_colour_manual(values = with(marine_parks_state_geo, setNames(colour, zone)),
+                        guide  = "none") +
+    new_scale_fill() +
     geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
     scale_fill_manual(
       values = c("National Park"  = "#c4cea6",
@@ -342,39 +389,14 @@ make_geo_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
         title.position = "top"
       )
     ) +
-    new_scale_fill() +
-    new_scale_colour() +
-    geom_sf(data = marine_parks_cwlth, aes(fill = zone, colour = zone),
-            linewidth = 0.7, alpha = 0.3) +
-    scale_fill_manual(values = with(marine_parks_cwlth, setNames(colour, zone)),
-                      name   = "Commonwealth Marine Parks",
-                      breaks = visible_zones(marine_parks_cwlth),
-                      guide  = guide_legend(
-                        order        = 2,
-                        override.aes = list(alpha = 0.6, colour = NA))) +
-    scale_colour_manual(values = with(marine_parks_cwlth, setNames(colour, zone)),
-                        guide  = "none") +
-    new_scale_fill() +
-    new_scale_colour() +
-    geom_sf(data = marine_parks_state, aes(fill = zone, colour = zone),
-            linewidth = 0.7, alpha = 0.3) +
-    scale_fill_manual(values = with(marine_parks_state, setNames(colour, zone)),
-                      name   = "State Marine Parks",
-                      breaks = visible_zones(marine_parks_state),
-                      guide  = guide_legend(
-                        order        = 3,
-                        override.aes = list(alpha = 0.6, colour = NA))) +
-    scale_colour_manual(values = with(marine_parks_state, setNames(colour, zone)),
-                        guide  = "none") +
     {if (!is.null(annotations))
       list(
         geom_segment(data = annotations,
                      aes(x = x, y = y, xend = label_x, yend = label_y),
                      colour = "black", linewidth = 0.4),
         geom_text(data = annotations,
-                  aes(x = label_x, y = label_y, label = label),
-                  colour = "black", size = 3,
-                  hjust = 0)
+                  aes(x = label_x, y = label_y, label = label, vjust = vjust, hjust = hjust),
+                  colour = "black", size = 3)
       )} +
     coord_sf(xlim = xlim, ylim = ylim, expand = FALSE) +
     labs(x = NULL, y = NULL) +
@@ -398,11 +420,13 @@ make_geo_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
 # x/y = tip of leader line (feature location)
 # label_x/label_y = text position
 capel_annotations <- data.frame(
-  label   = c("Capel River", "Capel River"),
-  x       = c(115.545, 115.485),
-  y       = c(-33.522, -33.455),
-  label_x = c(115.560, 115.50),
-  label_y = c(-33.510, -33.44)
+  label   = c("paleo wetland channel", " Capel cut"),
+  x       = c(115.545,               115.485),
+  y       = c(-33.522,               -33.455),
+  label_x = c(115.560,               115.50),
+  label_y = c(-33.510,               -33.44),
+  vjust   = c(-0.5,                    0),
+  hjust   = c(0.5,                   0)
 )
 
 p_capel_hr <- make_geo_zoom_map_hr(xlim = c(115.38, 115.6),
@@ -422,20 +446,18 @@ aspect_swc <- terrain(lidar_swc_crop, v = "aspect", unit = "radians")
 hill_swc   <- shade(slope_swc, aspect_swc, angle = 40, direction = 270)
 names(hill_swc) <- "hillshade"
 
-# --- SWC zoom function with hillshade ---
+# --- Gorbilyup  zoom function with hillshade ---
 make_swc_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
 
   lidar_rast <- clamp(lidar_swc_crop, upper = 0, values = FALSE)
   names(lidar_rast) <- "depth2"
 
-  marine_parks_state <- marine_parks_swc %>% filter(epbc == "State")
-  marine_parks_cwlth <- marine_parks_swc %>% filter(epbc == "Commonwealth")
-
   visible_zones <- function(mp) {
+    bbox_sf <- st_as_sfc(st_bbox(c(xmin = xlim[1], xmax = xlim[2],
+                                   ymin = ylim[1], ymax = ylim[2]),
+                                 crs = st_crs(mp)))
     mp %>%
-      st_crop(st_bbox(c(xmin = xlim[1], xmax = xlim[2],
-                        ymin = ylim[1], ymax = ylim[2]),
-                      crs = st_crs(mp))) %>%
+      st_filter(bbox_sf, .predicate = st_intersects) %>%
       pull(zone) %>% unique()
   }
 
@@ -473,6 +495,30 @@ make_swc_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
     ) +
     geom_sf(data = aus_hr, fill = "seashell2", colour = "grey30", linewidth = 0.3) +
     new_scale_fill() +
+    new_scale_colour() +
+    geom_sf(data = marine_parks_cwlth_swc, aes(fill = zone, colour = zone),
+            linewidth = 0.7, alpha = 0.3) +
+    scale_fill_manual(values = with(marine_parks_cwlth_swc, setNames(colour, zone)),
+                      name   = "Australian Marine Parks",
+                      breaks = visible_zones(marine_parks_cwlth_swc),
+                      guide  = guide_legend(
+                        order        = 2,
+                        override.aes = list(alpha = 1, colour = NA))) +
+    scale_colour_manual(values = with(marine_parks_cwlth_swc, setNames(colour, zone)),
+                        guide  = "none") +
+    new_scale_fill() +
+    new_scale_colour() +
+    geom_sf(data = marine_parks_state_swc, aes(fill = zone, colour = zone),
+            linewidth = 0.7, alpha = 0.3) +
+    scale_fill_manual(values = with(marine_parks_state_swc, setNames(colour, zone)),
+                      name   = "State Marine Parks",
+                      breaks = visible_zones(marine_parks_state_swc),
+                      guide  = guide_legend(
+                        order        = 3,
+                        override.aes = list(alpha = 1, colour = NA))) +
+    scale_colour_manual(values = with(marine_parks_state_swc, setNames(colour, zone)),
+                        guide  = "none") +
+    new_scale_fill() +
     geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
     scale_fill_manual(
       values = c("National Park"  = "#c4cea6",
@@ -483,35 +529,15 @@ make_swc_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
         title.position = "top"
       )
     ) +
-    new_scale_fill() +
-    new_scale_colour() +
-    geom_sf(data = marine_parks_cwlth, aes(fill = zone, colour = zone),
-            linewidth = 0.7, alpha = 0.3) +
-    scale_fill_manual(values = with(marine_parks_cwlth, setNames(colour, zone)),
-                      name   = "Commonwealth Marine Parks",
-                      breaks = visible_zones(marine_parks_cwlth),
-                      guide  = guide_legend(
-                        order        = 2,
-                        override.aes = list(alpha = 0.6, colour = NA))) +
-    scale_colour_manual(values = with(marine_parks_cwlth, setNames(colour, zone)),
-                        guide  = "none") +
-    new_scale_fill() +
-    new_scale_colour() +
-    geom_sf(data = marine_parks_state, aes(fill = zone, colour = zone),
-            linewidth = 0.7, alpha = 0.3) +
-    scale_fill_manual(values = with(marine_parks_state, setNames(colour, zone)),
-                      name   = "State Marine Parks",
-                      breaks = visible_zones(marine_parks_state),
-                      guide  = guide_legend(
-                        order        = 3,
-                        override.aes = list(alpha = 0.6, colour = NA))) +
-    scale_colour_manual(values = with(marine_parks_state, setNames(colour, zone)),
-                        guide  = "none") +
     geom_sf(data = aus_hr, fill = NA, colour = "grey30", linewidth = 0.3) +
     annotate("segment", x = 115.0, y = -34.5, xend = 114.97, yend = -34.48,
              colour = "black", linewidth = 0.4) +
     annotate("text", x = 115.0, y = -34.47, label = "Gorbilyup",
              colour = "black", size = 3, fontface = "plain", hjust = 1) +
+    annotate("segment", x = 115.17, y = -34.24, xend = 115.21, yend = -34.22,
+             colour = "black", linewidth = 0.4) +
+    annotate("text", x = 115.06, y = -34.24, label = "Blackwood River",
+             colour = "black", size = 3, fontface = "plain", hjust = 0, vjust = 0.5) +
     {if (!is.null(annotations))
       list(
         geom_segment(data = annotations,
@@ -541,11 +567,11 @@ make_swc_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
   p
 }
 
-# --- Blackwood zoom ---
 p_gorbilyup_hr <- make_swc_zoom_map_hr(xlim = c(114.8, 115.4),
                                        ylim = c(-34.65, -34.2))
 print(p_gorbilyup_hr)
-ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'corner_gorbilyup-zoom-lidar.png', sep = "-"),
+
+ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'corner_gorbilyup-zoom-lidar-TEST.png', sep = "-"),
        plot = p_gorbilyup_hr, dpi = 600, width = 9, height = 6, bg = "white")
 
 ###################################################################################################

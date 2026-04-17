@@ -6,3 +6,5 @@ secrets
 secrets/
 .RDataTmp
 .RDataTmp1
+.RDataTmp2
+plots/network/spatial/notake_bathy_overview_maps/

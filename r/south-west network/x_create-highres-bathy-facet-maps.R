@@ -34,7 +34,7 @@ aus <- st_read("data/south-west network/spatial/shapefiles/STE_2021_AUST_GDA2020
 
 aus_hr <- st_read("data/south-west network/spatial/shapefiles/AusOutline_HighRes.shp") %>%
   st_make_valid() %>%
-  st_crop(st_bbox(c(xmin = 113.0, xmax = 117.0, ymin = -35.5, ymax = -32.5),
+  st_crop(st_bbox(c(xmin = 113.0, xmax = 126.0, ymin = -35.5, ymax = -32.5),
                   crs = st_crs(4283)))
 
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/south-and-western-australia_marine-parks-all.shp") %>%
@@ -57,7 +57,7 @@ marine_parks_swc <- marine_parks %>%
 
 # --- Background bathymetry for grey hillshade context ---
 bg_bathy_raw <- rast("data/south-west network/spatial/rasters/ausbath_09_v4") %>%
-  crop(ext(113.0, 117.0, -35.5, -32.5)) %>%
+  crop(ext(113.0, 126.0, -35.5, -32.5)) %>%
   clamp(upper = 0, values = FALSE)
 
 # --- Geographe LiDAR (2024) ---
@@ -493,6 +493,7 @@ ggsave(
   bg     = "white"
 )
 
+
 # ==============================================================================
 # 11. EASTERN EXTENTS — SWC EASTERN ARM & EASTERN RECHERCHE
 # ==============================================================================
@@ -502,9 +503,6 @@ lidar_east_raw <- rast("data/south-west network/spatial/rasters/DoT_south-coasta
 lidar_east     <- -lidar_east_raw
 lidar_east     <- clamp(lidar_east, upper = 0, values = FALSE)
 names(lidar_east) <- "depth"
-
-# Check depth ranges to set limits — adjust depth_limits below accordingly
-# minmax(lidar_east)
 
 # --- Define extents ---
 swc_east_xlim <- c(120.6, 121.4)
@@ -537,8 +535,8 @@ marine_parks_er <- marine_parks %>%
 
 # --- Colour palettes ---
 # Adjust depth_limits after checking minmax(lidar_east) output
-bathy_palette_swc_east <- bathy_palette_swc  # reuse SWC palette as starting point
-bathy_palette_er       <- bathy_palette_swc  # reuse SWC palette as starting point
+bathy_palette_swc_east <- bathy_palette_swc
+bathy_palette_er       <- bathy_palette_swc
 
 # --- 2009 panels (empty — no LiDAR coverage) ---
 p_swc_east_2009 <- ggplot() +
@@ -610,6 +608,8 @@ p_er_2009 <- ggplot() +
 # --- 2024 panels ---
 # NOTE: check minmax(lidar_swc_east_crop) and minmax(lidar_er_crop) and
 #       adjust depth_limits below accordingly before saving final version
+minmax(lidar_er_crop)
+minmax(lidar_swc_east_crop)
 
 p_swc_east_2024 <- make_panel(
   depth_rast      = lidar_swc_east_crop,
@@ -617,7 +617,7 @@ p_swc_east_2024 <- make_panel(
   hill_bg         = hill_bg_swc_east,
   xlim            = swc_east_xlim,
   ylim            = swc_east_ylim,
-  depth_limits    = c(-100, 0),   # adjust after checking minmax
+  depth_limits    = c(-50, 0),   # adjust after checking minmax
   palette         = bathy_palette_swc_east,
   marine_parks_sf = marine_parks_swc_east
 )
@@ -628,7 +628,7 @@ p_er_2024 <- make_panel(
   hill_bg         = hill_bg_er,
   xlim            = er_xlim,
   ylim            = er_ylim,
-  depth_limits    = c(-100, 0),   # adjust after checking minmax
+  depth_limits    = c(-50, 0),   # adjust after checking minmax
   palette         = bathy_palette_er,
   marine_parks_sf = marine_parks_er
 )
@@ -636,8 +636,8 @@ p_er_2024 <- make_panel(
 # --- Legends ---
 # Adjust depth_limits to match above once confirmed
 legend_swc_east <- make_bathy_legend(
-  depth_limits = c(-100, 0),
-  depth_breaks = c(0, -25, -50, -75, -100),
+  depth_limits = c(-50, 0),
+  depth_breaks = c(0, -10, -20, -30, -40, -50),
   palette      = bathy_palette_swc_east
 )
 
@@ -704,11 +704,10 @@ figure_east <- cowplot::plot_grid(
 # --- Save ---
 ggsave(
   paste(paste0("plots/", park, "/spatial/bathymetry/", name),
-        "lidar-eastern-facet-comparison.png", sep = "-"),
+        "lidar-eastern-facet-comparison-TEST.png", sep = "-"),
   plot   = figure_east,
   dpi    = 600,
   width  = 14,
   height = 9.63,
   bg     = "white"
 )
-
