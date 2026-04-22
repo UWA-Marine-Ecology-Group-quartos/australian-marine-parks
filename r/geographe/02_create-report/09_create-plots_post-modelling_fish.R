@@ -334,7 +334,7 @@ bar_maxn <- ggplot(
                                       scientific)),
   aes(x = reorder_within(scientific_label, maxn, year), y = maxn)
 ) +
-  geom_col() +
+  geom_col(colour = "black", linewidth = 0.25) +
   geom_errorbar(aes(ymin = pmax(maxn - se, 0), ymax = maxn + se), width = 0.2) +
   coord_flip() +
   facet_wrap(~year, scales = "free_y") +
@@ -349,7 +349,7 @@ bar_maxn <- ggplot(
 bar_maxn
 
 ggsave(paste0("plots/", park, "/fish/", name, "_top_maxn_bar_plot.png"),
-       plot = bar_maxn, height = 4, width = 9, dpi = 300, units = "in", bg = "white")
+       plot = bar_maxn, height = 4, width = 9, dpi = 600, units = "in", bg = "white")
 
 
 # Thermal Index stacked plot
@@ -438,55 +438,148 @@ bar_cti <- ggplot(
 bar_cti
 
 ggsave(paste0("plots/", park, "/fish/", name, "_top_maxn_cti_bar_plot.png"),
-       plot = bar_cti, height = 4, width = 9, dpi = 300, units = "in", bg = "white")
+       plot = bar_cti, height = 4, width = 9, dpi = 600, units = "in", bg = "white")
 
-# B20
+# B20 ---------------------------------------------------------------------
+
 # read in b20 species summaries (already mean + sd per year x species)
-b20 <- readRDS(paste0("data/", park, "/tidy/", name, "_b20-species.rds")) %>%
-  glimpse()
+b20 <- readRDS(paste0("data/", park, "/tidy/", name, "_b20-species.rds"))
 
-# top 10 b20 per year (2014 & 2024)
+# top 10 b20 per year using combined values only
 b20.10 <- b20 %>%
+  filter(status == "Combined") %>%
   group_by(year) %>%
   slice_max(order_by = b20, n = 10, with_ties = FALSE) %>%
-  ungroup() %>%
-  glimpse()
+  ungroup()
 
 # species unique to either year's top 10 (for bold labels)
-sp14_b20 <- b20.10 %>% filter(year == 2014) %>% pull(scientific_name)
-sp24_b20 <- b20.10 %>% filter(year == 2024) %>% pull(scientific_name)
+sp14_b20 <- b20.10 %>%
+  filter(year == 2014) %>%
+  pull(scientific_name)
+
+sp24_b20 <- b20.10 %>%
+  filter(year == 2024) %>%
+  pull(scientific_name)
 
 unique_species_b20 <- union(
   setdiff(sp14_b20, sp24_b20),
   setdiff(sp24_b20, sp14_b20)
 )
 
-# plot
-bar_b20 <- ggplot(
-  b20.10 %>%
-    mutate(scientific_label = if_else(scientific_name %in% unique_species_b20,
-                                      paste0("**", scientific_name, "**"),
-                                      scientific_name)),
-  aes(x = reorder_within(scientific_label, b20, year), y = b20)
-) +
-  geom_col() +
-  geom_errorbar(
-    aes(ymin = pmax(b20 - se, 0), ymax = b20 + se),
-    width = 0.2
+# common plot function
+plot_b20_bars <- function(plot_data, fill_values, fill_breaks) {
+  ggplot(
+    plot_data %>%
+      mutate(
+        scientific_label = if_else(
+          scientific_name %in% unique_species_b20,
+          paste0("**", scientific_name, "**"),
+          scientific_name
+        )
+      ),
+    aes(
+      x = reorder_within(scientific_label, b20, year),
+      y = b20,
+      fill = status
+    )
   ) +
-  coord_flip() +
-  scale_y_log10() +   # <- log transform biomass axis
-  facet_wrap(~year, scales = "free_y") +
-  scale_x_reordered() +
-  labs(
-    x = "Species",
-    y = expression(Average~biomass~(B20~per~BRUV))
-  ) +
-  theme_bw() +
-  theme_collapse +
-  theme(axis.text.y = element_markdown())
+    geom_col(
+      position = position_dodge(width = 0.8),
+      width = 0.7,
+      colour = "black",
+      linewidth = 0.25
+    ) +
+    geom_errorbar(
+      aes(ymin = pmax(b20 - se, 0), ymax = b20 + se),
+      position = position_dodge(width = 0.8),
+      width = 0.2
+    ) +
+    coord_flip() +
+    scale_y_continuous(
+      trans = scales::pseudo_log_trans(base = 10),
+      breaks = c(0, 1, 10, 100, 1000),
+      labels = scales::label_number()
+    ) +
+    facet_wrap(~year, scales = "free_y") +
+    scale_x_reordered() +
+    scale_fill_manual(
+      values = fill_values,
+      breaks = fill_breaks
+    ) +
+    labs(
+      x = "Species",
+      y = expression(Average~biomass~(B20~per~BRUV)),
+      fill = "Status"
+    ) +
+    theme_bw() +
+    theme_collapse +
+    theme(
+      axis.text.y = element_markdown(),
+      panel.grid.major.x = element_line(color = "grey90")
+    )
+}
+
+# -------------------------------------------------------------------------
+# Plot 1: both years split into Fished / No-Take
+# -------------------------------------------------------------------------
+
+b20_plot_split <- b20 %>%
+  filter(status != "Combined") %>%
+  semi_join(b20.10, by = c("year", "scientific_name")) %>%
+  mutate(
+    status = factor(status, levels = c("Fished", "No-Take"))
+  )
+
+bar_b20 <- plot_b20_bars(
+  plot_data   = b20_plot_split,
+  fill_values = c("Fished" = "white", "No-Take" = "grey40"),
+  fill_breaks = c("No-Take", "Fished")
+)
 
 bar_b20
 
-ggsave(paste0("plots/", park, "/fish/", name, "_top_b20_bar_plot.png"),
-  plot = bar_b20, height = 4, width = 9, dpi = 300, units = "in", bg = "white")
+ggsave(
+  paste0("plots/", park, "/fish/", name, "_top_b20_bar_plot.png"),
+  plot   = bar_b20,
+  height = 4,
+  width  = 9,
+  dpi    = 600,
+  units  = "in",
+  bg     = "white"
+)
+
+# -------------------------------------------------------------------------
+# Plot 2: 2014 Combined, 2024 split into Fished / No-Take
+# -------------------------------------------------------------------------
+
+b20_plot_mixed <- b20 %>%
+  semi_join(b20.10, by = c("year", "scientific_name")) %>%
+  filter(
+    (year == 2014 & status == "Combined") |
+      (year == 2024 & status %in% c("Fished", "No-Take"))
+  ) %>%
+  mutate(
+    status = factor(status, levels = c("Combined", "Fished", "No-Take"))
+  )
+
+bar_b20_v2 <- plot_b20_bars(
+  plot_data   = b20_plot_mixed,
+  fill_values = c(
+    "Combined" = "grey75",
+    "Fished"   = "white",
+    "No-Take"  = "grey40"
+  ),
+  fill_breaks = c("No-Take", "Fished", "Combined")
+)
+
+bar_b20_v2
+
+ggsave(
+  paste0("plots/", park, "/fish/", name, "_top_b20_bar_plot_mixed.png"),
+  plot   = bar_b20_v2,
+  height = 4,
+  width  = 9,
+  dpi    = 600,
+  units  = "in",
+  bg     = "white"
+)
