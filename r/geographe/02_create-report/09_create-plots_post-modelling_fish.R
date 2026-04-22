@@ -285,7 +285,7 @@ theme.larger.text<-theme(
   legend.title = element_text(family="TN",size=8),
   legend.text = element_text(family="TN",size=8))
 
-# read in maxn
+# read in STI
 sti <- CheckEM::australia_life_history %>%
   clean_names() %>%
   dplyr::select(family, genus, species, rls_thermal_niche) %>%
@@ -293,11 +293,31 @@ sti <- CheckEM::australia_life_history %>%
   dplyr::distinct() %>%
   glimpse()
 
+# Create DF filter for Commonwealth waters only
+marine_parks_amp <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
+  dplyr::filter(epbc == "Commonwealth") %>%
+  st_transform(4326)
+
+metadata_amp <- readRDS(paste0("data/", park, "/raw/metadata.RDS")) %>%
+  distinct(campaignid, sample, .keep_all = TRUE) %>%
+  st_as_sf(coords = c("longitude_dd", "latitude_dd"), crs = 4326, remove = FALSE) %>%
+  st_join(
+    marine_parks_amp %>% dplyr::select(name, epbc),
+    join = st_within,
+    left = FALSE
+  ) %>%
+  st_drop_geometry()
+
+# Read in maxn (Commonwealth only)
 maxn <- readRDS(paste0("data/", park, "/raw/_count-with-zeros.RDS")) %>%
+  semi_join(metadata_amp, by = c("campaignid", "sample")) %>%
   mutate(year = year(date_time)) %>%
-  left_join(sti) %>%
-  select(year, sample, scientific_name, family, genus, species, count,
-         rls_thermal_niche) %>%
+  left_join(sti, by = c("family", "genus", "species")) %>%
+  select(
+    year, sample, scientific_name, family, genus, species, count,
+    rls_thermal_niche
+  ) %>%
   # dplyr::filter(!count > 200, # Remove some outliers
   #               # !sample %in% "779", ##HE what was 779?
   #               geoscience_roughness < 4) %>% # Remove outliers in roughness
@@ -344,7 +364,8 @@ bar_maxn <- ggplot(
     y = expression(Average~abundance~(MaxN~per~BRUV))) +
   theme_bw() +
   theme_collapse +
-  theme(axis.text.y = element_markdown())
+  theme(axis.text.y = element_markdown(),
+        panel.grid.major.x = element_line(color = "grey90"))
 
 bar_maxn
 
@@ -409,13 +430,15 @@ bar_cti <- ggplot(
     ),
     width = 0.2
   ) +
-  geom_text(aes(y = 16.5, label = niche_lab), hjust = 0, size = 3) +
+  geom_text(aes(y = 23, label = niche_lab), hjust = 0, size = 3) +
   coord_flip(clip = "off") +
   facet_wrap(~year, scales = "free_y") +
   scale_x_reordered() +
   scale_y_continuous(
     trans = log1p10_trans,
-    expand = expansion(mult = c(0, 0.15))
+    expand = expansion(mult = c(0, 0.15)),
+    breaks = c(0, 5, 10, 20),
+    labels = scales::label_number()
   ) +
   # centre GREY at the mean thermal niche
   scale_fill_gradientn(
@@ -433,7 +456,8 @@ bar_cti <- ggplot(
   ) +
   theme_bw() +
   theme_collapse +
-  theme(axis.text.y = element_markdown())
+  theme(axis.text.y = element_markdown(),
+        panel.grid.major.x = element_line(color = "grey90"))
 
 bar_cti
 
@@ -443,7 +467,7 @@ ggsave(paste0("plots/", park, "/fish/", name, "_top_maxn_cti_bar_plot.png"),
 # B20 ---------------------------------------------------------------------
 
 # read in b20 species summaries (already mean + sd per year x species)
-b20 <- readRDS(paste0("data/", park, "/tidy/", name, "_b20-species.rds"))
+b20 <- readRDS(paste0("data/", park, "/tidy/", name, "_b20-species_amp.rds"))
 
 # top 10 b20 per year using combined values only
 b20.10 <- b20 %>%

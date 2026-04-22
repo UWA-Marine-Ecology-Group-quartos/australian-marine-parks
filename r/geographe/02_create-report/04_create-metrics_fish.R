@@ -304,6 +304,145 @@ b20_species <- bind_rows(b20_species_by_status, b20_species_combined) %>%
 
 saveRDS(b20_species, file = paste0("data/", park, "/tidy/", name, "_b20-species.rds"))
 
+
+# -------------------------------------------------------------------------
+# Commonwealth-only copy of metadata
+# -------------------------------------------------------------------------
+
+marine_parks_amp <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
+  dplyr::filter(epbc %in% "Commonwealth") %>%
+  st_transform(4326)
+
+metadata_amp <- metadata %>%
+  distinct(campaignid, sample, .keep_all = TRUE) %>%
+  st_as_sf(coords = c("longitude_dd", "latitude_dd"), crs = 4326, remove = FALSE) %>%
+  st_join(
+    marine_parks_amp %>% dplyr::select(name, epbc),
+    join = st_within,
+    left = FALSE
+  ) %>%
+  st_drop_geometry()
+
+# optional quick check
+metadata_amp %>%
+  count(year, status)
+
+# -------------------------------------------------------------------------
+# Create df for calculating B20 (Commonwealth only)
+# -------------------------------------------------------------------------
+
+b20_length_amp <- readRDS(paste0("data/", park, "/raw/_length-with-zeros.RDS")) %>%
+  dplyr::select(campaignid, sample, family, genus, species, length_mm, count) %>%
+  mutate(length_cm = length_mm / 10) %>%
+  left_join(CheckEM::australia_life_history) %>%
+  dplyr::mutate(scientific_name = paste(genus, species, sep = " "))
+
+# 1) Calculate mass from lengths
+biomass_amp <- b20_length_amp %>%
+  inner_join(metadata_amp, by = c("campaignid", "sample")) %>%
+  left_join(
+    metadata_bathy_derivatives,
+    by = c("campaignid", "sample", "longitude_dd", "latitude_dd", "status", "year")
+  ) %>%
+  mutate(
+    adj_length = case_when(
+      count == 0 ~ NA_real_,  # length irrelevant for absences
+      fb_length_weight_measure %in% "FL" ~ length_cm,
+      fb_length_weight_measure %in% "TL" & fb_ll_equation_type %in% "FL → TL" ~ (length_cm * fb_b_ll) + fb_a_ll,
+      fb_length_weight_measure %in% "TL" & fb_ll_equation_type %in% "TL → FL" ~ (length_cm - fb_a_ll) / fb_b_ll,
+      TRUE ~ NA_real_
+    ),
+    mass_g = case_when(
+      count == 0 ~ 0,  # absences are zero biomass
+      !is.na(adj_length) & !is.na(fb_a) & !is.na(fb_b) ~ (adj_length ^ fb_b) * fb_a * count,
+      TRUE ~ NA_real_  # present but cannot compute biomass -> NA
+    )
+  )
+
+# 2) Define inclusion + b20-specific biomass
+b20_mass_amp <- biomass_amp %>%
+  mutate(
+    include_b20 = class == "Actinopterygii" &
+      (is.na(rls_water_column) | rls_water_column != "pelagic non-site attached" ) &
+      (count == 0 | (length_cm >= 20 & length_cm <= 800)),
+
+    b20_mass_g = case_when(
+      count == 0 ~ 0,                        # absence stays zero
+      !include_b20 ~ 0,                      # excluded taxa/sizes contribute 0 to B20
+      include_b20 & !is.na(mass_g) ~ mass_g, # included + computable biomass
+      include_b20 & is.na(mass_g) ~ NA_real_ # included but missing -> NA (flag)
+    )
+  ) %>%
+  filter(b20_mass_g <= 30000 | is.na(b20_mass_g)) # 190cm Centroberyx lineatus
+
+b20_mass_check_amp <- b20_mass_amp %>%
+  select(sample, year, scientific_name, b20_mass_g, length_cm)
+
+sp_watercol_amp <- b20_mass_amp %>%
+  distinct(scientific_name, rls_water_column)
+
+# 3) Per sample × species B20 biomass
+b20_by_sample_amp <- b20_mass_amp %>%
+  group_by(year, sample, scientific_name) %>%
+  summarise(
+    present_n = sum(count, na.rm = TRUE),
+
+    # If species never present on that BRUV => 0
+    b20_sample = if (sum(count, na.rm = TRUE) == 0) 0
+    # If present, but every INCLUDED present record has NA biomass => NA
+    else if (all(is.na(b20_mass_g[count > 0 & include_b20]))) NA_real_
+    # Otherwise sum included biomass (excluded rows are already 0)
+    else sum(b20_mass_g, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  left_join(sp_watercol_amp, by = "scientific_name")
+
+# 4) Ensure every BRUV × species exists (zeros for absences)
+all_samples_amp <- metadata_amp %>%
+  distinct(year, sample)
+
+b20_by_sample_complete_amp <- b20_by_sample_amp %>%
+  right_join(all_samples_amp, by = c("year","sample")) %>%
+  tidyr::complete(
+    nesting(year, sample), scientific_name,
+    fill = list(b20_sample = 0, present_n = 0)
+  ) %>%
+  left_join(
+    metadata_amp %>% distinct(year, sample, status),
+    by = c("year", "sample")
+  )
+
+# 5) Species summaries per year
+b20_species_by_status_amp <- b20_by_sample_complete_amp %>%
+  group_by(year, scientific_name, status) %>%
+  summarise(
+    b20 = mean(b20_sample, na.rm = TRUE),
+    sd  = sd(b20_sample, na.rm = TRUE),
+    n   = sum(!is.na(b20_sample)),
+    se  = sd / sqrt(n),
+    .groups = "drop"
+  )
+
+b20_species_combined_amp <- b20_by_sample_complete_amp %>%
+  group_by(year, scientific_name) %>%
+  summarise(
+    b20 = mean(b20_sample, na.rm = TRUE),
+    sd  = sd(b20_sample, na.rm = TRUE),
+    n   = sum(!is.na(b20_sample)),
+    se  = sd / sqrt(n),
+    .groups = "drop"
+  ) %>%
+  mutate(status = "Combined")
+
+b20_species_amp <- bind_rows(b20_species_by_status_amp, b20_species_combined_amp) %>%
+  left_join(sp_watercol_amp, by = "scientific_name")
+
+saveRDS(
+  b20_species_amp,
+  file = paste0("data/", park, "/tidy/", name, "_b20-species_amp.rds")
+)
+
 ##HE The below is to work out which species are missing fishbase data
 # message(paste(length(which(!is.na(biomass$length_cm))), "measured lengths in data"))
 # message(paste(length(which(!is.na(biomass$adj_length))), "adjusted lengths in data"))
