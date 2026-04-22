@@ -273,11 +273,22 @@ all_samples <- metadata %>%
 b20_by_sample_complete <- b20_by_sample %>%
   # filter(!sample %in% "GB-BV-125") %>% # heaps of huge pinkies
   right_join(all_samples, by = c("year","sample")) %>%
-  tidyr::complete(year, sample, scientific_name,
-                  fill = list(b20_sample = 0, present_n = 0))
+  tidyr::complete(nesting(year, sample), scientific_name,
+                  fill = list(b20_sample = 0, present_n = 0)) %>%
+  left_join(metadata %>% select(year, sample, status), by = c("year", "sample"))
 
 # 5) Species summaries per year
-b20_species <- b20_by_sample_complete %>%
+b20_species_by_status <- b20_by_sample_complete %>%
+  group_by(year, scientific_name, status) %>%
+  summarise(
+    b20 = mean(b20_sample, na.rm = TRUE),
+    sd  = sd(b20_sample, na.rm = TRUE),
+    n   = sum(!is.na(b20_sample)),
+    se  = sd / sqrt(n),
+    .groups = "drop"
+  )
+
+b20_species_combined <- b20_by_sample_complete %>%
   group_by(year, scientific_name) %>%
   summarise(
     b20 = mean(b20_sample, na.rm = TRUE),
@@ -286,6 +297,9 @@ b20_species <- b20_by_sample_complete %>%
     se  = sd / sqrt(n),
     .groups = "drop"
   ) %>%
+  mutate(status = "Combined")
+
+b20_species <- bind_rows(b20_species_by_status, b20_species_combined) %>%
   left_join(sp_watercol, by = "scientific_name")
 
 saveRDS(b20_species, file = paste0("data/", park, "/tidy/", name, "_b20-species.rds"))
