@@ -551,13 +551,14 @@ b20_plot_split <- b20 %>%
   filter(status != "Combined") %>%
   semi_join(b20.10, by = c("year", "scientific_name")) %>%
   mutate(
-    status = factor(status, levels = c("Fished", "No-Take"))
+    status = if_else(status %in% "Fished", "Open", status),
+    status = factor(status, levels = c("Open", "No-Take"))
   )
 
 bar_b20 <- plot_b20_bars(
   plot_data   = b20_plot_split,
-  fill_values = c("Fished" = "white", "No-Take" = "grey40"),
-  fill_breaks = c("No-Take", "Fished")
+  fill_values = c("Open" = "white", "No-Take" = "grey40"),
+  fill_breaks = c("No-Take", "Open")
 )
 
 bar_b20
@@ -583,17 +584,17 @@ b20_plot_mixed <- b20 %>%
       (year == 2024 & status %in% c("Fished", "No-Take"))
   ) %>%
   mutate(
-    status = factor(status, levels = c("Combined", "Fished", "No-Take"))
+    status = if_else(status %in% c("Combined", "Fished"), "Open", status),
+    status = factor(status, levels = c("Open", "No-Take"))
   )
 
 bar_b20_v2 <- plot_b20_bars(
   plot_data   = b20_plot_mixed,
   fill_values = c(
-    "Combined" = "grey75",
-    "Fished"   = "white",
+    "Open"   = "white",
     "No-Take"  = "grey40"
   ),
-  fill_breaks = c("No-Take", "Fished", "Combined")
+  fill_breaks = c("No-Take", "Open")
 )
 
 bar_b20_v2
