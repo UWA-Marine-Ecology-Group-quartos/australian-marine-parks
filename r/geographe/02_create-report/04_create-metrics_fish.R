@@ -18,6 +18,9 @@ library(leaflet)
 library(googlesheets4)
 library(terra)
 library(tidyterra)
+library(vegan)
+library(ggplot2)
+library(purrr)
 
 # Set the study name
 name <- "GeographeAMP"
@@ -82,6 +85,95 @@ ta.sr <- count %>%
   pivot_longer(cols = c("total_abundance", "species_richness"), names_to = "response", values_to = "count") %>%
   glimpse() # Should be nsamps * 2 = 594
 
+# -----------------------------
+# Species Accumulation
+# -----------------------------
+# Prepare species matrix
+# -----------------------------
+count.wide <- count %>%
+  dplyr::select(-c(family, genus, species)) %>%
+  dplyr::group_by(campaignid, sample, scientific_name) %>%
+  dplyr::summarise(
+    count = sum(count, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  tidyr::pivot_wider(
+    names_from = scientific_name,
+    values_from = count,
+    values_fill = 0
+  ) %>%
+  mutate(
+    Year = case_when(
+      grepl("^2014", campaignid) ~ "2014",
+      grepl("^2024", campaignid) ~ "2024",
+      TRUE ~ campaignid
+    )
+  ) %>%
+  left_join(
+    metadata %>% dplyr::select(sample, status),
+    by = "sample"
+  ) %>%
+  dplyr::filter(!is.na(status))
+
+# -----------------------------
+# Function to generate SAC data
+# -----------------------------
+
+make_sac_df <- function(df, year_name, status_name) {
+
+  species_mat <- df %>%
+    dplyr::select(-campaignid, -sample, -Year, -status)
+
+  species_pa <- vegan::decostand(species_mat, method = "pa")
+
+  sac_random_pa <- vegan::specaccum(
+    species_pa,
+    method = "random",
+    permutations = 999
+  )
+
+  df_random_pa <- data.frame(
+    x = sac_random_pa$sites,
+    richness = sac_random_pa$richness,
+    sd = sac_random_pa$sd,
+    curve = "Sample-based detection/non-detection",
+    Year = year_name,
+    status = status_name
+  )
+
+  sac_rare <- vegan::specaccum(
+    species_mat,
+    method = "rarefaction"
+  )
+
+  df_rare <- data.frame(
+    x = sac_rare$individuals,
+    richness = sac_rare$richness,
+    sd = sac_rare$sd,
+    curve = "Individual-based rarefaction",
+    Year = year_name,
+    status = status_name
+  )
+
+  bind_rows(df_random_pa, df_rare)
+}
+
+# -----------------------------
+# Generate SACs by Year and status
+# -----------------------------
+
+sac_df <- count.wide %>%
+  dplyr::group_split(Year, status) %>%
+  purrr::map_dfr(function(x) {
+    make_sac_df(
+      x,
+      unique(x$Year),
+      unique(x$status)
+    )
+  })
+
+saveRDS(sac_df, file = paste0("data/", park, "/tidy/", name, "_species-accumulation.rds"))
+
 cti <- CheckEM::create_cti(data = count) %>%
   dplyr::rename(count = cti) %>%
   dplyr::mutate(response = "cti") %>%
@@ -97,10 +189,6 @@ tidy_maxn <- bind_rows(ta.sr, cti) %>% ## HE need to check missing aspects
   glimpse()
 
 saveRDS(tidy_maxn, file = paste0("data/", park, "/tidy/", name, "_tidy-count.rds"))
-
-spp_list <- count %>%
-  dplyr::distinct(scientific_name, .keep_all = T) %>%
-  dplyr::select(family, genus, species, scientific_name)
 
 # length <- readRDS(paste0("data/", park, "/raw/_length-with-zeros.RDS")) %>%
 #   dplyr::select(campaignid, sample, family, genus, species, length_mm, count) %>%

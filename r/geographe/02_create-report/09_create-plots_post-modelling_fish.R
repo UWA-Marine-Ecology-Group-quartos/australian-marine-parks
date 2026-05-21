@@ -309,6 +309,115 @@ metadata_amp <- readRDS(paste0("data/", park, "/raw/metadata.RDS")) %>%
   ) %>%
   st_drop_geometry()
 
+# -----------------------------
+# Species Accumulation Curves
+# -----------------------------
+
+sac_df <- readRDS(paste0("data/", park, "/tidy/", name, "_species-accumulation.rds"))
+
+base_theme <- theme_bw(base_size = 13)
+
+sac_sample <- ggplot(
+  sac_df %>%
+    filter(curve == "Sample-based detection/non-detection"),
+  aes(
+    x = x,
+    y = richness,
+    colour = status,
+    fill = status,
+    linetype = Year
+  )
+) +
+  geom_ribbon(
+    aes(
+      ymin = richness - sd,
+      ymax = richness + sd
+    ),
+    alpha = 0.18,
+    colour = NA
+  ) +
+  geom_line(linewidth = 1.2) +
+  scale_colour_manual(name = "Status",
+    values = c(
+      "No-Take" = "#7bbc63",
+      "Fished" = "#b9e6fb"
+    )
+  ) +
+  scale_fill_manual(name = "Status",
+    values = c(
+      "No-Take" = "#7bbc63",
+      "Fished" = "#b9e6fb"
+    )
+  ) +
+  labs(
+    x = "Number of BRUV deployments",
+    y = "Species richness"
+  ) +
+  base_theme
+
+
+sac_individual <- ggplot(
+  sac_df %>%
+    filter(curve == "Individual-based rarefaction"),
+  aes(
+    x = x,
+    y = richness,
+    colour = status,
+    fill = status,
+    linetype = Year
+  )
+) +
+  geom_ribbon(
+    aes(
+      ymin = richness - sd,
+      ymax = richness + sd
+    ),
+    alpha = 0.18,
+    colour = NA
+  ) +
+  geom_line(linewidth = 1.2) +
+  scale_colour_manual(name = "Status",
+    values = c(
+      "No-Take" = "#7bbc63",
+      "Fished" = "#b9e6fb"
+    )
+  ) +
+  scale_fill_manual(name = "Status",
+    values = c(
+      "No-Take" = "#7bbc63",
+      "Fished" = "#b9e6fb"
+    )
+  ) +
+  labs(
+    x = "Cumulative MaxN individuals",
+    y = "Species richness"
+  ) +
+  base_theme
+
+
+sac_plot <- sac_sample / sac_individual +
+  plot_layout(guides = "collect") +
+  plot_annotation(
+    tag_levels = "a",
+    tag_suffix = ")"
+  ) &
+  theme(
+    legend.position = "right",
+    plot.tag = element_text(face = "bold", size = 14)
+  )
+
+sac_plot
+
+ggsave(
+  paste0("plots/", park, "/fish/", name, "_SAC-faceted.png"),
+  plot = sac_plot,
+  height = 8,
+  width = 7,
+  dpi = 600,
+  units = "in",
+  bg = "white"
+)
+
 # Read in maxn (Commonwealth only)
 maxn <- readRDS(paste0("data/", park, "/raw/_count-with-zeros.RDS")) %>%
   semi_join(metadata_amp, by = c("campaignid", "sample")) %>%
