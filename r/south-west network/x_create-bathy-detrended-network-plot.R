@@ -1,10 +1,23 @@
 ###
 # Project: NESP 4.20 - Marine Park Dashboard reporting
-# Data:    Marine parks, old and new bathymetry data (2009 & 2024)
-# Task:    1x2 panel plot - bathymetry + detrended bathymetry (network extent)
+# Data:    Marine parks, new bathymetry data (2024), marine park shapefiles,
+#          terrestrial parks and aus outline
+# Task:    Create network-scale bathy and detrended bathymetry facet maps
 # Author:  Annika Leunig
-# Date:    June 2026
+# Date:    May 2026
+# Outputs: 1. 1x2 panel plot — bathymetry + detrended bathymetry (network extent)
 ###
+
+# Table of contents
+#     1.  Set up and load libraries
+#     2.  Load spatial files
+#     3.  Hillshade and detrend bathymetry
+#     4. Define colour ramps
+#     5. FIGURE 1: South-west Network
+
+# ==============================================================================
+# 1. SET UP AND LOAD
+# ==============================================================================
 
 # Clear the environment
 rm(list = ls())
@@ -28,17 +41,20 @@ e <- ext(108.0, 138.0, -40.0, -23.0)
 
 # Progress bar for raster operations
 terraOptions(progress = 3)
-
 sf_use_s2(TRUE)
 
-# ── Load spatial files ────────────────────────────────────────────────────────
-
+# ==============================================================================
+# 2. LOAD SPATIAL FILES
+# ==============================================================================
+# Terrestrial parks using CAPAD to capture SA
 terrnp <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
   dplyr::filter(TYPE %in% c("Nature Reserve", "National Park"))
 
+# Aus Outline
 aus <- st_read("data/south-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
   st_make_valid()
 
+# Marine parks and filter for just South-west network parks
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/south-and-western-australia_marine-parks-all.shp") %>%
   dplyr::filter(name %in% c("Abrolhos", "Abrolhos Islands", "Bremer", "Eastern Recherche",
                             "Ngari Capes", "Geographe", "South-west Corner",
@@ -50,16 +66,17 @@ marine_parks <- st_read("data/south-west network/spatial/shapefiles/south-and-we
                             "Upper Spencer Gulf", "Cottesloe Reef", "Rottnest",
                             "Shoalwater Islands"))
 
-# ── Load bathymetry ───────────────────────────────────────────────────────────
-
-old_full_bathy <- rast("data/south-west network/spatial/rasters/ausbath_09_v4") %>%
+# Add bathymetry layer
+bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
   crop(e)
 
-old_bathy <- old_full_bathy %>%
+bathy_crop <- bathy %>%
   clamp(upper = 0, lower = -250, values = FALSE) %>%
   trim()
 
-# ── Hillshade ─────────────────────────────────────────────────────────────────
+# ==============================================================================
+# 3. CREATE HILLSHADE and DETREND BATHY
+# ==============================================================================
 
 make_hillshade <- function(bathy_rast) {
   slope  <- terrain(bathy_rast, v = "slope",  unit = "radians")
@@ -67,18 +84,19 @@ make_hillshade <- function(bathy_rast) {
   shade(slope, aspect, angle = 40, direction = 270)
 }
 
-old_hill <- make_hillshade(old_full_bathy)
+hill <- make_hillshade(bathy)
 
-# ── Detrended bathymetry ──────────────────────────────────────────────────────
+# Detrend bathy
+zstar <- st_as_stars(bathy_crop)
+detre <- detrend(zstar, parallel = 8)
+detre <- as(object = detre, Class = "SpatRaster")
+names(detre) <- c("geoscience_detrended", "lineartrend")
 
-old_zstar <- st_as_stars(old_bathy)
-old_detre <- detrend(old_zstar, parallel = 8)
-old_detre <- as(object = old_detre, Class = "SpatRaster")
-names(old_detre) <- c("geoscience_detrended", "lineartrend")
+detre_layer <- detre[["geoscience_detrended"]]
 
-old_detre_layer <- old_detre[["geoscience_detrended"]]
-
-# ── Shared colour scales ──────────────────────────────────────────────────────
+# ==============================================================================
+# 4. DEFINE COLOUR RAMPS
+# ==============================================================================
 
 bathy_cols <- c("#090d1f", "#090d1f", "#090d1f", "#121a3d",
                 "#121a3d", "#121a3d", "#121a3d", "#1a2860",
@@ -95,23 +113,26 @@ hill_scale <- scale_fill_gradient(
   guide    = "none"
 )
 
-# ── Plot 1: Bathymetry ────────────────────────────────────────────────────────
-
-names(old_full_bathy) <- "depth"
-names(old_hill)       <- "hillshade"
+# ==============================================================================
+# 5. FIGURE 1: South-west Network
+# ==============================================================================
+# ── Set up ────────────────────────────────────────────────────────────────────
+names(bathy) <- "depth"
+names(hill)       <- "hillshade"
 
 # Shared plot extent — both panels locked to this
 xlim_shared <- c(108.0, 138.0)
 ylim_shared <- c(-40.0, -23.0)
 
+# ── Plot 1: Normal bathymetry ─────────────────────────────────────────────────
 p_bathy <- ggplot() +
   # Hillshade first (bottom layer)
-  geom_spatraster(data = old_hill, aes(fill = hillshade),
+  geom_spatraster(data = hill, aes(fill = hillshade),
                   alpha = 0.55, show.legend = FALSE) +
   hill_scale +
   new_scale_fill() +
   # Bathymetry second
-  geom_spatraster(data = old_full_bathy, aes(fill = depth),
+  geom_spatraster(data = bathy, aes(fill = depth),
                   alpha = 0.65) +
   scale_fill_gradientn(
     colours  = bathy_cols,
@@ -159,10 +180,10 @@ p_bathy <- ggplot() +
 
 # ── Plot 2: Detrended bathymetry ──────────────────────────────────────────────
 
-names(old_detre_layer) <- "detrended"
+names(detre_layer) <- "detrended"
 
 p_detre <- ggplot() +
-  geom_spatraster(data = old_detre_layer, aes(fill = detrended)) +
+  geom_spatraster(data = detre_layer, aes(fill = detrended)) +
   scale_fill_viridis_c(
     option    = "magma",
     na.value  = NA,
@@ -242,3 +263,7 @@ ggsave(
   height   = 10,
   bg       = "white"
 )
+
+# ==============================================================================
+# End of script :)
+# ==============================================================================

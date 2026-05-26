@@ -4,8 +4,25 @@
 #          terrestrial parks and aus outline
 # Task:    Creating benthic habitat maps
 # Author:  Annika Leunig
-# Date:    March 2026
+# Date:    May 2026
+# Outputs: 1. Geographe and Two rocks benthic habitat comparisons
+#          2. Network scale benthic habitat and predicted reef comparisons
+#          3. Change in ecosystem area/% bar graphs
 ###
+
+# Table of contents
+#     1. Set up and load data
+#     2. Set CRS, colours and other housekeeping
+#     3. Functions
+#     4. FIGURE 1: Two Rocks and Geographe
+# [NOT IN USE] 5. Individual park figures (kept for future reference)
+#     6. FIGURE 2: Network benthic habitat extent
+#     7. Figure 3: 2018 vs 2025 ecosystem change bar graph
+
+
+# ==============================================================================
+# 1. LOAD DATA and SETUP
+# ==============================================================================
 
 # Clear environment
 rm(list = ls())
@@ -24,11 +41,6 @@ library(cowplot)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
-
-
-# ==============================================================================
-# 1. LOAD DATA
-# ==============================================================================
 
 # set extent
 e <- ext(106.0, 140.0, -45.0, -22.0)
@@ -1657,7 +1669,7 @@ ggsave(paste(paste0('plots/', park, '/spatial/benthic_habitat/', name),
 #
 
 # ==============================================================================
-# 6. NETWORK FIGURE (Figure 3)
+# 6. FIGURE 2: Network benthic habitat extent
 # ==============================================================================
 
 network_limits <- c(108.0, 138.0, -42.0, -24.0)
@@ -1712,7 +1724,7 @@ ggsave(paste(paste0('plots/', park, '/spatial/benthic_habitat/', name),
        bg     = "white")
 
 # ==============================================================================
-# 7. AREA CHANGE BAR CHARTS: 2018 vs 2025 shelf ecosystems
+# 7. Figure 3: 2018 vs 2025 shelf ecosystems
 # ==============================================================================
 
 # --- Reproject rasters to equal-area for accurate area calculations ---
@@ -1837,6 +1849,18 @@ p_area <- ggplot(area_combined %>% filter(classname != "Shelf unvegetated sedime
 
 print(p_area)
 
+ggsave(
+  paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+        "corner-network-_habitat-area-change.png", sep = "-"),
+  plot   = p_area,
+  dpi    = 600,
+  width  = 10,
+  height = 5,
+  bg     = "white"
+)
+
+# ------------------- % change graph rather than Area -------------------------#
+
 # CHART B: % change 2018 to 2025 — hashed out
 # area_wide <- area_combined %>%
 #   dplyr::select(classname, year, area_km2) %>%
@@ -1868,12 +1892,6 @@ print(p_area)
 #
 # print(p_pct)
 
-ggsave(
-  paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
-        "corner-network-_habitat-area-change.png", sep = "-"),
-  plot   = p_area,
-  dpi    = 600,
-  width  = 10,
-  height = 5,
-  bg     = "white"
-)
+# ==============================================================================
+# End of script :)
+# ==============================================================================

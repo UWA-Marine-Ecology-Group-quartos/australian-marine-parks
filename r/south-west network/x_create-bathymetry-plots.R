@@ -4,8 +4,22 @@
 #          parks and aus outline
 # Task:    2009 vs 2024 Bathymetry maps
 # Author:  Annika Leunig
-# Date:    June 2026
+# Date:    May 2026
+# Outputs: 1. Geographe and Two rocks 2009 vs 2024 bathy comparison facet plot
+#          2. SWC 2009 vs 2024 bathy comparison facet plot
 ###
+
+# Table of contents
+#     1. Load data and set up
+#     2. Define extents and colour ramps
+#     3. Create hillshades
+#     4. Functions
+#     5. FIGURE 1: Two rocks and Geographe 2009 v 2024 faceted plot
+#     6. FIGURE 2: South-west corner 2009 v 2024 faceted plot
+
+# ==============================================================================
+# 1. LOAD DATA and SETUP
+# ==============================================================================
 
 # Clear the environment
 rm(list = ls())
@@ -73,19 +87,14 @@ new_bathy <- new_full_bathy %>%
   clamp(upper = 0, lower = -250, values = F) %>%
   trim()
 
+# ==============================================================================
+# 2. DEFINE EXTENTS AND COLOUR RAMPS
+# ==============================================================================
 
 # Define extents
 geographe_limits <- c(114.9, 115.7, -33.8,    -33.369)
 tworocks_limits  <- c(114.7, 116.0, -32.0,    -31.3)
 swc_limits       <- c(114.2, 116.2, -34.65, -33.3)
-
-# Create function helpers (makes for a cleaner plot)
-thin_breaks <- function(limits, step = 0.2) {
-  b <- seq(from = floor(min(limits)   / step) * step,
-           to   = ceiling(max(limits) / step) * step,
-           by   = step)
-  b[seq(1, length(b), by = 2)]
-}
 
 # Create Colour ramps
 v <- scales::viridis_pal(option = "viridis")(100)
@@ -119,7 +128,7 @@ bathy_palette_geo <- colorRampPalette(c(
 bathy_palette_even <- scales::viridis_pal(option = "viridis")(8)
 
 bathy_palette_swc <- colorRampPalette(c(
-  v[1],    # dark purple  — -200 m
+  v[1],
   v[2],
   v[3],
   v[4],
@@ -139,7 +148,7 @@ bathy_palette_swc <- colorRampPalette(c(
   v[36],
   v[40],
   v[44],
-  v[48],   # teal         — ~-100 m
+  v[48],
   v[58],
   v[68],
   v[76],
@@ -147,8 +156,12 @@ bathy_palette_swc <- colorRampPalette(c(
   v[89],
   v[94],
   v[98],
-  v[100]   # bright yellow — 0 m
+  v[100]
 ))(500)
+
+# ==============================================================================
+# 3. CREATE HILLSHADES
+# ==============================================================================
 
 # Create and compute hillshade
 make_hillshade <- function(bathy_rast, altitude = 35, azimuth = 270) {
@@ -159,6 +172,18 @@ make_hillshade <- function(bathy_rast, altitude = 35, azimuth = 270) {
 
 hill_old <- make_hillshade(old_full_bathy)
 hill_new <- make_hillshade(new_full_bathy)
+
+# ==============================================================================
+# 4. FUNCTIONS
+# ==============================================================================
+
+# Create function helpers (makes for a cleaner plot)
+thin_breaks <- function(limits, step = 0.2) {
+  b <- seq(from = floor(min(limits)   / step) * step,
+           to   = ceiling(max(limits) / step) * step,
+           by   = step)
+  b[seq(1, length(b), by = 2)]
+}
 
 # Rotated polygon (so that it can be a diagonal box)
 rotated_rect <- function(cx, cy, width, height, angle_deg, xlim, ylim, plot_width, plot_height) {
@@ -340,8 +365,11 @@ make_terrp_legend <- function() {
 }
 
 
-# PLOT FUNCTIONS
-# TWO ROCKS AND GEOGRAPHE 2009 v 2024 FACETED PLOTS
+# ==============================================================================
+#  5. FIGURE 1: Two rocks and Geographe 2009 v 2024 faceted plot
+# ==============================================================================
+
+# Call all the individual plots
 p_tr_old <- make_bathy_panel(old_full_bathy, hill_old,
                              xlim          = tworocks_limits[1:2],
                              ylim          = tworocks_limits[3:4],
@@ -382,7 +410,7 @@ p_geo_new <- make_bathy_panel(new_full_bathy, hill_new,
                               clip_to_limit = FALSE,
                               break_step    = 0.1)
 
-
+# Call functions to create rectangular annotation boxes
 geo_box <- rotated_rect(cx        = 115.445, cy = -33.505,
                         width     = 0.09,
                         height    = 0.18,
@@ -390,8 +418,8 @@ geo_box <- rotated_rect(cx        = 115.445, cy = -33.505,
                         xlim      = geographe_limits[1:2],
                         ylim      = geographe_limits[3:4],
                         plot_width  = 15 * (1 / 2.09),
-                        plot_height = 10 * (1 / 2.06) * (1 / 1.06)) #adjust plot width and height to make polygon
-                                                                    # look like rectangle and not uneven
+                        plot_height = 10 * (1 / 2.06) * (1 / 1.06))
+
 
 p_geo_old <- p_geo_old +
   annotate("polygon",
@@ -493,10 +521,11 @@ ggsave(paste(paste0("plots/", park, "/spatial/bathymetry/", name),
        bg     = "white")
 
 
+# ==============================================================================
+#  6. FIGURE 2: South-west corner 2009 v 2024 faceted plot
+# ==============================================================================
 
-# SWC 2009 v 2024 FACETED PLOTS
-# Similar steps asabove, just without two rows
-
+# Call functions
 p_swc_old <- make_bathy_panel(old_full_bathy, hill_old,
                               xlim          = swc_limits[1:2],
                               ylim          = swc_limits[3:4],
@@ -515,6 +544,7 @@ p_swc_new <- make_bathy_panel(new_full_bathy, hill_new,
                               clip_to_limit = TRUE,
                               break_step    = 0.2)
 
+# Assemble figure
 legend_swc <- make_bathy_legend(
   depth_limits = c(-200, 0),
   depth_breaks = c(0, -50, -100, -150, -200),
@@ -564,4 +594,7 @@ ggsave(paste(paste0("plots/", park, "/spatial/bathymetry/", name),
        height = 6,
        bg     = "white")
 
+# ==============================================================================
+# End of script :)
+# ==============================================================================
 
