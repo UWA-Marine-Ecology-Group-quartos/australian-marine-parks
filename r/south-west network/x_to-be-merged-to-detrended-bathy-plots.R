@@ -33,8 +33,8 @@ sf_use_s2(TRUE)
 
 # ── Load spatial files ────────────────────────────────────────────────────────
 
-terrnp <- st_read("data/south-west network/spatial/shapefiles/Legislated_Lands_and_Waters_DBCA_011.shp") %>%
-  dplyr::filter(leg_catego %in% c("Nature Reserve", "National Park"))
+terrnp <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
+  dplyr::filter(TYPE %in% c("Nature Reserve", "National Park"))
 
 aus <- st_read("data/south-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
   st_make_valid()
@@ -131,7 +131,7 @@ p_bathy <- ggplot() +
   geom_sf(data = aus, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
   new_scale_fill() +
   # Terrestrial parks
-  geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
+  geom_sf(data = terrnp, aes(fill = TYPE), colour = NA, alpha = 0.8) +
   scale_fill_manual(
     values = c("National Park" = "#c4cea6", "Nature Reserve" = "#e4d0bb"),
     guide  = "none"
@@ -185,7 +185,7 @@ p_detre <- ggplot() +
   geom_sf(data = aus, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
   new_scale_fill() +
   # Terrestrial parks
-  geom_sf(data = terrnp, aes(fill = leg_catego), colour = NA, alpha = 0.8) +
+  geom_sf(data = terrnp, aes(fill = TYPE), colour = NA, alpha = 0.8) +
   scale_fill_manual(
     values = c("National Park" = "#c4cea6", "Nature Reserve" = "#e4d0bb"),
     guide  = "none"
@@ -212,10 +212,22 @@ p_detre <- ggplot() +
   )
 
 # ── Combine panels ────────────────────────────────────────────────────────────
+p_bathy <- p_bathy +
+  theme(legend.position   = "bottom",
+        legend.direction  = "horizontal",
+        legend.margin     = margin(0, 0, 0, 0),
+        legend.box.margin = margin(-10, 0, 0, 0),
+        plot.margin       = margin(2, 2, 0, 2))
 
-p_combined <- p_bathy + p_detre +
-  plot_layout(ncol = 2)
+p_detre <- p_detre +
+  theme(legend.position   = "bottom",
+        legend.direction  = "horizontal",
+        legend.margin     = margin(0, 0, 0, 0),
+        legend.box.margin = margin(-10, 0, 0, 0),
+        plot.margin       = margin(20, 2, 2, 2))
 
+p_combined <- p_bathy / p_detre +
+  plot_layout(ncol = 1, heights = c(1, 1))
 # print(p_combined)
 
 # ── Save ──────────────────────────────────────────────────────────────────────
@@ -226,8 +238,7 @@ ggsave(
   filename = paste0("plots/", park, "/spatial/bathymetry/", name, "-network-bathy-detrended-panel.png"),
   plot     = p_combined,
   dpi      = 800,
-  width    = 12,
-  height   = 4,
+  width    = 6,
+  height   = 10,
   bg       = "white"
 )
-

@@ -420,7 +420,7 @@ make_geo_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
 # x/y = tip of leader line (feature location)
 # label_x/label_y = text position
 capel_annotations <- data.frame(
-  label   = c("paleo wetland channel", " Capel cut"),
+  label   = c("  Capel cut", " paleo wetland channel"),
   x       = c(115.545,               115.485),
   y       = c(-33.522,               -33.455),
   label_x = c(115.560,               115.50),
@@ -433,7 +433,7 @@ p_capel_hr <- make_geo_zoom_map_hr(xlim = c(115.38, 115.6),
                                    ylim = c(-33.57, -33.4),
                                    annotations = capel_annotations)
 
-print(p_capel_hr)
+# print(p_capel_hr)
 
 ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'geographe_capel-zoom-lidar.png', sep = "-"),
        plot = p_capel_hr, dpi = 600, width = 8, height = 6, bg = "white")
@@ -536,7 +536,7 @@ make_swc_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
              colour = "black", size = 3, fontface = "plain", hjust = 1) +
     annotate("segment", x = 115.17, y = -34.24, xend = 115.21, yend = -34.22,
              colour = "black", linewidth = 0.4) +
-    annotate("text", x = 115.06, y = -34.24, label = "Blackwood River",
+    annotate("text", x = 115.06, y = -34.24, label = "  Blackwood River",
              colour = "black", size = 3, fontface = "plain", hjust = 0, vjust = 0.5) +
     {if (!is.null(annotations))
       list(
@@ -569,7 +569,7 @@ make_swc_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
 
 p_gorbilyup_hr <- make_swc_zoom_map_hr(xlim = c(114.8, 115.4),
                                        ylim = c(-34.65, -34.2))
-print(p_gorbilyup_hr)
+# print(p_gorbilyup_hr)
 
 ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'corner_gorbilyup-zoom-lidar-TEST.png', sep = "-"),
        plot = p_gorbilyup_hr, dpi = 600, width = 9, height = 6, bg = "white")

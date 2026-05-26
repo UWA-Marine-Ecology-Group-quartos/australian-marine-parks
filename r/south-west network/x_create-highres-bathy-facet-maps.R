@@ -504,6 +504,13 @@ lidar_east     <- -lidar_east_raw
 lidar_east     <- clamp(lidar_east, upper = 0, values = FALSE)
 names(lidar_east) <- "depth"
 
+# --- SWC east bathy  ---
+swc_east_bathy     <- rast("data/south-west network/spatial/rasters/UWA-EGS_AU038423-Wudjari-r50-SB-FP_rev1.tiff")
+swc_east_bathy     <- project(swc_east_bathy, "EPSG:7844", method = "bilinear")
+swc_east_bathy     <- -swc_east_bathy
+swc_east_bathy     <- clamp(swc_east_bathy, upper = 0, values = FALSE)
+names(swc_east_bathy) <- "depth"
+
 # --- Define extents ---
 swc_east_xlim <- c(120.6, 121.4)
 swc_east_ylim <- c(-34.15, -33.75)
@@ -514,17 +521,18 @@ er_ylim <- c(-34.5, -33.5)
 e_swc_east <- ext(swc_east_xlim[1], swc_east_xlim[2], swc_east_ylim[1], swc_east_ylim[2])
 e_er       <- ext(er_xlim[1],       er_xlim[2],       er_ylim[1],       er_ylim[2])
 
-# --- Crop LiDAR to each extent ---
-lidar_swc_east_crop <- crop(lidar_east, e_swc_east)
-lidar_er_crop       <- crop(lidar_east, e_er)
+# --- Crop rasters to each extent ---
+lidar_swc_east_crop  <- crop(lidar_east,     e_swc_east)
+lidar_er_crop        <- crop(lidar_east,     e_er)
+swc_east_bathy_crop <- crop(swc_east_bathy, e_swc_east)
 
 # --- Background hillshades ---
 hill_bg_swc_east <- make_hillshade(crop(bg_bathy_raw, e_swc_east))
 hill_bg_er       <- make_hillshade(crop(bg_bathy_raw, e_er))
 
 # --- Highres hillshades ---
-hill_swc_east <- make_hillshade(lidar_swc_east_crop)
-hill_er       <- make_hillshade(lidar_er_crop)
+hill_swc_east    <- make_hillshade(lidar_swc_east_crop)
+hill_er          <- make_hillshade(lidar_er_crop)
 
 # --- Marine parks filtered for eastern areas ---
 marine_parks_swc_east <- marine_parks %>%
@@ -534,11 +542,10 @@ marine_parks_er <- marine_parks %>%
   dplyr::filter(name %in% c("Eastern Recherche"))
 
 # --- Colour palettes ---
-# Adjust depth_limits after checking minmax(lidar_east) output
-bathy_palette_swc_east <- bathy_palette_swc
+bathy_palette_swc_east <- bathy_palette_swc_east_full
 bathy_palette_er       <- bathy_palette_swc
 
-# --- 2009 panels (empty — no LiDAR coverage) ---
+# --- 2009 panels (empty — no survey coverage) ---
 p_swc_east_2009 <- ggplot() +
   geom_spatraster(data = hill_bg_swc_east, aes(fill = hillshade),
                   alpha = 0.45, show.legend = FALSE) +
@@ -606,20 +613,16 @@ p_er_2009 <- ggplot() +
   )
 
 # --- 2024 panels ---
-# NOTE: check minmax(lidar_swc_east_crop) and minmax(lidar_er_crop) and
-#       adjust depth_limits below accordingly before saving final version
-minmax(lidar_er_crop)
-minmax(lidar_swc_east_crop)
-
 p_swc_east_2024 <- make_panel(
   depth_rast      = lidar_swc_east_crop,
   hill_rast       = hill_swc_east,
   hill_bg         = hill_bg_swc_east,
   xlim            = swc_east_xlim,
   ylim            = swc_east_ylim,
-  depth_limits    = c(-50, 0),   # adjust after checking minmax
+  depth_limits    = c(-78, 0),
   palette         = bathy_palette_swc_east,
-  marine_parks_sf = marine_parks_swc_east
+  marine_parks_sf = marine_parks_swc_east,
+  depth_rast2     = swc_east_bathy_crop
 )
 
 p_er_2024 <- make_panel(
@@ -628,22 +631,21 @@ p_er_2024 <- make_panel(
   hill_bg         = hill_bg_er,
   xlim            = er_xlim,
   ylim            = er_ylim,
-  depth_limits    = c(-50, 0),   # adjust after checking minmax
+  depth_limits    = c(-50, 0),
   palette         = bathy_palette_er,
   marine_parks_sf = marine_parks_er
 )
 
 # --- Legends ---
-# Adjust depth_limits to match above once confirmed
 legend_swc_east <- make_bathy_legend(
-  depth_limits = c(-50, 0),
-  depth_breaks = c(0, -10, -20, -30, -40, -50),
+  depth_limits = c(-78, 0),
+  depth_breaks = c(0, -20, -40, -60, -78),
   palette      = bathy_palette_swc_east
 )
 
 legend_er <- make_bathy_legend(
-  depth_limits = c(-100, 0),
-  depth_breaks = c(0, -25, -50, -75, -100),
+  depth_limits = c(-50, 0),
+  depth_breaks = c(0, -10, -20, -30, -40, -50),
   palette      = bathy_palette_er
 )
 
@@ -654,7 +656,7 @@ title_row_east <- cowplot::plot_grid(
 )
 
 label_swc_east <- ggdraw() + draw_label("SWC\nEastern Arm", fontface = "plain", size = 13, angle = 90)
-label_er       <- ggdraw() + draw_label("Eastern\nRecherche", fontface = "plain", size = 13, angle = 90)
+label_er       <- ggdraw() + draw_label("Eastern\nRecherche",  fontface = "plain", size = 13, angle = 90)
 
 depth_legends_east <- cowplot::plot_grid(
   legend_swc_east,
@@ -707,7 +709,91 @@ ggsave(
         "lidar-eastern-facet-comparison-TEST.png", sep = "-"),
   plot   = figure_east,
   dpi    = 600,
-  width  = 14,
+  width  = 16,
   height = 9.63,
+  bg     = "white"
+)
+
+
+# ==============================================================================
+# 12. SWC EASTERN ARM ONLY — viridis full depth ramp, 2009 vs 2024
+# ==============================================================================
+
+bathy_palette_swc_east_full <- colorRampPalette(c(
+  v[1], v[16], v[30], v[44], v[58], v[72], v[83], v[92], v[100]
+))(500)
+
+legend_swc_east_full <- make_bathy_legend(
+  depth_limits = c(-78, 0),
+  depth_breaks = c(0, -20, -40, -60, -78),
+  palette      = bathy_palette_swc_east_full
+)
+
+p_swc_east_2009_12 <- p_swc_east_2009 +
+  theme(
+    axis.text.x = element_text(size = 9, colour = "grey40"),
+    axis.text.y = element_text(size = 9, colour = "grey40"),
+    plot.margin = margin(5, 15, 5, 15)
+  ) +
+  scale_x_continuous(breaks = c(120.6, 120.8, 121.0, 121.2, 121.4)) +
+  scale_y_continuous(breaks = c(-34.15, -34.0, -33.9, -33.75))
+
+p_swc_east_2024_full <- make_panel(
+  depth_rast      = lidar_swc_east_crop,
+  hill_rast       = hill_swc_east,
+  hill_bg         = hill_bg_swc_east,
+  xlim            = swc_east_xlim,
+  ylim            = swc_east_ylim,
+  depth_limits    = c(-78, 0),
+  palette         = bathy_palette_swc_east_full,
+  marine_parks_sf = marine_parks_swc_east,
+  depth_rast2     = swc_east_bathy_crop
+) +
+  theme(
+    axis.text.x = element_text(size = 9, colour = "grey40"),
+    axis.text.y = element_text(size = 9, colour = "grey40"),
+    plot.margin = margin(5, 15, 5, 15)
+  ) +
+  scale_x_continuous(breaks = c(120.6, 120.8, 121.0, 121.2, 121.4)) +
+  scale_y_continuous(breaks = c(-34.15, -34.0, -33.9, -33.75))
+
+row_swc_east_full <- cowplot::plot_grid(
+  p_swc_east_2009_12, NULL, p_swc_east_2024_full,
+  nrow = 1, rel_widths = c(1, 0.03, 1),
+  align = "h", axis = "tb"
+)
+
+maps_grid_swc_east <- cowplot::plot_grid(
+  title_row,
+  row_swc_east_full,
+  ncol        = 1,
+  rel_heights = c(0.05, 1)
+)
+
+maps_with_legends_swc_east <- cowplot::plot_grid(
+  maps_grid_swc_east,
+  legend_swc_east_full,
+  nrow       = 1,
+  rel_widths = c(1, 0.07)
+)
+
+figure_swc_east <- cowplot::plot_grid(
+  maps_with_legends_swc_east,
+  bottom_legend,
+  ncol        = 1,
+  rel_heights = c(1, 0.10)
+) +
+  theme(
+    plot.background = element_rect(fill = "white", colour = NA),
+    plot.margin     = margin(t = 5, r = 5, b = 5, l = 5)
+  )
+
+ggsave(
+  paste(paste0("plots/", park, "/spatial/bathymetry/", name),
+        "swc-eastern-arm-full-ramp.png", sep = "-"),
+  plot   = figure_swc_east,
+  dpi    = 600,
+  width  = 16,
+  height = 5.5,
   bg     = "white"
 )
