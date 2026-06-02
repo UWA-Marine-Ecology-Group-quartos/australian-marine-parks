@@ -1,0 +1,48 @@
+---
+title: "Appendix A - Geographe Marine Park Natural Values Report"
+subtitle: "South-west Marine Parks Network"
+format: pdf
+toc: true
+---
+
+```{r}
+#| include: false
+library(here)
+library(ggplot2)
+library(knitr)
+library(terra)
+library(tidyterra)
+```
+
+# Natural Values
+
+Understanding of natural values
+
+### Benthic ecosystem extent – dominant habitat types
+
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Predicted dominant habitat type"
+p_cat_multi <- readRDS(here("plots/geographe/habitat/GeographeAMP_predicted-habitat-categorical_2014-2024.rds"))
+p_cat_multi
+```
+
+### Benthic ecosystem extent – habitat distribution and probability
+
+```{r}
+#| echo: false
+#| out-width: "70%"
+#| fig-cap: "Predicted habitat distribution probability and uncertainty"
+include_graphics(here("plots/geographe/habitat/GeographeAMP_predicted-dominant-benthos-and-combined-se_2014-2024.png"))
+```
+
+```{r}
+#| echo: false
+#| fig-width: 8
+#| fig-height: 4
+#| fig-cap: "Habitat classes observed in benthic imagery. Habitat classes observed in spatially balanced stereo-BRUV and drop-camera imagery visualised as spatial pie charts. The green polygon represents the extent of no-take National Park Zones and State no-take sanctuary zones. The bathymetric contour shown is 30 m which represents ecosystem depth contours."
+p_scatterpie_multi <- readRDS(here("plots/geographe/habitat/GeographeAMP_scatterpie_2014-2024.rds"))
+p_scatterpie_multi
+```

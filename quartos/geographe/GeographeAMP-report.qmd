@@ -40,7 +40,7 @@ marine_park <- "Geographe Marine Park"
 |                         |             |
 |                         |             |
 
-: Key Ecological Features of the `{r} marine_park`. Environmental features summarised from the South-west Marine Parks Network Management Plan (Director of National Parks 2018). {#tbl-kef}
+: Key Ecological Features of the `{r} marine_park`. Environmental features summarised from the South-west Marine Parks Network Management Plan (Director of National Parks 2018).
 
 | Key natural values |
 |--------------------|
@@ -50,7 +50,7 @@ marine_park <- "Geographe Marine Park"
 |                    |
 |                    |
 
-: Draft\^ Key Natural Values of the `{r} marine_park`. Key natural values summarised from the South-west Marine Parks Network Management Plan (Director of National Parks 2018). \* Values characterised within the latest survey (Section 3 and 4). \^ These may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework. {#tbl-knv}
+: Draft\^ Key Natural Values of the `{r} marine_park`. Key natural values summarised from the South-west Marine Parks Network Management Plan (Director of National Parks 2018). \* Values characterised within the latest survey (Section 3 and 4). \^ These may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework.
 
 | Cultural value | Description |
 |----------------|-------------|
@@ -63,7 +63,7 @@ marine_park <- "Geographe Marine Park"
 |                |             |
 |                |             |
 
-: Cultural values\* of the `{r} marine_park` for the Wadandi region. \*Reproduced from Davies et al. (2022) ‘The Cultural Seascape of Wadandi Boodja’. {#tbl-cultural}
+: Cultural values\* of the `{r} marine_park` for the Wadandi region. \*Reproduced from Davies et al. (2022) ‘The Cultural Seascape of Wadandi Boodja’.
 
 | Key social and economic values |
 |--------------------------------|
@@ -75,7 +75,7 @@ marine_park <- "Geographe Marine Park"
 |                                |
 |                                |
 
-: Draft\* social, economic and use values of the `{r} marine_park`. Key social and economic values summarised from the South-west Marine Parks Network Management Plan (Director of National Parks 2018). \* These values may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework. {#tbl-socio}
+: Draft\* social, economic and use values of the `{r} marine_park`. Key social and economic values summarised from the South-west Marine Parks Network Management Plan (Director of National Parks 2018). \* These values may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework.
 
 ## Pressures
 
@@ -89,18 +89,18 @@ marine_park <- "Geographe Marine Park"
 |               |
 |               |
 
-: Draft\* key pressures in the `{r} marine_park`. Key pressures likely to be acting on natural values and ecosystem components of the South-west Corner Marine Park. Key pressures are summarised from the South-west Marine Parks Network Management Plan (Director of National Parks 2018). \* These pressures may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework. {#tbl-pressures}
+: Draft\* key pressures in the `{r} marine_park`. Key pressures likely to be acting on natural values and ecosystem components of the South-west Corner Marine Park. Key pressures are summarised from the South-west Marine Parks Network Management Plan (Director of National Parks 2018). \* These pressures may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework.
 
 Fig - Practice = National RUM of recreational fishing
 
-| Climatology, oceanography and climate change metrics | Description                                                                                                                                                           | Reference or source |
-|------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------|
-| Ocean acidity                                        | Modelled product of ocean acidity, providing an indication of physiological stress for marine biota and for calcifying organisms in particular Orr2005-hh.            | AODN\*              |
-| Sea level anomaly                                    | Satellite derived observation providing a proxy of upwelling and potential indicating areas of increased nutrient exchange and productivity (Pearce et al. 2009) .    | AODN\*              |
-| Sea surface temperature                              | Satellite derived observation providing a measurement of sea surface temperature and potential indicator of physiological stress for marine biota Caputi2009-qj.      | AODN\*              |
-| Degree Heating Weeks                                 | Designed to provide an indicator of potential bleaching in tropical coral reefs, this product can also be used to characterise marine heat waves globally Liu2014-dt. | NOAA                |
+| Climatology, oceanography and climate change metrics | Description | Reference or source |
+|----|----|----|
+| Ocean acidity | Modelled product of ocean acidity, providing an indication of physiological stress for marine biota and for calcifying organisms in particular Orr2005-hh. | AODN\* |
+| Sea level anomaly | Satellite derived observation providing a proxy of upwelling and potential indicating areas of increased nutrient exchange and productivity (Pearce et al. 2009) . | AODN\* |
+| Sea surface temperature | Satellite derived observation providing a measurement of sea surface temperature and potential indicator of physiological stress for marine biota Caputi2009-qj. | AODN\* |
+| Degree Heating Weeks | Designed to provide an indicator of potential bleaching in tropical coral reefs, this product can also be used to characterise marine heat waves globally Liu2014-dt. | NOAA |
 
-: Potential metrics of climatology, oceanography and climate change. Examples included are indexes of ocean acidity, sea level anomaly, sea surface temperature and degree heating weeks (Figure 8 - 11). These metrics may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework. Where indicated, \*data was sourced from Australia’s Integrated Marine Observing System (IMOS) – IMOS is enabled by the National Collaborative Research Infrastructure strategy (NCRIS). {#tbl-climmetrics}
+: Potential metrics of climatology, oceanography and climate change. Examples included are indexes of ocean acidity, sea level anomaly, sea surface temperature and degree heating weeks (Figure 8 - 11). These metrics may be revised during Parks Australia's ongoing development of a Monitoring, Evaluation, Improvement and Reporting framework. Where indicated, \*data was sourced from Australia’s Integrated Marine Observing System (IMOS) – IMOS is enabled by the National Collaborative Research Infrastructure strategy (NCRIS).
 
 ![Temporal patterns in pH, Sea Level Anomaly, Sea Surface Temperature and Degree Heating Weeks](../../plots/geographe/spatial/GeographeAMP_oceanography_time-series.png){#fig-temporalpressures}
 

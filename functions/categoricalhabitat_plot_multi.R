@@ -84,7 +84,8 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
     coord_sf(
       xlim = c(prediction_limits[1], prediction_limits[2]),
       ylim = c(prediction_limits[3], prediction_limits[4]),
-      crs = 4326
+      crs = 4326,
+      expand = FALSE
     ) +
     facet_wrap(~year, nrow = 1) +
     theme_minimal() +
@@ -95,7 +96,8 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
       legend.position = "bottom",
       legend.direction = "horizontal",
       legend.box = "horizontal",
-      legend.text = element_text(size = 6),
-      legend.title = element_blank()
+      legend.text = element_text(size = 10),
+      legend.title = element_blank(),
+      strip.text = element_text(size = 10, face = "bold")
     )
 }

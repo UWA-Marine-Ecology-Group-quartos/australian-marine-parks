@@ -9,3 +9,4 @@ secrets/
 .RDataTmp2
 plots/network/spatial/notake_bathy_overview_maps/
 .RDataTmp3
+plots/**/*.rds
