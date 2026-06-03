@@ -3,7 +3,7 @@
 ## Steps to use this template for a new marine park:
 
 1.  Copy the `r/TEMPLATE/` folder and save in the `r/` folder as your park name.
-2.  Edit `r/[PARK]/02_create-report_appendix-A-natural-values/00_config.yml` and `r/``[PARK]``/03_create-report_appendix-B-pressures/00_config.yml` to set your marine park and project name (currently set to "template")
+2.  Edit `r/[PARK]/02_create-report_appendix-A-natural-values/00_config.yml` and `r/[PARK]/03_create-report_appendix-B-pressures/00_config.yml` to set your marine park and project name (currently set to "template")
 3.  Copy `TEMPLATE/` folders in `data/`, `output/model-output/`, and `plots/` and save as your park name.
 4.  Run scripts in number order.
     - Note that the template scripts were duplicated from the Geographe marine park, so they need to be read through and edited to be appropriate for your park.
