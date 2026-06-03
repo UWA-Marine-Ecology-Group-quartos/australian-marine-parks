@@ -1,8 +1,13 @@
 ---
 title: "Appendix A - Geographe Marine Park Natural Values Report"
 subtitle: "South-west Marine Parks Network"
-format: pdf
+format:
+  pdf:
+    output-file: "Project 4.21-Geographe-2-Appendix A-q-Natural values.pdf"
 toc: true
+execute:
+  echo: false
+post-render: 11_move-pdf.R
 ---
 
 ```{r}

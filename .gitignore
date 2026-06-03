@@ -10,3 +10,17 @@ secrets/
 plots/network/spatial/notake_bathy_overview_maps/
 .RDataTmp3
 plots/**/*.rds
+/.quarto/
+**/*.quarto_ipynb
+plots/*/
+!plots/TEMPLATE/
+output/*/
+!output/model-output/
+output/model-output/*/
+!output/model-output/TEMPLATE/
+data/**/raw
+data/**/tidy
+data/**/uploads
+!data/TEMPLATE/raw
+!data/TEMPLATE/tidy
+!data/TEMPLATE/uploads
