@@ -439,14 +439,14 @@ ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'geographe_ca
        plot = p_capel_hr, dpi = 600, width = 8, height = 6, bg = "white")
 
 
-# --------------- Gorbilyup River zoom ----------------------------------------#
+# --------------- Gorbiliyup River zoom ----------------------------------------#
 # --- Compute hillshade from SWC LiDAR ---
 slope_swc  <- terrain(lidar_swc_crop, v = "slope",  unit = "radians")
 aspect_swc <- terrain(lidar_swc_crop, v = "aspect", unit = "radians")
 hill_swc   <- shade(slope_swc, aspect_swc, angle = 40, direction = 270)
 names(hill_swc) <- "hillshade"
 
-# --- Gorbilyup  zoom function with hillshade ---
+# --- Gorbiliyup  zoom function with hillshade ---
 make_swc_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
 
   lidar_rast <- clamp(lidar_swc_crop, upper = 0, values = FALSE)
@@ -532,7 +532,7 @@ make_swc_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
     geom_sf(data = aus_hr, fill = NA, colour = "grey30", linewidth = 0.3) +
     annotate("segment", x = 115.0, y = -34.5, xend = 114.97, yend = -34.48,
              colour = "black", linewidth = 0.4) +
-    annotate("text", x = 115.0, y = -34.47, label = "Gorbilyup",
+    annotate("text", x = 115.0, y = -34.47, label = "Gorbiliyup",
              colour = "black", size = 3, fontface = "plain", hjust = 1) +
     annotate("segment", x = 115.17, y = -34.24, xend = 115.21, yend = -34.22,
              colour = "black", linewidth = 0.4) +
@@ -567,11 +567,11 @@ make_swc_zoom_map_hr <- function(xlim, ylim, annotations = NULL) {
   p
 }
 
-p_gorbilyup_hr <- make_swc_zoom_map_hr(xlim = c(114.8, 115.4),
+p_gorbiliyup_hr <- make_swc_zoom_map_hr(xlim = c(114.8, 115.4),
                                        ylim = c(-34.65, -34.2))
-# print(p_gorbilyup_hr)
+# print(p_gorbiliyup_hr)
 
-ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'corner_gorbilyup-zoom-lidar-TEST.png', sep = "-"),
+ggsave(paste(paste0('plots/', park, '/spatial/bathymetry/', name), 'corner_gorbiliyup-zoom-lidar-TEST.png', sep = "-"),
        plot = p_gorbilyup_hr, dpi = 600, width = 9, height = 6, bg = "white")
 
 ###################################################################################################

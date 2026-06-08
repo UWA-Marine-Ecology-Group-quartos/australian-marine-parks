@@ -1,23 +1,25 @@
 ###
-# Project: NESP 4.20 - Marine Park Dashboard reporting
+# Project: NESP 5.6 Project - South west Corner Report
 # Data:    Natural values ecosystems, predicted reef, marine park shapefiles,
 #          terrestrial parks and aus outline
 # Task:    Creating benthic habitat maps
 # Author:  Annika Leunig
 # Date:    May 2026
-# Outputs: 1. Geographe and Two rocks benthic habitat comparisons
-#          2. Network scale benthic habitat and predicted reef comparisons
-#          3. Change in ecosystem area/% bar graphs
+# Outputs: 1. Network scale benthic habitat and predicted reef comparisons
+#          2. Geographe and Two rocks benthic habitat comparisons
+#          3. Individual park extent benthic habitat plots
+#          4. Change in ecosystem by area bar graph
 ###
 
 # Table of contents
-#     1. Set up and load data
-#     2. Set CRS, colours and other housekeeping
-#     3. Functions
-#     4. FIGURE 1: Two Rocks and Geographe
-# [NOT IN USE] 5. Individual park figures (kept for future reference)
-#     6. FIGURE 2: Network benthic habitat extent
-#     7. Figure 3: 2018 vs 2025 ecosystem change bar graph
+#     1.  Set up and load data
+#     2.  Set CRS, colours and other housekeeping
+#     3.  Functions
+#     4.  FIGURE 1: Two Rocks and Geographe
+#     5.  FIGURES 2-9: Individual park figures
+#     6.  FIGURE 10: Network benthic habitat extent
+#     7.  Figure 11: 2018 vs 2025 ecosystem change bar graph
+#     [NOT IN USE] 8.  Figure 12: 2018 vs 2025 ecosystem change bar graph
 
 
 # ==============================================================================
@@ -147,9 +149,7 @@ naturalvalues_clipped <- mask(naturalvalues, mask_250_resamp)
 # ==============================================================================
 # 3. FUNCTIONS
 # ==============================================================================
-
 # --- Helper functions ---
-
 check_ratio <- function(l) {
   mean_lat <- (l[3] + l[4]) / 2
   cos_lat  <- cos(mean_lat * pi / 180)
@@ -164,807 +164,6 @@ thin_breaks <- function(limits, step = 0.2) {
            by   = step)
   b[seq(1, length(b), by = 2)]
 }
-
-
-# --- FUNCTION 1: Solid background colour ---
-naturalvalues_map_dynamic <- function(plot_limits,
-                                      use_clipped     = TRUE,
-                                      show_predicted  = FALSE,
-                                      predicted_alpha = 1,
-                                      ocean_colour    = "cornsilk1",
-                                      show_legend     = TRUE,
-                                      y_label         = NULL,
-                                      title           = NULL,
-                                      break_step      = 0.2) {
-
-  require(tidyverse); require(tidyterra); require(ggnewscale)
-
-  ext_plot  <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
-  nv_source <- if (use_clipped) naturalvalues_clipped else naturalvalues
-  nv_crop   <- crop(nv_source, ext_plot)
-
-  nv_df <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
-  colnames(nv_df)[3] <- "value"
-  nv_df$classname <- nv_lookup[as.character(nv_df$value)]
-  nv_df <- dplyr::filter(nv_df, !is.na(classname))
-
-  present_classes <- unique(nv_df$classname)
-  present_colours <- hab_colours[names(hab_colours) %in% present_classes]
-
-  nv_guide <- if (show_legend) guide_legend(order = 1, ncol = 1) else "none"
-
-  x_breaks <- thin_breaks(plot_limits[1:2], step = break_step)
-  y_breaks <- thin_breaks(abs(plot_limits[3:4]), step = break_step) * -1
-
-  p <- ggplot() +
-
-    geom_tile(data = nv_df, aes(x = x, y = y, fill = classname)) +
-    scale_fill_manual(
-      name   = "Benthic ecosystem",
-      values = present_colours,
-      breaks = names(present_colours),
-      guide  = nv_guide
-    ) +
-
-    new_scale_fill() +
-    geom_sf(data = aus, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
-
-    new_scale_fill() +
-    geom_sf(data = terrnp, aes(fill = TYPE), colour = NA) +
-    scale_fill_manual(
-      values = c("National Park"  = "#c4cea6",
-                 "Nature Reserve" = "#e4d0bb"),
-      name   = "Terrestrial Parks",
-      guide  = if (show_legend) guide_legend(order = 4) else "none"
-    )
-
-  if (show_predicted) {
-    ph_crop   <- crop(predictedhabitat, ext_plot)
-    ph_masked <- mask(ph_crop, resample(mask_250, ph_crop, method = "near"))
-
-    ph_df <- as.data.frame(ph_masked, xy = TRUE, na.rm = TRUE)
-    colnames(ph_df)[3] <- "prob"
-    ph_df <- dplyr::filter(ph_df, prob > 0)
-
-    ph_guide <- if (show_legend) guide_colourbar(order = 3) else "none"
-
-    p <- p +
-      new_scale_fill() +
-      geom_tile(data = ph_df, aes(x = x, y = y, fill = prob),
-                alpha = predicted_alpha) +
-      scale_fill_gradient2(
-        name     = "Predicted reef\nhabitat (probability)",
-        low      = "#fff1e6",
-        mid      = "#a87448",
-        high     = "#301703",
-        midpoint = 0.5,
-        na.value = NA,
-        guide    = ph_guide
-      )
-  }
-
-  p <- p +
-    geom_sf(data = marine_parks, fill = alpha("grey80", 0.3), colour = alpha("white", 0.6), linewidth = 0.2)
-
-  p <- p +
-    coord_sf(xlim   = plot_limits[1:2],
-             ylim   = plot_limits[3:4],
-             crs    = 4326,
-             expand = FALSE) +
-    scale_x_continuous(breaks = x_breaks) +
-    scale_y_continuous(breaks = y_breaks) +
-    labs(x = NULL, y = y_label, title = title) +
-    theme_minimal() +
-    theme(
-      legend.key.size  = unit(0.45, "cm"),
-      legend.text      = element_text(size = 8),
-      legend.title     = element_text(size = 9, face = "bold"),
-      legend.position  = if (show_legend) "right" else "none",
-      legend.box       = "vertical",
-      panel.grid       = element_blank(),
-      panel.background = element_rect(fill = ocean_colour, colour = NA),
-      plot.background  = element_rect(fill = "white",      colour = NA),
-      axis.text        = element_text(size = 10, colour = "grey40"),
-      axis.ticks       = element_line(colour = "grey60"),
-      axis.title.y     = if (!is.null(y_label)) element_text(face = "bold", size = 12, margin = margin(r = 11))
-      else                   element_blank(),
-      plot.title       = if (!is.null(title)) element_text(face = "bold", size = 14, hjust = 0.5)
-      else                 element_blank(),
-      plot.margin = margin(t = 0, r = 0, b = 0, l = 0)
-    )
-
-  return(p)
-}
-
-
-# --- FUNCTION 2: White gridline background ---
-naturalvalues_map_white <- function(plot_limits,
-                                    use_clipped            = TRUE,
-                                    show_predicted         = FALSE,
-                                    predicted_alpha        = 0.6,
-                                    grid_colour            = "grey80",
-                                    grid_lwd               = 0.3,
-                                    show_graticule_labels  = TRUE,
-                                    show_legend            = TRUE) {
-
-  require(tidyverse); require(tidyterra); require(ggnewscale)
-
-  ext_plot  <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
-  nv_source <- if (use_clipped) naturalvalues_clipped else naturalvalues
-  nv_crop   <- crop(nv_source, ext_plot)
-
-  nv_df <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
-  colnames(nv_df)[3] <- "value"
-  nv_df$classname <- nv_lookup[as.character(nv_df$value)]
-  nv_df <- dplyr::filter(nv_df, !is.na(classname))
-
-  present_classes <- unique(nv_df$classname)
-  present_colours <- hab_colours[names(hab_colours) %in% present_classes]
-
-  nv_guide <- if (show_legend) guide_legend(order = 1, ncol = 1) else "none"
-
-  x_breaks <- thin_breaks(plot_limits[1:2])
-  y_breaks <- thin_breaks(abs(plot_limits[3:4])) * -1
-
-  p <- ggplot() +
-
-    geom_tile(data = nv_df, aes(x = x, y = y, fill = classname)) +
-    scale_fill_manual(
-      name   = "Benthic ecosystem",
-      values = present_colours,
-      breaks = names(present_colours),
-      guide  = nv_guide
-    ) +
-
-    new_scale_fill() +
-    geom_sf(data = aus, fill = "seashell2", colour = "grey70", linewidth = 0.15) +
-
-    new_scale_fill() +
-    geom_sf(data = terrnp, aes(fill = TYPE), colour = NA) +
-    scale_fill_manual(
-      values = c("National Park"  = "#c4cea6",
-                 "Nature Reserve" = "#e4d0bb"),
-      name   = "Terrestrial Parks",
-      guide  = if (show_legend) guide_legend(order = 4) else "none"
-    )
-
-  geom_sf(data = marine_parks, fill = NA, colour = alpha("grey40", 0.6), linewidth = 0.35)
-
-  if (show_predicted) {
-    ph_crop   <- crop(predictedhabitat, ext_plot)
-    ph_masked <- mask(ph_crop, resample(mask_250, ph_crop, method = "near"))
-
-    ph_df <- as.data.frame(ph_masked, xy = TRUE, na.rm = TRUE)
-    colnames(ph_df)[3] <- "prob"
-    ph_df <- dplyr::filter(ph_df, prob > 0)
-
-    ph_guide <- if (show_legend) guide_colourbar(order = 3) else "none"
-
-    p <- p +
-      new_scale_fill() +
-      geom_tile(data = ph_df, aes(x = x, y = y, fill = prob),
-                alpha = predicted_alpha) +
-      scale_fill_gradient2(
-        name     = "Predicted reef\nhabitat (probability)",
-        low      = "#fff1e6",
-        mid      = "#a87448",
-        high     = "#301703",
-        midpoint = 0.5,
-        na.value = NA,
-        guide    = ph_guide
-      )
-  }
-
-  p <- p +
-    coord_sf(xlim   = plot_limits[1:2],
-             ylim   = plot_limits[3:4],
-             crs    = 4326,
-             expand = FALSE) +
-    scale_x_continuous(breaks = x_breaks) +
-    scale_y_continuous(breaks = y_breaks) +
-    labs(x = NULL, y = NULL) +
-    theme_minimal() +
-    theme(
-      legend.key.size   = unit(0.45, "cm"),
-      legend.text       = element_text(size = 8),
-      legend.title      = element_text(size = 9, face = "bold"),
-      legend.position   = if (show_legend) "right" else "none",
-      legend.box        = "vertical",
-      panel.background  = element_rect(fill = "white", colour = NA),
-      plot.background   = element_rect(fill = "white", colour = NA),
-      panel.grid.major  = element_line(colour = grid_colour,
-                                       linewidth = grid_lwd,
-                                       linetype  = "solid"),
-      panel.grid.minor  = element_blank(),
-      axis.text         = if (show_graticule_labels) element_text(size = 10, colour = "grey40")
-      else                       element_blank(),
-      axis.ticks        = element_line(colour = "grey60")
-    )
-
-  return(p)
-}
-
-
-# --- FUNCTION 3: Bathymetry background ---
-naturalvalues_map_hillshade <- function(plot_limits,
-                                        use_clipped     = TRUE,
-                                        show_predicted  = FALSE,
-                                        predicted_alpha = 0.6,
-                                        nv_alpha        = 0.55,
-                                        hs_altitude     = 35,
-                                        hs_azimuth      = 315,
-                                        bathy_palette   = c("#04134a","#0a3272",
-                                                            "#1a5fa0","#4b9ec9",
-                                                            "#a8d4e6","#daeef7"),
-                                        bathy_limits    = c(-6000, 0),
-                                        show_legend     = TRUE) {
-
-  require(tidyverse); require(tidyterra); require(ggnewscale); require(terra)
-
-  ext_plot <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
-
-  bathy_crop    <- crop(bathy, ext_plot)
-  bathy_clamped <- clamp(bathy_crop, lower = bathy_limits[1], upper = bathy_limits[2], values = TRUE)
-  bathy_df      <- as.data.frame(bathy_clamped, xy = TRUE, na.rm = TRUE)
-  colnames(bathy_df)[3] <- "depth"
-
-  slope  <- terrain(bathy_crop, v = "slope",  unit = "radians")
-  aspect <- terrain(bathy_crop, v = "aspect", unit = "radians")
-  hs     <- shade(slope, aspect, angle = hs_altitude, direction = hs_azimuth, normalize = TRUE)
-  hs_df  <- as.data.frame(hs, xy = TRUE, na.rm = TRUE)
-  colnames(hs_df)[3] <- "hs"
-
-  nv_source <- if (use_clipped) naturalvalues_clipped else naturalvalues
-  nv_crop   <- crop(nv_source, ext_plot)
-  nv_df     <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
-  colnames(nv_df)[3] <- "value"
-  nv_df$classname <- nv_lookup[as.character(nv_df$value)]
-  nv_df <- dplyr::filter(nv_df, !is.na(classname))
-
-  present_classes <- unique(nv_df$classname)
-  present_colours <- hab_colours[names(hab_colours) %in% present_classes]
-
-  bathy_guide <- if (show_legend) guide_colourbar(order = 2,
-                                                  barwidth  = unit(0.4, "cm"),
-                                                  barheight = unit(3, "cm")) else "none"
-  nv_guide    <- if (show_legend) guide_legend(order = 1, ncol = 1) else "none"
-
-  p <- ggplot() +
-
-    geom_tile(data = bathy_df, aes(x = x, y = y, fill = depth)) +
-    scale_fill_gradientn(
-      name     = "Depth (m)",
-      colours  = bathy_palette,
-      limits   = bathy_limits,
-      na.value = "white",
-      guide    = bathy_guide
-    ) +
-
-    new_scale_fill() +
-    geom_tile(data = hs_df, aes(x = x, y = y, fill = hs), alpha = 0.45) +
-    scale_fill_gradient(low = "black", high = "white", na.value = NA, guide = "none")
-
-  if (nv_alpha > 0 && nrow(nv_df) > 0) {
-    p <- p +
-      new_scale_fill() +
-      geom_tile(data = nv_df, aes(x = x, y = y, fill = classname), alpha = 1) +
-      scale_fill_manual(
-        name   = "Benthic ecosystem",
-        values = present_colours,
-        breaks = names(present_colours),
-        guide  = nv_guide
-      )
-  }
-
-  if (show_predicted) {
-    ph_crop   <- crop(predictedhabitat, ext_plot)
-    ph_masked <- mask(ph_crop, resample(mask_250, ph_crop, method = "near"))
-    ph_df     <- as.data.frame(ph_masked, xy = TRUE, na.rm = TRUE)
-    colnames(ph_df)[3] <- "prob"
-    ph_df <- dplyr::filter(ph_df, prob > 0)
-
-    ph_guide <- if (show_legend) guide_colourbar(order = 3) else "none"
-
-    p <- p +
-      new_scale_fill() +
-      geom_tile(data = ph_df, aes(x = x, y = y, fill = prob), alpha = predicted_alpha) +
-      scale_fill_gradient2(
-        name     = "Predicted reef\nhabitat (probability)",
-        low      = "#fff1e6", mid = "#a87448", high = "#301703",
-        midpoint = 0.5, na.value = NA, guide = ph_guide
-      )
-  }
-
-  p <- p +
-    new_scale_fill() +
-    geom_sf(data = aus, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
-    new_scale_fill() +
-    geom_sf(data = terrnp, aes(fill = TYPE), colour = NA) +
-    scale_fill_manual(
-      values = c("National Park"  = "#c4cea6",
-                 "Nature Reserve" = "#e4d0bb"),
-      name   = "Terrestrial Parks",
-      guide  = if (show_legend) guide_legend(order = 4) else "none"
-    ) +
-    geom_sf(data = marine_parks, fill = NA, colour = alpha("grey40", 0.6), linewidth = 0.35) +
-    coord_sf(xlim = plot_limits[1:2], ylim = plot_limits[3:4], crs = 4326, expand = FALSE) +
-    labs(x = NULL, y = NULL) +
-    theme_minimal() +
-    theme(
-      legend.key.size  = unit(0.45, "cm"),
-      legend.text      = element_text(size = 8, colour = "grey20"),
-      legend.title     = element_text(size = 9, face = "bold", colour = "grey10"),
-      legend.position  = if (show_legend) "right" else "none",
-      legend.box       = "vertical",
-      panel.grid       = element_blank(),
-      panel.background = element_rect(fill = "#04134a", colour = NA),
-      plot.background  = element_rect(fill = "white",   colour = NA)
-    )
-
-  return(p)
-}
-
-
-# --- FUNCTION 4: Categorised predicted reef overlay ---
-naturalvalues_map_reef_classified <- function(plot_limits,
-                                              reef_threshold  = 0.5,
-                                              depth_breaks    = c(shallow    = -30,
-                                                                  mesophotic = -70,
-                                                                  rariphotic = -200),
-                                              ocean_colour    = "cornsilk1",
-                                              show_legend     = TRUE,
-                                              title           = NULL,
-                                              break_step =0.2) {
-
-  require(tidyverse); require(terra); require(sf); require(ggnewscale)
-
-  ext_plot <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
-
-  # ── 1. Crop rasters ────────────────────────────────────────────────────────
-  bathy_crop <- crop(bathy,                 ext_plot)
-  ph_crop    <- crop(predictedhabitat,      ext_plot)
-  nv_crop    <- crop(naturalvalues_clipped, ext_plot)
-  ph_resamp  <- resample(ph_crop, bathy_crop, method = "bilinear")
-
-  # ── 2. Classified reef data frame ─────────────────────────────────────────
-  bathy_single <- bathy_crop[[1]]; names(bathy_single) <- "depth"
-  ph_single    <- ph_resamp[[1]];  names(ph_single)    <- "prob"
-
-  df <- as.data.frame(c(bathy_single, ph_single), xy = TRUE, na.rm = FALSE) %>%
-    mutate(
-      reef_class = case_when(
-        !is.na(prob) & prob >= reef_threshold &
-          depth >= depth_breaks["shallow"] & depth <= 0
-        ~ "Shallow rocky reefs",
-
-        !is.na(prob) & prob >= reef_threshold &
-          depth >= depth_breaks["mesophotic"] & depth < depth_breaks["shallow"]
-        ~ "Mesophotic reefs",
-
-        !is.na(prob) & prob >= reef_threshold &
-          depth >= depth_breaks["rariphotic"] & depth < depth_breaks["mesophotic"]
-        ~ "Rariphotic reefs",           # merged class
-
-        TRUE ~ "Shelf unvegetated sediments"
-      )
-    ) %>%
-    filter(!is.na(depth))
-
-  # ── 3. Natural values overlay ──────────────────────────────────────────────
-  nv_df <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
-  colnames(nv_df)[3] <- "value"
-
-  nv_df <- nv_df %>%
-    filter(value != 1) %>%                           # drop shelf unvegetated
-    mutate(
-      nv_class = case_when(
-        value %in% c(12, 13) ~ "Mesophotic reefs",   # merge mesophotic
-        value == 15          ~ "Rariphotic reefs",    # merge rariphotic
-        value == 10          ~ "Shallow rocky reefs", #Merge shallow coral reefs
-        TRUE                  ~ nv_lookup[as.character(value)]
-      )
-    ) %>%
-    filter(!is.na(nv_class))
-
-  # ── 4. Colour palette ─────────────────────────────────────────────────────
-  reef_colours <- c(
-    "Shelf unvegetated sediments" = "cornsilk1",
-    "Shallow rocky reefs"         = "darkgoldenrod1",
-    "Mesophotic reefs"            = "khaki4",
-    "Rariphotic reefs"            = "steelblue3"
-  )
-
-  nv_overlay_colours <- c(
-    hab_colours[!names(hab_colours) %in% c("Shelf unvegetated sediments",
-                                           "Mesophotic coral reefs",
-                                           "Mesophotic rocky reefs",
-                                           "Rariphotic shelf reefs")],
-    "Mesophotic reefs" = "khaki4",
-    "Rariphotic reefs" = "steelblue3"
-  )
-
-  all_colours <- c(reef_colours,
-                   nv_overlay_colours[!names(nv_overlay_colours) %in% names(reef_colours)])
-
-  present_reef <- unique(df$reef_class)
-  present_nv   <- unique(nv_df$nv_class)
-  present_all  <- names(all_colours)[names(all_colours) %in% c(present_reef, present_nv)]
-
-  level_order <- c(
-    "Shelf unvegetated sediments",
-    "Shelf vegetated sediments",
-    "Shallow rocky reefs",
-    "Mesophotic reefs",
-    "Rariphotic reefs",
-    "Upper slope reefs",
-    "Upper slope sediments",
-    # remaining — shown only if present
-    "Oceanic shallow coral reefs",
-    "Oceanic mesophotic coral reefs",
-    "Mid slope reefs",
-    "Lower slope reef and sediments",
-    "Abyssal reef and sediments",
-    "Seamount reefs",
-    "Seamount sediments",
-    "Shelf incising canyons",
-    "Mid slope sediments"
-  )
-  level_order <- level_order[level_order %in% present_all]
-
-  df$reef_class  <- factor(df$reef_class,  levels = level_order)
-  nv_df$nv_class <- factor(nv_df$nv_class, levels = level_order)
-
-  x_breaks <- thin_breaks(plot_limits[1:2], step = break_step)
-  y_breaks <- thin_breaks(abs(plot_limits[3:4]), step = break_step) * -1
-
-  # ── 5. Build plot ──────────────────────────────────────────────────────────
-  legend_guide <- if (show_legend) guide_legend(order = 1, ncol = 1) else "none"
-
-  p <- ggplot() +
-
-    geom_tile(data = df, aes(x = x, y = y, fill = reef_class)) +
-    scale_fill_manual(
-      name   = paste0("Habitat class\n(prob ≥ ", reef_threshold, ")"),
-      values = all_colours[names(all_colours) %in% present_all],
-      breaks = level_order,
-      guide  = legend_guide,
-      drop   = TRUE
-    ) +
-
-    new_scale_fill() +
-    geom_tile(data = nv_df, aes(x = x, y = y, fill = nv_class)) +
-    scale_fill_manual(
-      name   = "Natural values overlay",
-      values = all_colours[names(all_colours) %in% present_nv],
-      breaks = level_order[level_order %in% present_nv],
-      guide  = legend_guide,
-      drop   = TRUE
-    ) +
-
-    new_scale_fill() +
-    geom_sf(data = aus, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
-
-    new_scale_fill() +
-    geom_sf(data = terrnp, aes(fill = TYPE), colour = NA) +
-    scale_fill_manual(
-      values = c("National Park"  = "#c4cea6",
-                 "Nature Reserve" = "#e4d0bb"),
-      name   = "Terrestrial Parks",
-      guide  = if (show_legend) guide_legend(order = 4) else "none"
-    ) +
-
-    geom_sf(data = marine_parks, fill = alpha("grey80", 0.3), colour = alpha("white", 0.6), linewidth = 0.2) +
-
-    coord_sf(xlim = plot_limits[1:2], ylim = plot_limits[3:4], crs = 4326, expand = FALSE) +
-    scale_x_continuous(breaks = x_breaks) +
-    scale_y_continuous(breaks = y_breaks) +
-    labs(x = NULL, y = NULL, title = title) +
-    theme_minimal() +
-    theme(
-      legend.key.size  = unit(0.45, "cm"),
-      legend.text      = element_text(size = 8),
-      legend.title     = element_text(size = 9, face = "bold"),
-      legend.position  = if (show_legend) "right" else "none",
-      legend.box       = "vertical",
-      panel.grid       = element_blank(),
-      panel.background = element_rect(fill = ocean_colour, colour = NA),
-      plot.background  = element_rect(fill = "white",      colour = NA),
-      axis.text        = element_text(size = 10, colour = "grey40"),
-      axis.ticks       = element_line(colour = "grey60"),
-      plot.title       = if (!is.null(title)) element_text(face = "bold", size = 14, hjust = 0.5)
-      else                 element_blank(),
-      plot.margin = margin(t = 0, r = 0, b = 0, l = 0)
-    )
-
-  return(p)
-}
-
-
-# --- FUNCTION 5: Network-scale classified reef map with white MPs ---
-naturalvalues_map_network_classified <- function(plot_limits,
-                                                 reef_threshold = 0.5,
-                                                 depth_breaks   = c(shallow    = -30,
-                                                                    mesophotic = -70,
-                                                                    rariphotic = -200),
-                                                 ocean_colour   = "#2b3a4a",
-                                                 break_step     = 2.0,
-                                                 title          = NULL) {
-
-  require(tidyverse); require(terra); require(sf); require(ggnewscale)
-
-  ext_plot <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
-
-  # ── 1. Crop rasters ──────────────────────────────────────────────────────
-  bathy_crop <- crop(bathy,          ext_plot)
-  ph_crop    <- crop(predictedhabitat, ext_plot)
-  nv_crop    <- crop(naturalvalues,  ext_plot)   # <- was naturalvalues_clipped
-  ph_resamp  <- resample(ph_crop, bathy_crop, method = "bilinear")
-  ph_resamp  <- mask(ph_resamp, resample(mask_250, bathy_crop, method = "near"))
-
-  # ── 2. Natural values base layer ─────────────────────────────────────────
-  nv_df <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
-  colnames(nv_df)[3] <- "value"
-
-  nv_df <- nv_df %>%
-    mutate(
-      nv_class = case_when(
-        value == 1                   ~ "Shelf unvegetated sediments",
-        value %in% c(8, 10, 11)     ~ "Shallow reefs",
-        value %in% c(12, 13, 14)    ~ "Mesophotic reefs",
-        value == 15                  ~ "Rariphotic reefs",
-        value == 16                  ~ "Upper slope reefs",
-        value == 17                  ~ "Mid slope reefs",
-        value == 18                  ~ "Seamount reefs",
-        value == 9                   ~ "Shelf vegetated sediments",
-        value == 2                   ~ "Upper slope sediments",
-        value == 3                   ~ "Mid slope sediments",
-        value == 4                   ~ "Lower slope reef and sediments",
-        value == 5                   ~ "Abyssal reef and sediments",
-        value == 6                   ~ "Seamount sediments",
-        value == 7                   ~ "Shelf incising canyons",
-        TRUE                          ~ NA_character_
-      )
-    ) %>%
-    filter(!is.na(nv_class))
-
-  # ── 3. Predicted reef classified layer (non-sediment classes only) ────────
-  bathy_single <- bathy_crop[[1]]; names(bathy_single) <- "depth"
-  ph_single    <- ph_resamp[[1]];  names(ph_single)    <- "prob"
-
-  df_reef <- as.data.frame(c(bathy_single, ph_single), xy = TRUE, na.rm = FALSE) %>%
-    mutate(
-      reef_class = case_when(
-        !is.na(prob) & prob >= reef_threshold &
-          depth >= depth_breaks["shallow"] & depth <= 0
-        ~ "Shallow reefs",
-
-        !is.na(prob) & prob >= reef_threshold &
-          depth >= depth_breaks["mesophotic"] & depth < depth_breaks["shallow"]
-        ~ "Mesophotic reefs",
-
-        !is.na(prob) & prob >= reef_threshold &
-          depth >= depth_breaks["rariphotic"] & depth < depth_breaks["mesophotic"]
-        ~ "Rariphotic reefs",
-
-        TRUE ~ NA_character_     # sediments dropped — ocean_colour shows through
-      )
-    ) %>%
-    filter(!is.na(depth), !is.na(reef_class))   # only plot reef pixels
-
-  # ── 4. Colour palette ────────────────────────────────────────────────────
-  all_colours <- c(
-    "Shelf unvegetated sediments"    = "cornsilk1",
-    "Shelf vegetated sediments"      = "seagreen3",
-    "Shallow reefs"                  = "darkgoldenrod1",
-    "Mesophotic reefs"               = "khaki4",
-    "Rariphotic reefs"               = "steelblue3",
-    "Upper slope reefs"              = "indianred3",
-    "Mid slope reefs"                = "palevioletred3",
-    "Seamount reefs"                 = "mediumpurple3",
-    "Upper slope sediments"          = "wheat1",
-    "Mid slope sediments"            = "navajowhite1",
-    "Lower slope reef and sediments" = "lightsteelblue2",
-    "Abyssal reef and sediments"     = "slategrey",
-    "Seamount sediments"             = "rosybrown2",
-    "Shelf incising canyons"         = "grey50"
-  )
-
-  present_nv   <- unique(nv_df$nv_class)
-  present_reef <- unique(df_reef$reef_class)
-  present_all  <- names(all_colours)[names(all_colours) %in% c(present_nv, present_reef)]
-
-  level_order <- c(
-    "Shelf unvegetated sediments",
-    "Shelf vegetated sediments",
-    "Shallow reefs",
-    "Mesophotic reefs",
-    "Rariphotic reefs",
-    "Upper slope reefs",
-    "Upper slope sediments",
-    "Mid slope reefs",
-    "Lower slope reef and sediments",
-    "Abyssal reef and sediments",
-    "Seamount reefs",
-    "Seamount sediments",
-    "Shelf incising canyons",
-    "Mid slope sediments"
-  )
-  level_order <- level_order[level_order %in% present_all]
-
-  nv_df$nv_class     <- factor(nv_df$nv_class,     levels = level_order)
-  df_reef$reef_class <- factor(df_reef$reef_class, levels = level_order)
-
-  x_breaks <- thin_breaks(plot_limits[1:2], step = break_step)
-  y_breaks <- thin_breaks(abs(plot_limits[3:4]), step = break_step) * -1
-
-  # ── 5. Build plot — NV base, predicted reef on top ───────────────────────
-  p <- ggplot() +
-
-    # Layer 1: natural values (all classes including sediments)
-    geom_tile(data = nv_df, aes(x = x, y = y, fill = nv_class)) +
-    scale_fill_manual(
-      values = all_colours[names(all_colours) %in% present_nv],
-      breaks = level_order[level_order %in% present_nv],
-      guide  = "none"
-    ) +
-
-    # Layer 2: predicted reef classes on top (sediments excluded)
-    new_scale_fill() +
-    geom_tile(data = df_reef, aes(x = x, y = y, fill = reef_class)) +
-    scale_fill_manual(
-      values = all_colours[names(all_colours) %in% present_reef],
-      breaks = level_order[level_order %in% present_reef],
-      guide  = "none"
-    ) +
-
-    # Layer 3: land + terrestrial parks
-    new_scale_fill() +
-    geom_sf(data = aus, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
-
-    new_scale_fill() +
-    geom_sf(data = terrnp, aes(fill = TYPE), colour = NA) +
-    scale_fill_manual(
-      values = c("National Park"  = "#c4cea6",
-                 "Nature Reserve" = "#e4d0bb"),
-      guide  = "none"
-    ) +
-
-    # Layer 4: marine park boundaries
-    geom_sf(data = marine_parks, fill = alpha("grey70", 0.3),
-            colour = alpha("white", 0.7), linewidth = 0.35) +
-
-    coord_sf(xlim = plot_limits[1:2], ylim = plot_limits[3:4], crs = 4326, expand = FALSE) +
-    scale_x_continuous(breaks = x_breaks) +
-    scale_y_continuous(breaks = y_breaks) +
-    labs(x = NULL, y = NULL, title = title) +
-    theme_minimal() +
-    theme(
-      legend.position  = "none",
-      panel.grid       = element_blank(),
-      panel.background = element_rect(fill = ocean_colour, colour = NA),
-      plot.background  = element_rect(fill = "white",      colour = NA),
-      axis.text        = element_text(size = 10, colour = "grey40"),
-      axis.ticks       = element_line(colour = "grey60"),
-      plot.title       = if (!is.null(title)) element_text(face = "bold", size = 14, hjust = 0)
-      else                 element_blank(),
-      plot.margin      = margin(t = 0, r = 0, b = 0, l = 0)
-    )
-
-  return(p)
-}
-
-
-# --- FUNCTION 6: Network-scale natural values map with white MPs ---
-naturalvalues_map__network_dynamic <- function(plot_limits,
-                                               use_clipped     = TRUE,
-                                               show_predicted  = FALSE,
-                                               predicted_alpha = 1,
-                                               ocean_colour    = "cornsilk1",
-                                               show_legend     = TRUE,
-                                               y_label         = NULL,
-                                               title           = NULL,
-                                               break_step      = 0.2) {
-
-  require(tidyverse); require(tidyterra); require(ggnewscale)
-
-  ext_plot  <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
-  nv_source <- if (use_clipped) naturalvalues_clipped else naturalvalues
-  nv_crop   <- crop(nv_source, ext_plot)
-
-  nv_df <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
-  colnames(nv_df)[3] <- "value"
-  nv_df$classname <- nv_lookup[as.character(nv_df$value)]
-  nv_df <- dplyr::filter(nv_df, !is.na(classname))
-
-  present_classes <- unique(nv_df$classname)
-  present_colours <- hab_colours[names(hab_colours) %in% present_classes]
-
-  nv_guide <- if (show_legend) guide_legend(order = 1, ncol = 1) else "none"
-
-  x_breaks <- thin_breaks(plot_limits[1:2], step = break_step)
-  y_breaks <- thin_breaks(abs(plot_limits[3:4]), step = break_step) * -1
-
-  p <- ggplot() +
-
-    geom_tile(data = nv_df, aes(x = x, y = y, fill = classname)) +
-    scale_fill_manual(
-      name   = "Benthic ecosystem",
-      values = present_colours,
-      breaks = names(present_colours),
-      guide  = nv_guide
-    ) +
-
-    new_scale_fill() +
-    geom_sf(data = aus, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
-
-    new_scale_fill() +
-    geom_sf(data = terrnp, aes(fill = TYPE), colour = NA) +
-    scale_fill_manual(
-      values = c("National Park"  = "#c4cea6",
-                 "Nature Reserve" = "#e4d0bb"),
-      name   = "Terrestrial Parks",
-      guide  = if (show_legend) guide_legend(order = 4) else "none"
-    )
-
-  if (show_predicted) {
-    ph_crop   <- crop(predictedhabitat, ext_plot)
-    ph_masked <- mask(ph_crop, resample(mask_250, ph_crop, method = "near"))
-
-    ph_df <- as.data.frame(ph_masked, xy = TRUE, na.rm = TRUE)
-    colnames(ph_df)[3] <- "prob"
-    ph_df <- dplyr::filter(ph_df, prob > 0)
-
-    ph_guide <- if (show_legend) guide_colourbar(order = 3) else "none"
-
-    p <- p +
-      new_scale_fill() +
-      geom_tile(data = ph_df, aes(x = x, y = y, fill = prob),
-                alpha = predicted_alpha) +
-      scale_fill_gradient2(
-        name     = "Predicted reef\nhabitat (probability)",
-        low      = "#fff1e6",
-        mid      = "#a87448",
-        high     = "#301703",
-        midpoint = 0.5,
-        na.value = NA,
-        guide    = ph_guide
-      )
-  }
-
-  p <- p +
-    geom_sf(data = marine_parks, fill = alpha("grey70", 0.3),
-            colour = alpha("white", 0.7), linewidth = 0.35)
-
-  p <- p +
-    coord_sf(xlim   = plot_limits[1:2],
-             ylim   = plot_limits[3:4],
-             crs    = 4326,
-             expand = FALSE) +
-    scale_x_continuous(breaks = x_breaks) +
-    scale_y_continuous(breaks = y_breaks) +
-    labs(x = NULL, y = y_label, title = title) +
-    theme_minimal() +
-    theme(
-      legend.key.size  = unit(0.45, "cm"),
-      legend.text      = element_text(size = 8),
-      legend.title     = element_text(size = 9, face = "bold"),
-      legend.position  = if (show_legend) "right" else "none",
-      legend.box       = "vertical",
-      panel.grid       = element_blank(),
-      panel.background = element_rect(fill = ocean_colour, colour = NA),
-      plot.background  = element_rect(fill = "white",      colour = NA),
-      axis.text        = element_text(size = 10, colour = "grey40"),
-      axis.ticks       = element_line(colour = "grey60"),
-      axis.title.y     = if (!is.null(y_label)) element_text(face = "bold", size = 12, margin = margin(r = 11))
-      else                   element_blank(),
-      plot.title       = if (!is.null(title)) element_text(face = "bold", size = 14, hjust = 0)
-      else                 element_blank(),
-      plot.margin = margin(t = 0, r = 0, b = 0, l = 0)
-    )
-
-  return(p)
-}
-
 
 # --- Shared legend builder function ---
 build_network_legend <- function(park_extents,
@@ -1142,8 +341,293 @@ build_network_legend <- function(park_extents,
   )
 }
 
+# --- FUNCTION 1: Network-scale classified reef map with white MPs ---
+naturalvalues_map_network_classified <- function(plot_limits,
+                                                 reef_threshold = 0.5,
+                                                 depth_breaks   = c(shallow    = -30,
+                                                                    mesophotic = -70,
+                                                                    rariphotic = -200),
+                                                 ocean_colour   = "#2b3a4a",
+                                                 break_step     = 2.0,
+                                                 title          = NULL) {
 
-# --- FUNCTION 7: Hillshade background, NV shelf classes, optional predicted reef ---
+  require(tidyverse); require(terra); require(sf); require(ggnewscale)
+
+  ext_plot <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
+
+  # ── 1. Crop rasters ──────────────────────────────────────────────────────
+  bathy_crop <- crop(bathy,          ext_plot)
+  ph_crop    <- crop(predictedhabitat, ext_plot)
+  nv_crop    <- crop(naturalvalues,  ext_plot)   # <- was naturalvalues_clipped
+  ph_resamp  <- resample(ph_crop, bathy_crop, method = "bilinear")
+  ph_resamp  <- mask(ph_resamp, resample(mask_250, bathy_crop, method = "near"))
+
+  # ── 2. Natural values base layer ─────────────────────────────────────────
+  nv_df <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
+  colnames(nv_df)[3] <- "value"
+
+  nv_df <- nv_df %>%
+    mutate(
+      nv_class = case_when(
+        value == 1                   ~ "Shelf unvegetated sediments",
+        value %in% c(8, 10, 11)     ~ "Shallow reefs",
+        value %in% c(12, 13, 14)    ~ "Mesophotic reefs",
+        value == 15                  ~ "Rariphotic reefs",
+        value == 16                  ~ "Upper slope reefs",
+        value == 17                  ~ "Mid slope reefs",
+        value == 18                  ~ "Seamount reefs",
+        value == 9                   ~ "Shelf vegetated sediments",
+        value == 2                   ~ "Upper slope sediments",
+        value == 3                   ~ "Mid slope sediments",
+        value == 4                   ~ "Lower slope reef and sediments",
+        value == 5                   ~ "Abyssal reef and sediments",
+        value == 6                   ~ "Seamount sediments",
+        value == 7                   ~ "Shelf incising canyons",
+        TRUE                          ~ NA_character_
+      )
+    ) %>%
+    filter(!is.na(nv_class))
+
+  # ── 3. Predicted reef classified layer (non-sediment classes only) ────────
+  bathy_single <- bathy_crop[[1]]; names(bathy_single) <- "depth"
+  ph_single    <- ph_resamp[[1]];  names(ph_single)    <- "prob"
+
+  df_reef <- as.data.frame(c(bathy_single, ph_single), xy = TRUE, na.rm = FALSE) %>%
+    mutate(
+      reef_class = case_when(
+        !is.na(prob) & prob >= reef_threshold &
+          depth >= depth_breaks["shallow"] & depth <= 0
+        ~ "Shallow reefs",
+
+        !is.na(prob) & prob >= reef_threshold &
+          depth >= depth_breaks["mesophotic"] & depth < depth_breaks["shallow"]
+        ~ "Mesophotic reefs",
+
+        !is.na(prob) & prob >= reef_threshold &
+          depth >= depth_breaks["rariphotic"] & depth < depth_breaks["mesophotic"]
+        ~ "Rariphotic reefs",
+
+        TRUE ~ NA_character_     # sediments dropped — ocean_colour shows through
+      )
+    ) %>%
+    filter(!is.na(depth), !is.na(reef_class))   # only plot reef pixels
+
+  # ── 4. Colour palette ────────────────────────────────────────────────────
+  all_colours <- c(
+    "Shelf unvegetated sediments"    = "cornsilk1",
+    "Shelf vegetated sediments"      = "seagreen3",
+    "Shallow reefs"                  = "darkgoldenrod1",
+    "Mesophotic reefs"               = "khaki4",
+    "Rariphotic reefs"               = "steelblue3",
+    "Upper slope reefs"              = "indianred3",
+    "Mid slope reefs"                = "palevioletred3",
+    "Seamount reefs"                 = "mediumpurple3",
+    "Upper slope sediments"          = "wheat1",
+    "Mid slope sediments"            = "navajowhite1",
+    "Lower slope reef and sediments" = "lightsteelblue2",
+    "Abyssal reef and sediments"     = "slategrey",
+    "Seamount sediments"             = "rosybrown2",
+    "Shelf incising canyons"         = "grey50"
+  )
+
+  present_nv   <- unique(nv_df$nv_class)
+  present_reef <- unique(df_reef$reef_class)
+  present_all  <- names(all_colours)[names(all_colours) %in% c(present_nv, present_reef)]
+
+  level_order <- c(
+    "Shelf unvegetated sediments",
+    "Shelf vegetated sediments",
+    "Shallow reefs",
+    "Mesophotic reefs",
+    "Rariphotic reefs",
+    "Upper slope reefs",
+    "Upper slope sediments",
+    "Mid slope reefs",
+    "Lower slope reef and sediments",
+    "Abyssal reef and sediments",
+    "Seamount reefs",
+    "Seamount sediments",
+    "Shelf incising canyons",
+    "Mid slope sediments"
+  )
+  level_order <- level_order[level_order %in% present_all]
+
+  nv_df$nv_class     <- factor(nv_df$nv_class,     levels = level_order)
+  df_reef$reef_class <- factor(df_reef$reef_class, levels = level_order)
+
+  x_breaks <- thin_breaks(plot_limits[1:2], step = break_step)
+  y_breaks <- thin_breaks(abs(plot_limits[3:4]), step = break_step) * -1
+
+  # ── 5. Build plot — NV base, predicted reef on top ───────────────────────
+  p <- ggplot() +
+
+    # Layer 1: natural values (all classes including sediments)
+    geom_tile(data = nv_df, aes(x = x, y = y, fill = nv_class)) +
+    scale_fill_manual(
+      values = all_colours[names(all_colours) %in% present_nv],
+      breaks = level_order[level_order %in% present_nv],
+      guide  = "none"
+    ) +
+
+    # Layer 2: predicted reef classes on top (sediments excluded)
+    new_scale_fill() +
+    geom_tile(data = df_reef, aes(x = x, y = y, fill = reef_class)) +
+    scale_fill_manual(
+      values = all_colours[names(all_colours) %in% present_reef],
+      breaks = level_order[level_order %in% present_reef],
+      guide  = "none"
+    ) +
+
+    # Layer 3: land + terrestrial parks
+    new_scale_fill() +
+    geom_sf(data = aus, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
+
+    new_scale_fill() +
+    geom_sf(data = terrnp, aes(fill = TYPE), colour = NA) +
+    scale_fill_manual(
+      values = c("National Park"  = "#c4cea6",
+                 "Nature Reserve" = "#e4d0bb"),
+      guide  = "none"
+    ) +
+
+    # Layer 4: marine park boundaries
+    geom_sf(data = marine_parks, fill = alpha("grey70", 0.3),
+            colour = alpha("white", 0.7), linewidth = 0.35) +
+
+    coord_sf(xlim = plot_limits[1:2], ylim = plot_limits[3:4], crs = 4326, expand = FALSE) +
+    scale_x_continuous(breaks = x_breaks) +
+    scale_y_continuous(breaks = y_breaks) +
+    labs(x = NULL, y = NULL, title = title) +
+    theme_minimal() +
+    theme(
+      legend.position  = "none",
+      panel.grid       = element_blank(),
+      panel.background = element_rect(fill = ocean_colour, colour = NA),
+      plot.background  = element_rect(fill = "white",      colour = NA),
+      axis.text        = element_text(size = 10, colour = "grey40"),
+      axis.ticks       = element_line(colour = "grey60"),
+      plot.title       = if (!is.null(title)) element_text(face = "bold", size = 14, hjust = 0)
+      else                 element_blank(),
+      plot.margin      = margin(t = 0, r = 0, b = 0, l = 0)
+    )
+
+  return(p)
+}
+
+
+# --- FUNCTION 2: Network-scale natural values map with white MPs ---
+naturalvalues_map__network_dynamic <- function(plot_limits,
+                                               use_clipped     = TRUE,
+                                               show_predicted  = FALSE,
+                                               predicted_alpha = 1,
+                                               ocean_colour    = "cornsilk1",
+                                               show_legend     = TRUE,
+                                               y_label         = NULL,
+                                               title           = NULL,
+                                               break_step      = 0.2) {
+
+  require(tidyverse); require(tidyterra); require(ggnewscale)
+
+  ext_plot  <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
+  nv_source <- if (use_clipped) naturalvalues_clipped else naturalvalues
+  nv_crop   <- crop(nv_source, ext_plot)
+
+  nv_df <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
+  colnames(nv_df)[3] <- "value"
+  nv_df$classname <- nv_lookup[as.character(nv_df$value)]
+  nv_df <- dplyr::filter(nv_df, !is.na(classname))
+
+  present_classes <- unique(nv_df$classname)
+  present_colours <- hab_colours[names(hab_colours) %in% present_classes]
+
+  nv_guide <- if (show_legend) guide_legend(order = 1, ncol = 1) else "none"
+
+  x_breaks <- thin_breaks(plot_limits[1:2], step = break_step)
+  y_breaks <- thin_breaks(abs(plot_limits[3:4]), step = break_step) * -1
+
+  p <- ggplot() +
+
+    geom_tile(data = nv_df, aes(x = x, y = y, fill = classname)) +
+    scale_fill_manual(
+      name   = "Benthic ecosystem",
+      values = present_colours,
+      breaks = names(present_colours),
+      guide  = nv_guide
+    ) +
+
+    new_scale_fill() +
+    geom_sf(data = aus, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
+
+    new_scale_fill() +
+    geom_sf(data = terrnp, aes(fill = TYPE), colour = NA) +
+    scale_fill_manual(
+      values = c("National Park"  = "#c4cea6",
+                 "Nature Reserve" = "#e4d0bb"),
+      name   = "Terrestrial Parks",
+      guide  = if (show_legend) guide_legend(order = 4) else "none"
+    )
+
+  if (show_predicted) {
+    ph_crop   <- crop(predictedhabitat, ext_plot)
+    ph_masked <- mask(ph_crop, resample(mask_250, ph_crop, method = "near"))
+
+    ph_df <- as.data.frame(ph_masked, xy = TRUE, na.rm = TRUE)
+    colnames(ph_df)[3] <- "prob"
+    ph_df <- dplyr::filter(ph_df, prob > 0)
+
+    ph_guide <- if (show_legend) guide_colourbar(order = 3) else "none"
+
+    p <- p +
+      new_scale_fill() +
+      geom_tile(data = ph_df, aes(x = x, y = y, fill = prob),
+                alpha = predicted_alpha) +
+      scale_fill_gradient2(
+        name     = "Predicted reef\nhabitat (probability)",
+        low      = "#fff1e6",
+        mid      = "#a87448",
+        high     = "#301703",
+        midpoint = 0.5,
+        na.value = NA,
+        guide    = ph_guide
+      )
+  }
+
+  p <- p +
+    geom_sf(data = marine_parks, fill = alpha("grey70", 0.3),
+            colour = alpha("white", 0.7), linewidth = 0.35)
+
+  p <- p +
+    coord_sf(xlim   = plot_limits[1:2],
+             ylim   = plot_limits[3:4],
+             crs    = 4326,
+             expand = FALSE) +
+    scale_x_continuous(breaks = x_breaks) +
+    scale_y_continuous(breaks = y_breaks) +
+    labs(x = NULL, y = y_label, title = title) +
+    theme_minimal() +
+    theme(
+      legend.key.size  = unit(0.45, "cm"),
+      legend.text      = element_text(size = 8),
+      legend.title     = element_text(size = 9, face = "bold"),
+      legend.position  = if (show_legend) "right" else "none",
+      legend.box       = "vertical",
+      panel.grid       = element_blank(),
+      panel.background = element_rect(fill = ocean_colour, colour = NA),
+      plot.background  = element_rect(fill = "white",      colour = NA),
+      axis.text        = element_text(size = 10, colour = "grey40"),
+      axis.ticks       = element_line(colour = "grey60"),
+      axis.title.y     = if (!is.null(y_label)) element_text(face = "bold", size = 12, margin = margin(r = 11))
+      else                   element_blank(),
+      plot.title       = if (!is.null(title)) element_text(face = "bold", size = 14, hjust = 0)
+      else                 element_blank(),
+      plot.margin = margin(t = 0, r = 0, b = 0, l = 0)
+    )
+
+  return(p)
+}
+
+
+# --- FUNCTION 3: Hillshade background, NV shelf classes, optional predicted reef ---
 naturalvalues_map_hillshade_nv <- function(plot_limits,
                                            use_clipped     = TRUE,
                                            show_predicted  = FALSE,
@@ -1401,275 +885,229 @@ ggsave(paste(paste0('plots/', park, '/spatial/benthic_habitat/', name),
        bg     = "white")
 
 
-# # ==============================================================================
-# # 5. INDIVIDUAL PARK FIGURES — NOT BEING USED
-# # ==============================================================================
-#
-# # --- Plot extents ---
-# swc_limits      <- c(113.5, 116.4, -34.7857, -33.2643)
-# abrolhos_limits <- c(108.5, 116.1, -30, -24.2)
-# er_limits       <- c(123.2, 124.4, -34.9, -33.5)
-# geo_limits      <- c(114.8, 115.7, -33.7, -33.2)
-# ski_limits      <- c(136, 137.85, -36.5, -35.5)
-# swc_east_limits <- c(120.35, 122.2, -35.5, -33.7)
-#
-# # Generic assembly function for single-park 2-panel figures
-# assemble_park_figure <- function(map_a, map_b, park_label_text, legend,
-#                                  break_step = 0.2, height = 6.5) {
-#   label_park <- ggdraw() + draw_label(park_label_text, size = 16, angle = 90)
-#
-#   title_row <- cowplot::plot_grid(
-#     NULL,
-#     ggdraw() + draw_label("a)", fontface = "bold", size = 14, x = 0.02, hjust = 0),
-#     NULL,
-#     ggdraw() + draw_label("b)", fontface = "bold", size = 14, x = 0.02, hjust = 0),
-#     nrow = 1, rel_widths = c(0.08, 1, 0.03, 1)
-#   ) + theme(plot.margin = margin(0, 0, 0, 0))
-#
-#   map_row <- cowplot::plot_grid(
-#     label_park, map_a, NULL, map_b,
-#     nrow = 1, rel_widths = c(0.08, 1, 0.03, 1)
-#   ) + theme(plot.margin = margin(0, 0, 0, 0))
-#
-#   maps <- cowplot::plot_grid(
-#     title_row,
-#     map_row,
-#     ncol        = 1,
-#     rel_heights = c(0.06, 1)
-#   )
-#
-#   cowplot::plot_grid(
-#     maps,
-#     legend,
-#     ncol        = 1,
-#     rel_heights = c(1, 0.14),
-#     align       = "v",
-#     axis        = "t"
-#   ) +
-#     theme(plot.background = element_rect(fill = "white", colour = NA),
-#           plot.margin     = margin(t = 2, r = 15, b = 15, l = 5))
-# }
-#
-# # ── Geographe (individual) ────────────────────────────────────────────────────
-# geo_2018_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = geo_limits,
-#   year           = "2018",
-#   show_predicted = FALSE,
-#   show_legend    = FALSE,
-#   break_step     = 0.1
-# )
-# geo_2025_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = geo_limits,
-#   year           = "2025",
-#   show_predicted = TRUE,
-#   reef_threshold = 0.5,
-#   show_legend    = FALSE,
-#   break_step     = 0.1
-# )
-# legend_geo <- build_network_legend(
-#   park_extents   = list(geo = geo_limits),
-#   reef_threshold = 0.5,
-#   ncol_legend    = 3
-# )
-# figure_geo <- assemble_park_figure(geo_2018_hs, geo_2025_hs, "Geographe", legend_geo)
-#
-# ggsave(paste(paste0('plots/', park, '/spatial/benthic_habitat/', name),
-#              'geographe-benthic-habitats.png', sep = "-"),
-#        plot   = figure_geo,
-#        dpi    = 600,
-#        width  = 15,
-#        height = 6.5,
-#        bg     = "white")
-#
-# # ── Two Rocks (individual) ────────────────────────────────────────────────────
-# tr_2018_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = tworocks_limits,
-#   year           = "2018",
-#   show_predicted = FALSE,
-#   show_legend    = FALSE,
-#   break_step     = 0.1
-# )
-# tr_2025_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = tworocks_limits,
-#   year           = "2025",
-#   show_predicted = TRUE,
-#   reef_threshold = 0.5,
-#   show_legend    = FALSE,
-#   break_step     = 0.1
-# )
-# legend_tr <- build_network_legend(
-#   park_extents   = list(tworocks = tworocks_limits),
-#   reef_threshold = 0.5,
-#   ncol_legend    = 4
-# )
-# figure_tr <- assemble_park_figure(tr_2018_hs, tr_2025_hs, "Two Rocks", legend_tr)
-#
-# ggsave(paste(paste0('plots/', park, '/spatial/benthic_habitat/', name),
-#              'tworocks-benthic-habitats.png', sep = "-"),
-#        plot   = figure_tr,
-#        dpi    = 600,
-#        width  = 15,
-#        height = 6.5,
-#        bg     = "white")
-#
-# # ── South-west Corner ─────────────────────────────────────────────────────────
-# swc_2018_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = swc_limits,
-#   year           = "2018",
-#   show_predicted = FALSE,
-#   show_legend    = FALSE,
-#   break_step     = 0.2
-# )
-# swc_2025_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = swc_limits,
-#   year           = "2025",
-#   show_predicted = TRUE,
-#   reef_threshold = 0.5,
-#   show_legend    = FALSE,
-#   break_step     = 0.2
-# )
-# legend_swc <- build_network_legend(
-#   park_extents   = list(swc = swc_limits),
-#   reef_threshold = 0.5,
-#   ncol_legend    = 4
-# )
-# figure_swc <- assemble_park_figure(swc_2018_hs, swc_2025_hs, "South-west Corner", legend_swc)
-#
-# ggsave(paste(paste0('plots/', park, '/spatial/benthic_habitat/', name),
-#              'corner-benthic-habitats.png', sep = "-"),
-#        plot   = figure_swc,
-#        dpi    = 600,
-#        width  = 15,
-#        height = 6,
-#        bg     = "white")
-#
-# # ── Abrolhos ──────────────────────────────────────────────────────────────────
-# abrolhos_2018_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = abrolhos_limits,
-#   year           = "2018",
-#   show_predicted = FALSE,
-#   show_legend    = FALSE,
-#   break_step     = 0.4
-# )
-# abrolhos_2025_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = abrolhos_limits,
-#   year           = "2025",
-#   show_predicted = TRUE,
-#   reef_threshold = 0.5,
-#   show_legend    = FALSE,
-#   break_step     = 0.4
-# )
-# legend_abrolhos <- build_network_legend(
-#   park_extents   = list(abrolhos = abrolhos_limits),
-#   reef_threshold = 0.5,
-#   ncol_legend    = 4
-# )
-# figure_abrolhos <- assemble_park_figure(abrolhos_2018_hs, abrolhos_2025_hs, "Abrolhos", legend_abrolhos)
-#
-# ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
-#              "abrolhos-benthic-habitats.png", sep = "-"),
-#        plot   = figure_abrolhos,
-#        dpi    = 600,
-#        width  = 15,
-#        height = 8,
-#        bg     = "white")
-#
-# # ── Eastern Recherche ─────────────────────────────────────────────────────────
-# er_2018_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = er_limits,
-#   year           = "2018",
-#   show_predicted = FALSE,
-#   show_legend    = FALSE,
-#   break_step     = 0.2
-# )
-# er_2025_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = er_limits,
-#   year           = "2025",
-#   show_predicted = TRUE,
-#   reef_threshold = 0.5,
-#   show_legend    = FALSE,
-#   break_step     = 0.2
-# )
-# legend_er <- build_network_legend(
-#   park_extents   = list(er = er_limits),
-#   reef_threshold = 0.5,
-#   ncol_legend    = 3
-# )
-# figure_er <- assemble_park_figure(er_2018_hs, er_2025_hs, "Eastern Recherche", legend_er)
-#
-# ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
-#              "eastern-recherche-benthic-habitats.png", sep = "-"),
-#        plot   = figure_er,
-#        dpi    = 600,
-#        width  = 10,
-#        height = 8.5,
-#        bg     = "white")
-#
-# # ── Southern Kangaroo Island ──────────────────────────────────────────────────
-# ski_2018_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = ski_limits,
-#   year           = "2018",
-#   show_predicted = FALSE,
-#   show_legend    = FALSE,
-#   break_step     = 0.4
-# )
-# ski_2025_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = ski_limits,
-#   year           = "2025",
-#   show_predicted = TRUE,
-#   reef_threshold = 0.5,
-#   show_legend    = FALSE,
-#   break_step     = 0.4
-# )
-# legend_ski <- build_network_legend(
-#   park_extents   = list(ski = ski_limits),
-#   reef_threshold = 0.5,
-#   ncol_legend    = 4
-# )
-# figure_ski <- assemble_park_figure(ski_2018_hs, ski_2025_hs, "Southern Kangaroo Island", legend_ski)
-#
-# ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
-#              "southernkangaroo-benthic-habitats.png", sep = "-"),
-#        plot   = figure_ski,
-#        dpi    = 600,
-#        width  = 15,
-#        height = 6.5,
-#        bg     = "white")
-#
-# # ── SWC Eastern Arm ───────────────────────────────────────────────────────────
-# swc_east_2018_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = swc_east_limits,
-#   year           = "2018",
-#   show_predicted = FALSE,
-#   show_legend    = FALSE,
-#   break_step     = 0.2
-# )
-# swc_east_2025_hs <- naturalvalues_map_hillshade_nv(
-#   plot_limits    = swc_east_limits,
-#   year           = "2025",
-#   show_predicted = TRUE,
-#   reef_threshold = 0.5,
-#   show_legend    = FALSE,
-#   break_step     = 0.2
-# )
-# legend_swc_east <- build_network_legend(
-#   park_extents   = list(swc_east = swc_east_limits),
-#   reef_threshold = 0.5,
-#   ncol_legend    = 3
-# )
-# figure_swc_east <- assemble_park_figure(swc_east_2018_hs, swc_east_2025_hs, "South-west Corner (eastern arm)", legend_swc_east)
-#
-# ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
-#              "swc-eastern-benthic-habitats.png", sep = "-"),
-#        plot   = figure_swc_east,
-#        dpi    = 600,
-#        width  = 12.5,
-#        height = 8.5,
-#        bg     = "white")
-#
+# ==============================================================================
+# 5. INDIVIDUAL PARK FIGURES — 2025 ONLY
+# ==============================================================================
+# --- Plot extents ---
+geo_limits      <- c(114.8, 115.7, -33.7, -33.2)
+tworocks_limits <- c(114.7, 116.0, -32.0, -31.3)
+swc_limits      <- c(113.5, 116.4, -34.7857, -33.2643)
+abrolhos_limits <- c(108.5, 116.1, -30, -24.2)
+bremer_limits   <- c(119.3, 120.3, -35.3, -33.9)
+er_limits       <- c(123.2, 124.4, -34.9, -33.5)
+ski_limits      <- c(136,   137.85, -36.5, -35.5)
+swc_east_limits <- c(120.35, 122.2, -35.5, -33.7)
+
+# --- Assembly function (single panel, 2025 only) ---
+assemble_park_figure_2025 <- function(map, legend) {
+
+  cowplot::plot_grid(
+    map,
+    legend,
+    ncol        = 1,
+    rel_heights = c(1, 0.25),
+    align       = "v",
+    axis        = "t"
+  ) +
+    theme(plot.background = element_rect(fill = "white", colour = NA),
+          plot.margin     = margin(t = 2, r = 15, b = 15, l = 5))
+}
+
+
+# ── Figure 2:  Geographe ──────────────────────────────────────────────────────
+geo_2025 <- naturalvalues_map_hillshade_nv(
+  plot_limits    = geo_limits,
+  year           = "2025",
+  show_predicted = TRUE,
+  reef_threshold = 0.5,
+  show_legend    = FALSE,
+  break_step     = 0.1
+)
+legend_geo <- build_network_legend(
+  park_extents   = list(geo = geo_limits),
+  reef_threshold = 0.5,
+  ncol_legend    = 3
+)
+figure_geo <- assemble_park_figure_2025(geo_2025, legend_geo)
+
+ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+             "geographe-benthic-habitats.png", sep = "-"),
+       plot   = figure_geo,
+       dpi    = 600,
+       width  = 9,
+       height = 7.5,
+       bg     = "white")
+
+# ── Figure 3: Two Rocks ───────────────────────────────────────────────────────
+tworocks_2025 <- naturalvalues_map_hillshade_nv(
+  plot_limits    = tworocks_limits,
+  year           = "2025",
+  show_predicted = TRUE,
+  reef_threshold = 0.5,
+  show_legend    = FALSE,
+  break_step     = 0.1
+)
+legend_tworocks <- build_network_legend(
+  park_extents   = list(tworocks = tworocks_limits),
+  reef_threshold = 0.5,
+  ncol_legend    = 3
+)
+figure_tworocks <- assemble_park_figure_2025(tworocks_2025, legend_tworocks)
+
+ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+             "tworocks-benthic-habitats.png", sep = "-"),
+       plot   = figure_tworocks,
+       dpi    = 600,
+       width  = 11,
+       height = 9.5,
+       bg     = "white")
+
+# ── Figure 4: South-west Corner ───────────────────────────────────────────────
+swc_2025 <- naturalvalues_map_hillshade_nv(
+  plot_limits    = swc_limits,
+  year           = "2025",
+  show_predicted = TRUE,
+  reef_threshold = 0.5,
+  show_legend    = FALSE,
+  break_step     = 0.2
+)
+legend_swc <- build_network_legend(
+  park_extents   = list(swc = swc_limits),
+  reef_threshold = 0.5,
+  ncol_legend    = 2
+)
+figure_swc <- assemble_park_figure_2025(swc_2025, legend_swc)
+
+ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+             "corner_individual-benthic-habitats.png", sep = "-"),
+       plot   = figure_swc,
+       dpi    = 600,
+       width  = 9,
+       height = 8,
+       bg     = "white")
+
+# ── Figure 5: Abrolhos ────────────────────────────────────────────────────────
+abrolhos_2025 <- naturalvalues_map_hillshade_nv(
+  plot_limits    = abrolhos_limits,
+  year           = "2025",
+  show_predicted = TRUE,
+  reef_threshold = 0.5,
+  show_legend    = FALSE,
+  break_step     = 0.4
+)
+legend_abrolhos <- build_network_legend(
+  park_extents   = list(abrolhos = abrolhos_limits),
+  reef_threshold = 0.5,
+  ncol_legend    = 2
+)
+figure_abrolhos <- assemble_park_figure_2025(abrolhos_2025, legend_abrolhos)
+
+ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+             "abrolhos-benthic-habitats.png", sep = "-"),
+       plot   = figure_abrolhos,
+       dpi    = 600,
+       width  = 9,
+       height = 10,
+       bg     = "white")
+
+# ── Figure 6: Bremer Bay ──────────────────────────────────────────────────────
+bremer_2025 <- naturalvalues_map_hillshade_nv(
+  plot_limits    = bremer_limits,
+  year           = "2025",
+  show_predicted = TRUE,
+  reef_threshold = 0.5,
+  show_legend    = FALSE,
+  break_step     = 0.2
+)
+legend_bremer <- build_network_legend(
+  park_extents   = list(bremer = bremer_limits),
+  reef_threshold = 0.5,
+  ncol_legend    = 2
+)
+figure_bremer <- assemble_park_figure_2025(bremer_2025, legend_bremer)
+
+ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+             "bremer-benthic-habitats.png", sep = "-"),
+       plot   = figure_bremer,
+       dpi    = 600,
+       width  = 9,
+       height = 8,
+       bg     = "white")
+
+# ── Figure 7: Eastern Recherche ───────────────────────────────────────────────
+er_2025 <- naturalvalues_map_hillshade_nv(
+  plot_limits    = er_limits,
+  year           = "2025",
+  show_predicted = TRUE,
+  reef_threshold = 0.5,
+  show_legend    = FALSE,
+  break_step     = 0.2
+)
+legend_er <- build_network_legend(
+  park_extents   = list(er = er_limits),
+  reef_threshold = 0.5,
+  ncol_legend    = 2
+)
+figure_er <- assemble_park_figure_2025(er_2025, legend_er)
+
+ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+             "eastern-recherche-benthic-habitats.png", sep = "-"),
+       plot   = figure_er,
+       dpi    = 600,
+       width  = 9,
+       height = 12.5,
+       bg     = "white")
+
+# ── Figure 8: Southern Kangaroo Island ────────────────────────────────────────
+ski_2025 <- naturalvalues_map_hillshade_nv(
+  plot_limits    = ski_limits,
+  year           = "2025",
+  show_predicted = TRUE,
+  reef_threshold = 0.5,
+  show_legend    = FALSE,
+  break_step     = 0.4
+)
+legend_ski <- build_network_legend(
+  park_extents   = list(ski = ski_limits),
+  reef_threshold = 0.5,
+  ncol_legend    = 2
+)
+figure_ski <- assemble_park_figure_2025(ski_2025, legend_ski)
+
+ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+             "southern-kangaroo-island-benthic-habitats.png", sep = "-"),
+       plot   = figure_ski,
+       dpi    = 600,
+       width  = 9,
+       height = 8.5,
+       bg     = "white")
+
+# ── Figure 9: SWC Eastern Arm ─────────────────────────────────────────────────
+swc_east_2025 <- naturalvalues_map_hillshade_nv(
+  plot_limits    = swc_east_limits,
+  year           = "2025",
+  show_predicted = TRUE,
+  reef_threshold = 0.5,
+  show_legend    = FALSE,
+  break_step     = 0.2
+)
+legend_swc_east <- build_network_legend(
+  park_extents   = list(swc_east = swc_east_limits),
+  reef_threshold = 0.5,
+  ncol_legend    = 2
+)
+figure_swc_east <- assemble_park_figure_2025(swc_east_2025, legend_swc_east)
+
+ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+            "corner-eastern-arm-benthic-habitats.png", sep = "-"),
+       plot   = figure_swc_east,
+       dpi    = 600,
+       width  = 9,
+       height = 10,
+       bg     = "white")
 
 # ==============================================================================
-# 6. FIGURE 2: Network benthic habitat extent
+# 6. FIGURE 10: Network benthic habitat extent
 # ==============================================================================
 
 network_limits <- c(108.0, 138.0, -42.0, -24.0)
@@ -1724,7 +1162,7 @@ ggsave(paste(paste0('plots/', park, '/spatial/benthic_habitat/', name),
        bg     = "white")
 
 # ==============================================================================
-# 7. Figure 3: 2018 vs 2025 shelf ecosystems
+# 7. Figure 11: 2018 vs 2025 shelf ecosystems (by AREA)
 # ==============================================================================
 
 # --- Reproject rasters to equal-area for accurate area calculations ---
@@ -1859,7 +1297,10 @@ ggsave(
   bg     = "white"
 )
 
-# ------------------- % change graph rather than Area -------------------------#
+# ==============================================================================
+# 8. [NOT IN USE]
+#    Figure 12: 2018 vs 2025 shelf ecosystems (by %)
+# ==============================================================================
 
 # CHART B: % change 2018 to 2025 — hashed out
 # area_wide <- area_combined %>%
@@ -1893,5 +1334,5 @@ ggsave(
 # print(p_pct)
 
 # ==============================================================================
-# End of script :)
+# End of script
 # ==============================================================================

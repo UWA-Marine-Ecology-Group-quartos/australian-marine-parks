@@ -1,5 +1,5 @@
 ###
-# Project: NESP 4.20 - Marine Park Dashboard reporting
+# Project: NESP 5.6 Project - South west Corner Report
 # Data:    Marine parks, new bathymetry data (2024), marine park shapefiles,
 #          terrestrial parks and aus outline
 # Task:    Create network-scale bathy and detrended bathymetry facet maps
@@ -12,8 +12,8 @@
 #     1.  Set up and load libraries
 #     2.  Load spatial files
 #     3.  Hillshade and detrend bathymetry
-#     4. Define colour ramps
-#     5. FIGURE 1: South-west Network
+#     4.  Define colour ramps
+#     5.  FIGURE 1: South-west Network
 
 # ==============================================================================
 # 1. SET UP AND LOAD
@@ -252,7 +252,7 @@ p_combined <- p_bathy / p_detre +
 # print(p_combined)
 
 # ── Save ──────────────────────────────────────────────────────────────────────
-# Only unhash if folder doesn't exist yet
+# Only unhash below if folder doesn't exist yet
 # dir.create(paste0("plots/", park, "/spatial/bathymetry/"), recursive = TRUE, showWarnings = FALSE)
 
 ggsave(
@@ -265,5 +265,5 @@ ggsave(
 )
 
 # ==============================================================================
-# End of script :)
+# End of script
 # ==============================================================================

@@ -1,19 +1,37 @@
 ###
-# Data:    CAPAD, South australia cropping polygon
-# Task:    Tidy CAPAD to a south australia marine park shp
-# Author:  Annika Leunig (modification of Claude's code)
-# Date:    Feb 2026
+# Project: NESP 5.6 Project - South west Corner Report
+# Data:    CAPAD, cropping polygon for South Australia
+# Task:    Creating benthic habitat maps
+# Author:  Annika Leunig
+# Date:    March 2026
+# Outputs: 1. Tidied South aus MPs shapefile
+#          2. Combined tidied WA and SA shapefile
 ###
 
+# Table of contents
+#     1. Load data and set up
+#     2. Filter CAPAD to just South Australia parks
+#     3. Combine shapefiles and save
+
+# ==============================================================================
+# 1. LOAD DATA and SETUP
+# ==============================================================================
+# Clear the environment
+rm(list = ls())
+
+# Load libraries
 library(CheckEM)
 library(sf)
 library(tidyverse)
 
-
-# Commonwealth and State marine parks at the scale of the location
+# Load shapefiles
 crop <- st_read("data/south-west network/spatial/shapefiles/South_aus_crop-marine-parks.shp") %>%
   st_make_valid()
 
+# ==============================================================================
+# 2. Filter CAPAD to just South Australia parks
+# ==============================================================================
+# Load and filter CAPAD to just SA MPs and format colours
 capad <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
   CheckEM::clean_names() %>%
   st_make_valid() %>%
@@ -53,6 +71,10 @@ capad <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Austr
 # Save SA shapefile
 st_write(capad, "data/south-west network/spatial/shapefiles/south-australia_marine-parks-all.shp", append = F)
 
+
+# ==============================================================================
+# 3. Combine shapefiles and save
+# ==============================================================================
 # combine Western Australia and South Australia tidied shapefiles
 wa <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
   st_make_valid()
@@ -60,6 +82,8 @@ wa <- st_read("data/south-west network/spatial/shapefiles/western-australia_mari
 combined <- dplyr::bind_rows(list(capad,wa)) %>%
   st_make_valid()
 
+# Unhash and inspect below to see what was included in 'Other zones'
+# Make sure none of the zones classified above appear here
 # test <- combined %>%
 #   dplyr::filter(zone_type %in% c("Unassigned (IUCN VI)",
 #                                  "Unassigned (IUCN IV,VI)",
@@ -71,7 +95,10 @@ combined <- dplyr::bind_rows(list(capad,wa)) %>%
 #                                  "MP (Unclassified) (IUCN VI)",
 #                                  "MMA (Unclassified) (IUCN VI)"))
 
-
 # Save combined shapefile
-st_write(combined, "data/south-west network/spatial/shapefiles/south-and-western-australia_marine-parks-all.shp", append = F)
+st_write(combined, "data/south-west network/spatial/shapefiles/south-and-western-australia_marine-parks-all.shp",
+         append = F)
 
+# ==============================================================================
+# End of script
+# ==============================================================================

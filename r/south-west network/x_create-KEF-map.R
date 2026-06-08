@@ -1,11 +1,24 @@
 ###
-# Project: NESP 4.20 - Marine Park Dashboard reporting
-# Data:    Marine Parks, Key ecological features, terrestrial parks and aus outline
-# Task:    Create South west network map
+# Project: NESP 5.6 Project - South west Corner Report
+# Data:    Marine parks, key ecological features, terrestrial parks, aus outline
+# Task:    Create South-west network KEF map
 # Author:  Annika Leunig
 # Date:    April 2026
+# Outputs: 1. South-west network KEF map
 ###
 
+# Table of contents
+#     1.  Set up and load data
+#     2.  Recode and reorder KEF
+#     3.  Colour palettes
+#     4.  Plot inputs
+#     5.  Map function
+#     6.  FIGURE 1: South-west network KEF map
+
+
+# ==============================================================================
+# 1. LOAD DATA AND SETUP
+# ==============================================================================
 # Clear environment
 rm(list = ls())
 
@@ -70,7 +83,7 @@ bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__
 names(bathy) <- "Depth"
 
 # ==============================================================================
-# RECODE AND REORDER KEF
+# 2. RECODE AND REORDER KEF
 # ==============================================================================
 
 KEF$NAME <- dplyr::recode(KEF$NAME,
@@ -98,7 +111,7 @@ KEF <- KEF %>%
   select(-plot_order)
 
 # ==============================================================================
-# KEF COLOURS
+# 3. COLOUR PALETTES
 # ==============================================================================
 
 kef_colours <- c(
@@ -121,14 +134,14 @@ kef_colours <- c(
 )
 
 # ==============================================================================
-# PLOT INPUTS
+# 4. PLOT INPUTS
 # ==============================================================================
 
 plot_limits     <- c(108.0, 138.0, -40.0, -24.0)
 annotation_labels <- NULL
 
 # ==============================================================================
-# MAP FUNCTION
+# 5. MAP FUNCTION
 # ==============================================================================
 
 network_map <- function(plot_limits, annotation_labels = NULL) {
@@ -227,7 +240,7 @@ network_map <- function(plot_limits, annotation_labels = NULL) {
 }
 
 # ==============================================================================
-# RUN AND SAVE
+# 6. FIGURE 1: South-west network KEF map
 # ==============================================================================
 
 network_map(plot_limits)
@@ -235,3 +248,6 @@ network_map(plot_limits)
 ggsave(paste(paste0("plots/", park, "/spatial/", name), "KEF-TEST-1.png", sep = "-"),
        dpi = 600, width = 8, height = 6, bg = "white")
 
+# ==============================================================================
+# End of script
+# ==============================================================================

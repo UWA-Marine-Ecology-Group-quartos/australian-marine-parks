@@ -1,5 +1,5 @@
 ###
-# Project: NESP 4.20 - Marine Park Dashboard reporting
+# Project: NESP 5.6 Project - South west Corner Report
 # Data:    Marine parks, old and new bathymetry data (2009 & 2024), terrestrial
 #          parks and aus outline
 # Task:    2009 vs 2024 Bathymetry maps
@@ -10,12 +10,12 @@
 ###
 
 # Table of contents
-#     1. Load data and set up
-#     2. Define extents and colour ramps
-#     3. Create hillshades
-#     4. Functions
-#     5. FIGURE 1: Two rocks and Geographe 2009 v 2024 faceted plot
-#     6. FIGURE 2: South-west corner 2009 v 2024 faceted plot
+#     1.  Load data and set up
+#     2.  Define extents and colour ramps
+#     3.  Create hillshades
+#     4.  Functions
+#     5.  FIGURE 1: Two rocks and Geographe 2009 v 2024 faceted plot
+#     6.  FIGURE 2: South-west corner 2009 v 2024 faceted plot
 
 # ==============================================================================
 # 1. LOAD DATA and SETUP
@@ -595,6 +595,6 @@ ggsave(paste(paste0("plots/", park, "/spatial/bathymetry/", name),
        bg     = "white")
 
 # ==============================================================================
-# End of script :)
+# End of script
 # ==============================================================================
 

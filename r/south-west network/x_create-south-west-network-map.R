@@ -1,6 +1,9 @@
 ###
 # Project: NESP 4.20 - Marine Park Dashboard reporting
-# Data:    Marine Park, oceanographic data, marine park boundary files
+# Data:    Marine Park, oceanographic data, marine park boundary files and
+#          image legend for bathy network map, cropped to have no title
+#          This image can be found and saved from this link:
+#          https://geoserver.imas.utas.edu.au/geoserver/seamap/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic&LAYER=seamap:bathymetry_AMP_grp&FORMAT=image/png
 # Task:    Create South west network map
 # Author:  Claude Spencer modified by Annika Leunig
 # Date:    Feb 2026
@@ -99,15 +102,8 @@ bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__
   crop(e) %>%
   clamp(upper = 0, values = F)
 names(bathy) <- "Depth"
-plot(bathy)
 
 bathdf <- as.data.frame(bathy, xy = T)
-
-# Create marine park colours and fills (scale_fill_manual)
-# amp_fills <- amp_marine_park_fills(marine_parks)
-# state_fills <- state_marine_park_fills(marine_parks)
-# amp_cols <- amp_marine_park_cols(marine_parks)
-# state_cols <- state_marine_park_fills(marine_parks)
 
 # 1. Plot map
 # Set plot inputs
@@ -216,12 +212,11 @@ network_map(plot_limits,
             annotation_labels)
 
 # Save plot
-ggsave(paste(paste0('plots/', park, '/spatial/', name) , 'bottom-inset_network-plot.png',
+ggsave(paste(paste0('plots/', park, '/spatial/', name) , 'network_zones.png',
              sep = "-"), dpi = 600, width = 8, height = 5, bg = "white")
 
 
 # Zoom in plots
-
 marine_parks_wa <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
   dplyr::filter(name %in% c(
     "Abrolhos", "Abrolhos Islands",
@@ -260,7 +255,7 @@ marine_parks_state <- marine_parks %>%
 # marine_parks_amp and marine_parks_state above — assign for compatibility
 # with park_map_panel() and legend_source_plot() which use the _wa_ names
 marine_parks_wa_amp   <- marine_parks_amp
-marine_parks_wa_state <- marine_parks_stat
+marine_parks_wa_state <- marine_parks_state
 
 network_map_zoomed <- function(plot_limits, study_limits = NULL, annotation_labels = NULL) {
   require(tidyverse)
@@ -367,9 +362,7 @@ network_map_zoomed <- function(plot_limits, study_limits = NULL, annotation_labe
     plot_layout(heights = c(4, 1))
 }
 
-
 #swc
 network_map_zoomed(plot_limits = c(113.5, 116.4, -34.7857, -33.2643))
-ggsave(paste(paste0('plots/', park, '/spatial/', name), 'swc-zones.png', sep = "-"),
+ggsave(paste(paste0('plots/', park, '/spatial/', name), 'swc-MPs.png', sep = "-"),
        dpi = 600, width = 8, height = 5, bg = "white")
-
