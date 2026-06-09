@@ -25,13 +25,9 @@ park <- config$park
 library(CheckEM)
 library(tidyverse)
 library(sf)
-library(here)
-library(leaflet)
-library(googlesheets4)
 library(terra)
 library(tidyterra)
 library(vegan)
-library(ggplot2)
 library(purrr)
 
 metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
@@ -47,7 +43,7 @@ benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combine
   dplyr::mutate(reef = reef/total_pts) %>% # Model reef as proportion for fish prediction
   glimpse()
 
-# # Maturity data from WA sheet
+# # Maturity data from WA sheet (this is excluded from the TEMPLATE)
 # maturity_mean <- CheckEM::maturity %>%
 #   dplyr::filter(!marine_region %in% c("NW", "N")) %>% # Change here for each marine park (exclude regions)
 #   dplyr::group_by(family, genus, species, sex) %>%
@@ -84,14 +80,14 @@ write.csv(spp_list, file = paste0("data/", park, "/tidy/", name, "_species_list.
 
 ta.sr <- count %>%
   dplyr::select(-c(family, genus, species)) %>%
-  dplyr::group_by(campaignid, sample, scientific_name) %>%
   pivot_wider(names_from = "scientific_name", values_from = count) %>%
-  dplyr::ungroup() %>%
-  dplyr::mutate(total_abundance = rowSums(.[, 3:(ncol(.))], na.rm = T),
-                species_richness = rowSums(.[, 3:(ncol(.))] > 0)) %>%
+  dplyr::mutate(
+    total_abundance = rowSums(across(-c(campaignid, sample)), na.rm = TRUE),
+    species_richness = rowSums(across(-c(campaignid, sample)) > 0)
+  ) %>%
   dplyr::select(campaignid, sample, total_abundance, species_richness) %>%
   pivot_longer(cols = c("total_abundance", "species_richness"), names_to = "response", values_to = "count") %>%
-  glimpse() # Should be nsamps * 2 = 594
+  glimpse()
 
 # -----------------------------
 # Species Accumulation
@@ -187,10 +183,10 @@ cti <- CheckEM::create_cti(data = count) %>%
   dplyr::mutate(response = "cti") %>%
   glimpse()
 
-tidy_maxn <- bind_rows(ta.sr, cti) %>% ## HE need to check missing aspects
+tidy_maxn <- bind_rows(ta.sr, cti) %>% # TODO check which samples are removed in this chunk
   dplyr::select(-c(log_count, w_sti)) %>%
-  dplyr::left_join(benthos) %>%
   dplyr::left_join(metadata) %>% # To join samples without valid bathymetry derivatives
+  dplyr::left_join(benthos) %>%
   dplyr::left_join(metadata_bathy_derivatives) %>%
   dplyr::filter(!is.na(reef), # GBR3-4 has no habitat
                 !is.na(geoscience_aspect)) %>% # Not valid values for modelling so will remove them now
@@ -198,6 +194,7 @@ tidy_maxn <- bind_rows(ta.sr, cti) %>% ## HE need to check missing aspects
 
 saveRDS(tidy_maxn, file = paste0("data/", park, "/tidy/", name, "_tidy-count.rds"))
 
+# # the below is excluded from the TEMPLATE
 # length <- readRDS(paste0("data/", park, "/raw/_length-with-zeros.RDS")) %>%
 #   dplyr::select(campaignid, sample, family, genus, species, length_mm, count) %>%
 #   left_join(large_bodied_carnivores) %>%
@@ -539,40 +536,40 @@ saveRDS(
   file = paste0("data/", park, "/tidy/", name, "_b20-species_amp.rds")
 )
 
-##HE The below is to work out which species are missing fishbase data
-# message(paste(length(which(!is.na(biomass$length_cm))), "measured lengths in data"))
-# message(paste(length(which(!is.na(biomass$adj_length))), "adjusted lengths in data"))
-# message(paste(length(which(!is.na(biomass$length_cm))) - length(which(!is.na(biomass$adj_length))),
-#               "measured lengths not converted to adjusted (missing)"))
-#
-# message(paste(length(which(!is.na(biomass$length_cm) &
-#                              is.na(biomass$fb_length_weight_measure))), "because fb_length_weight_measure is NA"))
-# message(paste(length(which(!is.na(biomass$length_cm) &
-#                              is.na(biomass$fb_ll_equation_type) &
-#                              biomass$fb_length_weight_measure == "TL")),
-#               "because fb_length_weight_measure = TL (good) but fb_ll_equation_type is missing"))
-# message(paste(length(which(biomass$fb_length_weight_measure == "SL" & !is.na(biomass$length_cm))),
-#               "because fb_length_weight_measure is SL (not FL or TL)"))
-#
-# message(paste("These 3x reasons added =", length(which(!is.na(biomass$length_cm) &
-#                                                          is.na(biomass$fb_length_weight_measure))) +
-#                 length(which(!is.na(biomass$length_cm) &
-#                                is.na(biomass$fb_ll_equation_type) &
-#                                biomass$fb_length_weight_measure == "TL")) +
-#                 length(which(biomass$fb_length_weight_measure == "SL" & !is.na(biomass$length_cm))),
-#               "accounting for all missing adjusted lengths"))
-#
-# missing_info <- biomass %>%
-#   dplyr::filter(class %in% "Actinopterygii") %>%
-#   dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
-#                               "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
-#                               "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
-#   dplyr::filter(!length_cm < 20) %>%
-#   filter(is.na(adj_length)) %>%
-#   distinct(scientific_name, australian_common_name, .keep_all = TRUE) %>%
-#   select(family, genus, species, australian_common_name, fb_length_weight_measure,
-#          fb_a, fb_b, fb_ll_equation_type)
-# write.csv(missing_info, file = paste0("data/", park, "/tidy/", name, "_b20_missing_info.csv"))
+#HE The below is to work out which species are missing fishbase data
+message(paste(length(which(!is.na(biomass$length_cm))), "measured lengths in data"))
+message(paste(length(which(!is.na(biomass$adj_length))), "adjusted lengths in data"))
+message(paste(length(which(!is.na(biomass$length_cm))) - length(which(!is.na(biomass$adj_length))),
+              "measured lengths not converted to adjusted (missing)"))
+
+message(paste(length(which(!is.na(biomass$length_cm) &
+                             is.na(biomass$fb_length_weight_measure))), "because fb_length_weight_measure is NA"))
+message(paste(length(which(!is.na(biomass$length_cm) &
+                             is.na(biomass$fb_ll_equation_type) &
+                             biomass$fb_length_weight_measure == "TL")),
+              "because fb_length_weight_measure = TL (good) but fb_ll_equation_type is missing"))
+message(paste(length(which(biomass$fb_length_weight_measure == "SL" & !is.na(biomass$length_cm))),
+              "because fb_length_weight_measure is SL (not FL or TL)"))
+
+message(paste("These 3x reasons added =", length(which(!is.na(biomass$length_cm) &
+                                                         is.na(biomass$fb_length_weight_measure))) +
+                length(which(!is.na(biomass$length_cm) &
+                               is.na(biomass$fb_ll_equation_type) &
+                               biomass$fb_length_weight_measure == "TL")) +
+                length(which(biomass$fb_length_weight_measure == "SL" & !is.na(biomass$length_cm))),
+              "accounting for all missing adjusted lengths"))
+
+missing_info <- biomass %>%
+  dplyr::filter(class %in% "Actinopterygii") %>%
+  dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
+                              "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
+                              "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
+  dplyr::filter(length_cm >= 20) %>%
+  filter(is.na(adj_length)) %>%
+  distinct(scientific_name, australian_common_name, .keep_all = TRUE) %>%
+  select(family, genus, species, australian_common_name, fb_length_weight_measure,
+         fb_a, fb_b, fb_ll_equation_type)
+write.csv(missing_info, file = paste0("data/", park, "/tidy/", name, "_b20_missing_info.csv"))
 
 b20_metadata <- biomass %>%
   distinct(year, sample) %>%

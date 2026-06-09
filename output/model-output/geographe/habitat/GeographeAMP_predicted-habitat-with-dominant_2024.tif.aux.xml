@@ -30,6 +30,12 @@
     <Description>p_rock.se.fit</Description>
   </PAMRasterBand>
   <PAMRasterBand band="11">
+    <Description>p_reef.fit</Description>
+  </PAMRasterBand>
+  <PAMRasterBand band="12">
+    <Description>p_reef.se.fit</Description>
+  </PAMRasterBand>
+  <PAMRasterBand band="13">
     <Description>dom_tag</Description>
     <CategoryNames>
       <Category></Category>
@@ -38,7 +44,7 @@
       <Category>seagrass</Category>
       <Category>inverts</Category>
       <Category>rock</Category>
-      <Category></Category>
+      <Category>reef</Category>
       <Category></Category>
       <Category></Category>
       <Category></Category>
@@ -290,7 +296,7 @@
       <Category></Category>
     </CategoryNames>
   </PAMRasterBand>
-  <PAMRasterBand band="12">
+  <PAMRasterBand band="14">
     <Description>mean_se</Description>
   </PAMRasterBand>
 </PAMDataset>

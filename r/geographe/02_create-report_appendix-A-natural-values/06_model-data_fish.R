@@ -19,39 +19,35 @@ config <- yaml::read_yaml(
 
 name <- config$name
 park <- config$park
+years <- config$years
 
 library(mgcv)
 library(tidyverse)
 library(terra)
 library(sf)
 library(predicts)
+library(patchwork)
 library(FSSgam)
 library(CheckEM)
 
-tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %>%
-  dplyr::filter(!count > 200, # Remove some outliers
-                # !sample %in% "779", ##HE what was 779?
-                geoscience_roughness < 4) %>% # Remove outliers in roughness
+tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %>% # TODO check outlier removal
+  dplyr::filter(!count > 500, # Remove some outliers
+                geoscience_roughness < 4, # Remove outliers in roughness
+                !sample %in% "779_NA") %>% ##HE what was 779?
   glimpse()
 
-# # Re-set the predictors for modeling----
+
+# Re-set the predictors for modeling----
 names(tidy_maxn)
-pred.vars = c("reef", "geoscience_depth","geoscience_aspect" , "geoscience_roughness", "geoscience_detrended")
+pred.vars <- c("reef", "geoscience_depth","geoscience_aspect" , "geoscience_roughness", "geoscience_detrended")
 
-# model_dat <- habi %>%
-#   pivot_longer(cols = c(macroalgae, sand, rock, sessile_invertebrates, reef, seagrasses),
-#                names_to = "response", values_to = "number")
-#
-# # Set predictor variables---
-# pred.vars <- c("geoscience_depth", "geoscience_aspect", "geoscience_roughness", "geoscience_detrended")
-#
-# # Check for correlation of predictor variables- remove anything highly correlated (>0.95)---
-# round(cor(model_dat[ , pred.vars]), 2) # Roughness and depth 0.35 correlated
-#
-# # Review of individual predictors for even distribution---
-# CheckEM::plot_transformations(pred.vars = pred.vars, dat = model_dat)
+# TODO Check for correlation of predictor variables- remove anything highly correlated (>0.95)---
+round(cor(tidy_maxn[ , pred.vars]), 2)
 
-# Check to make sure Response vector has not more than 80% zeros----
+# TODO Review of individual predictors for even distribution---
+CheckEM::plot_transformations(pred.vars = pred.vars, dat = tidy_maxn)
+
+# TODO Check to make sure Response vector has not more than 80% zeros---
 unique.vars <- unique(as.character(tidy_maxn$response))
 
 resp.vars <- character()
@@ -60,11 +56,11 @@ for(i in 1:length(unique.vars)){
   if(length(which(temp.dat$count == 0)) / nrow(temp.dat) < 0.8){
     resp.vars <- c(resp.vars, unique.vars[i])}
 }
-resp.vars # All good
+resp.vars
 
 # Run the full subset model selection----
 savedir <- paste0("output/model-output/", park, "/fish/")
-factor.vars <- c("status", "year")
+factor.vars <- c("status", "year") # TODO set factors
 out.all     <- list()
 var.imp     <- list()
 
@@ -72,17 +68,17 @@ var.imp     <- list()
 for(i in 1:length(resp.vars)){
   print(resp.vars[i])
   use.dat <- as.data.frame(tidy_maxn[which(tidy_maxn$response == resp.vars[i]), ])
-  Model1  <- gam(count ~ s(geoscience_depth, k = 3, bs = 'cr'), ##HE what is Model1 doing?
-                 family = gaussian(link = "identity"),  data = use.dat)
+  Model1  <- gam(count ~ s(geoscience_depth, k = 3, bs = 'cr'),
+                 family = gaussian(link = "identity"),  data = use.dat) # TODO check family
 
   model.set <- generate.model.set(use.dat = use.dat,
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
                                   pred.vars.fact = factor.vars,
                                   cyclic.vars = "geoscience_aspect",
-                                  k = 3,
-                                  factor.smooth.interactions = F,
-                                  max.predictors = 5
+                                  k = 3, # TODO check this, maybe add cov.cutoff
+                                  factor.smooth.interactions = F, # TODO check this
+                                  max.predictors = 5 # TODO check this
   )
   out.list <- fit.model.set(model.set,
                             max.models = 600,
@@ -120,116 +116,53 @@ all.var.imp    <- do.call("rbind",var.imp)
 write.csv(all.mod.fits[ , -2], file = paste(savedir, paste(name, "all.mod.fits.csv", sep = "_"), sep = "/"))
 write.csv(all.var.imp, file = paste(savedir, paste(name, "all.var.imp.csv", sep = "_"), sep = "/"))
 
-# tidy_length <- readRDS(paste0("data/geographe/tidy/", name, "_tidy-length.rds")) %>%
-#   dplyr::filter(geoscience_roughness < 3) %>%
-#   glimpse()
-#
-# # Check to make sure Response vector has not more than 80% zeros----
-# unique.vars <- unique(tidy_length$response)
-#
-# resp.vars <- character()
-# for(i in 1:length(unique.vars)){
-#   temp.dat <- tidy_length[which(tidy_length$response == unique.vars[i]), ]
-#   if(length(which(temp.dat$count == 0)) / nrow(temp.dat) < 0.8){
-#     resp.vars <- c(resp.vars, unique.vars[i])}
-# }
-# resp.vars
-#
-# # Run the full subset model selection----
-# name_length <- paste(name,"length", sep = "_")
-# out.all = list()
-# var.imp = list()
-#
-# # Loop through the FSS function for each Taxa----
-# for(i in 1:length(resp.vars)){
-#   print(resp.vars[i])
-#   use.dat = as.data.frame(tidy_length[which(tidy_length$response==resp.vars[i]),])
-#   use.dat$campaignid <- as.factor(use.dat$campaignid)
-#   use.dat$status <- as.factor(use.dat$status)
-#   Model1  <- gam(count ~ s(geoscience_depth, k = 3, bs = 'cr'),
-#                  family = tw(),  data = use.dat)
-#
-#   model.set <- generate.model.set(use.dat = use.dat,
-#                                   test.fit = Model1,
-#                                   pred.vars.cont = pred.vars,
-#                                   pred.vars.fact = factor.vars,
-#                                   cyclic.vars = "geoscience_aspect",
-#                                   k = 3,
-#                                   factor.smooth.interactions = F,
-#                                   max.predictors = 5
-#   )
-#   out.list=fit.model.set(model.set,
-#                          max.models=600,
-#                          parallel=T,
-#                          r2.type = "dev")
-#   names(out.list)
-#
-#   out.list$failed.models # examine the list of failed models
-#   mod.table=out.list$mod.data.out  # look at the model selection table
-#   mod.table=mod.table[order(mod.table$AICc),]
-#   mod.table$cumsum.wi=cumsum(mod.table$wi.AICc)
-#   out.i=mod.table[which(mod.table$delta.AICc<=2),]
-#   out.all=c(out.all,list(out.i))
-#   # var.imp=c(var.imp,list(out.list$variable.importance$aic$variable.weights.raw)) #Either raw importance score
-#   var.imp=c(var.imp,list(out.list$variable.importance$aic$variable.weights.raw)) #Or importance score weighted by r2
-#
-#   # plot the best models
-#   for(m in 1:nrow(out.i)){
-#     best.model.name=as.character(out.i$modname[m])
-#     png(file = paste(savedir, paste(name_length, m, resp.vars[i], "mod_fits.png", sep = "_"), sep = "/"))
-#     if(best.model.name!="null"){
-#       par(mfrow=c(3,1),mar=c(9,4,3,1))
-#       best.model=out.list$success.models[[best.model.name]]
-#       plot(best.model,all.terms=T,pages=1,residuals=T,pch=16)
-#       mtext(side=2,text=resp.vars[i],outer=F)}
-#     dev.off()
-#   }
-# }
-#
-# # Model fits and importance---
-# names(out.all) = resp.vars
-# names(var.imp) = resp.vars
-# all.mod.fits = do.call("rbind", out.all)
-# all.var.imp = do.call("rbind", var.imp)
-# write.csv(all.mod.fits[ , -2], file = paste(savedir, paste(name_length, "all.mod.fits.csv", sep = "_"), sep = "/"))
-# write.csv(all.var.imp, file = paste(savedir, paste(name_length, "all.var.imp.csv", sep = "_"), sep = "/"))
-
+# Do FSS for B20
 tidy_b20 <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-b20.rds")) %>%
-  # dplyr::filter(geoscience_roughness < 3) %>%
+  dplyr::filter(geoscience_roughness < 4) %>% # TODO check, make same as above
   glimpse()
 
-# Check to make sure Response vector has not more than 90% zeros----
+# # Re-set the predictors for modeling----
+names(tidy_b20)
+pred.vars <- c("reef", "geoscience_depth","geoscience_aspect" , "geoscience_roughness", "geoscience_detrended")
+
+# TODO Check for correlation of predictor variables- remove anything highly correlated (>0.95)---
+round(cor(tidy_b20[ , pred.vars]), 2)
+
+# TODO Review of individual predictors for even distribution---
+CheckEM::plot_transformations(pred.vars = pred.vars, dat = tidy_b20)
+
+# TODO Check to make sure Response vector has not more than 80% zeros----
 unique.vars <- unique(tidy_b20$response)
 
 resp.vars <- character()
 for(i in 1:length(unique.vars)){
   temp.dat <- tidy_b20[which(tidy_b20$response == unique.vars[i]), ]
-  if(length(which(temp.dat$count == 0)) / nrow(temp.dat) < 0.9){ ##HE change back to 80% when cleaned up
+  if(length(which(temp.dat$count == 0)) / nrow(temp.dat) < 0.8){
     resp.vars <- c(resp.vars, unique.vars[i])}
 }
 resp.vars
 
 # Run the full subset model selection----
 name_b20 <- paste(name,"b20", sep = "_")
-out.all = list()
-var.imp = list()
-factor.vars <- c("status", "year")
+out.all <- list()
+var.imp <- list()
+factor.vars <- c("status", "year") # TODO check
 
 # Loop through the FSS function for each Taxa----
 for(i in 1:length(resp.vars)){
   print(resp.vars[i])
   use.dat = as.data.frame(tidy_b20[which(tidy_b20$response==resp.vars[i]),])
   Model1  <- gam(count ~ s(geoscience_depth, k = 3, bs = 'cr'),
-                 gaussian(link = "identity"),  data = use.dat) ##HE changed to gaussion
+                 gaussian(link = "identity"),  data = use.dat) # TODO HE changed to gaussian
 
   model.set <- generate.model.set(use.dat = use.dat,
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
                                   pred.vars.fact = factor.vars,
                                   cyclic.vars = "geoscience_aspect",
-                                  k = 3,
-                                  factor.smooth.interactions = F,
-                                  max.predictors = 5
+                                  k = 3, # TODO check this, maybe add cov.cutoff
+                                  factor.smooth.interactions = F, # TODO check this
+                                  max.predictors = 5 # TODO check this
   )
   out.list=fit.model.set(model.set,
                          max.models=600,
@@ -270,6 +203,10 @@ write.csv(all.var.imp, file = paste(savedir, paste(name_b20, "all.var.imp.csv", 
 # read in
 fabund <- bind_rows(tidy_maxn, tidy_b20) %>%
   glimpse()
+
+## TODO Select best models from above then write them below (check all.mod.fits and all.var.imp)
+# For each response, carefully write the selected model choosing model type (family),
+# predictor variables, factor variables, k and bs
 
 #Total abundance
 m_abundance <- gam(count ~ year + status +
@@ -319,7 +256,7 @@ preddf <- preds %>%
 
 # Extract status to predict onto (same as habitat script)
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>% # TODO select marine parks in your area
   dplyr::filter(zone_type %in% c("Sanctuary Zone (IUCN VI)",
                                  "National Park Zone (IUCN II)")) %>%
   dplyr::mutate(status = "No-Take") %>%
@@ -334,41 +271,41 @@ preddf_s <- cbind(preddf, terra::extract(marine_parks, predv)) %>%
   glimpse()
 
 ## ------------------------------------------------------------
-## ADD YEAR-SPECIFIC REEF (2014 & 2024) FOR FISH MODELLING
+## ADD YEAR-SPECIFIC REEF FOR FISH MODELLING
 ## ------------------------------------------------------------
 
-# Predicted reef 2014
-pred_reef_2014 <- readRDS(paste0("output/model-output/geographe/habitat/",
-                                 name, "_predicted-habitat_2014.rds")) %>%
+# Predicted reef year 1
+pred_reef_y1 <- readRDS(paste0("output/model-output/", park, "/habitat/",
+                                 name, "_predicted-habitat_", years[1], ".rds")) %>%
   terra::subset("p_reef.fit")
-names(pred_reef_2014) <- "reef"
-plot(pred_reef_2014)
+names(pred_reef_y1) <- "reef"
+plot(pred_reef_y1)
 
-# Predicted reef 2024
-pred_reef_2024 <- readRDS(paste0("output/model-output/geographe/habitat/",
-                                 name, "_predicted-habitat_2024.rds")) %>%
+# Predicted reef year 2
+pred_reef_y2 <- readRDS(paste0("output/model-output/", park, "/habitat/",
+                                 name, "_predicted-habitat_", years[2], ".rds")) %>%
   terra::subset("p_reef.fit")
-names(pred_reef_2024) <- "reef"
-plot(pred_reef_2024)
+names(pred_reef_y2) <- "reef"
+plot(pred_reef_y2)
 
-# Add reef for 2014
-preddf_s2014 <- cbind(
+# Add reef for year 1
+preddf_sy1 <- cbind(
   preddf_s,
-  terra::extract(pred_reef_2014, predv)[, "reef", drop = FALSE]
+  terra::extract(pred_reef_y1, predv)[, "reef", drop = FALSE]
 ) %>%
-  dplyr::mutate(year = 2014L)
+  dplyr::mutate(year = years[1])
 
-# Add reef for 2024
-preddf_s2024 <- cbind(
+# Add reef for year 2
+preddf_sy2 <- cbind(
   preddf_s,
-  terra::extract(pred_reef_2024, predv)[, "reef", drop = FALSE]
+  terra::extract(pred_reef_y2, predv)[, "reef", drop = FALSE]
 ) %>%
-  dplyr::mutate(year = 2024L)
+  dplyr::mutate(year = years[2])
 
-# Stack years and align year factor levels with your fish data object
-preddf_sy <- dplyr::bind_rows(preddf_s2014, preddf_s2024) %>%
+# Stack years and align year factor levels
+preddf_sy <- dplyr::bind_rows(preddf_sy1, preddf_sy2) %>%
   dplyr::mutate(
-    year = factor(year, levels = levels(fabund$year))  # <- adjust 'fish' to your fish data object
+    year = factor(year, levels = levels(fabund$year))
   ) %>%
   glimpse()
 
@@ -389,32 +326,32 @@ predicted_fish <- cbind(
 ## RASTERISE FISH PREDICTIONS BY YEAR (same format as habitat)
 ## ------------------------------------------------------------
 
-# 2014 rasters
-prasts_2014 <- rast(
+# year 1 rasters
+prasts_y1 <- rast(
   predicted_fish %>%
-    dplyr::filter(as.character(year) %in% "2014") %>%
+    dplyr::filter(as.character(year) %in% years[1]) %>%
     dplyr::select(x, y, starts_with("p_")),
   crs = "epsg:4326"
 )
 
-plot(prasts_2014)
-summary(prasts_2014)
+plot(prasts_y1)
+summary(prasts_y1)
 
-# 2024 rasters
-prasts_2024 <- rast(
+# year 2 rasters
+prasts_y2 <- rast(
   predicted_fish %>%
-    dplyr::filter(as.character(year) %in% "2024") %>%
+    dplyr::filter(as.character(year) %in% years[2]) %>%
     dplyr::select(x, y, starts_with("p_")),
   crs = "epsg:4326"
 )
 
-plot(prasts_2024)
-summary(prasts_2024)
+plot(prasts_y2)
+summary(prasts_y2)
 
 # Calculate MESS and mask predictions
 
 resp.vars <- c("p_abundance", "p_richness", "p_cti", "p_b20")
-pred.years <- c("2014", "2024")
+pred.years <- years
 
 for (y in seq_along(pred.years)) {
 

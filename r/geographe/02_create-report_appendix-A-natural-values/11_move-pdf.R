@@ -13,14 +13,15 @@ config <- yaml::read_yaml(
 name <- config$name
 park <- config$park
 
+# TODO Change pdf_name to your quarto name
 pdf_name <- "Project 4.21-Geographe-2-Appendix A-q-Natural values.pdf"
 
-dest_dir <- "D:/GIT/australian-marine-parks/quartos/geographe"
+dest_dir <- paste0("D:/GIT/australian-marine-parks/quartos/", park)
 if (!dir.exists(dest_dir)) dir.create(dest_dir, recursive = TRUE)
 
 file.rename(
   from = file.path(
-    "D:/GIT/australian-marine-parks/r/geographe/02_create-report_appendix-A-natural-values",
+    paste0("D:/GIT/australian-marine-parks/r/", park, "/02_create-report_appendix-A-natural-values"),
     pdf_name
   ),
   to = file.path(dest_dir, pdf_name)

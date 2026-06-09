@@ -19,25 +19,20 @@ name <- config$name
 park <- config$park
 
 # Load libraries needed -----
-library(httr)
+
+# TODO Run these once or as required:
+# remotes::install_github("GlobalArchiveManual/CheckEM")
+# CheckEM::ga_api_set_token()
+
 library(tidyverse)
-library(RJSONIO)
-library('remotes')
-options(timeout=9999999)
-remotes::install_github("GlobalArchiveManual/CheckEM")
 library(CheckEM)
-library(arrow)
-
-# CheckEM::ga_api_set_token() # Run this once and then turn it off
-
+options(timeout=600) # increase if more time needed for large data downloads
 
 # Load the saved token
 token <- readRDS("secrets/api_token.RDS")
 
-
 # Load the metadata, count and length ----
-# This way does not include the zeros where a species isn't present - it returns a much smaller dataframe
-CheckEM::ga_api_all_data(synthesis_id = "47", # Synthesis ID changes between projects
+CheckEM::ga_api_all_data(synthesis_id = "47", # TODO change synthesis ID for different project
                          token = token,
                          dir = paste0("data/", park, "/raw/"), # Check the directory
                          include_zeros = TRUE)

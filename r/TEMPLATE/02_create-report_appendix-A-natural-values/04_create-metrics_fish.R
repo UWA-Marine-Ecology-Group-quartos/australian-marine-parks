@@ -25,13 +25,9 @@ park <- config$park
 library(CheckEM)
 library(tidyverse)
 library(sf)
-library(here)
-library(leaflet)
-library(googlesheets4)
 library(terra)
 library(tidyterra)
 library(vegan)
-library(ggplot2)
 library(purrr)
 
 metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_metadata-bathymetry-derivatives.rds")) %>%
@@ -47,30 +43,6 @@ benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combine
   dplyr::mutate(reef = reef/total_pts) %>% # Model reef as proportion for fish prediction
   glimpse()
 
-# # Maturity data from WA sheet
-# maturity_mean <- CheckEM::maturity %>%
-#   dplyr::filter(!marine_region %in% c("NW", "N")) %>% # Change here for each marine park (exclude regions)
-#   dplyr::group_by(family, genus, species, sex) %>%
-#   dplyr::slice(which.min(l50_mm)) %>%
-#   ungroup() %>%
-#   dplyr::group_by(family, genus, species) %>%
-#   dplyr::summarise(l50 = mean(l50_mm)) %>% ##HE this averages across sexes, but sometimes big difference (e.g. double:half male:female)
-#   ungroup() %>%
-#   glimpse()
-#
-# large_bodied_carnivores <- CheckEM::australia_life_history %>% ##HE remove pelagics
-#   dplyr::filter(length_max_cm > 20) %>%
-#   dplyr::filter(class %in% "Actinopterygii") %>%
-#   dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
-#                               "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
-#                               "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
-#   left_join(maturity_mean) %>%
-#   dplyr::mutate(fb_length_at_maturity_mm = fb_length_at_maturity_cm * 10) %>%
-#   dplyr::mutate(l50 = if_else(is.na(l50), fb_length_at_maturity_mm, l50)) %>%
-#   dplyr::filter(!is.na(l50)) %>%
-#   dplyr::select(family, genus, species, l50) %>%
-#   glimpse()
-
 count <- readRDS(paste0("data/", park, "/raw/_count-with-zeros.RDS")) %>%
   dplyr::select(campaignid, sample, family, genus, species, count) %>%
   dplyr::mutate(scientific_name = paste(family, genus, species, sep = " ")) %>%
@@ -84,14 +56,14 @@ write.csv(spp_list, file = paste0("data/", park, "/tidy/", name, "_species_list.
 
 ta.sr <- count %>%
   dplyr::select(-c(family, genus, species)) %>%
-  dplyr::group_by(campaignid, sample, scientific_name) %>%
   pivot_wider(names_from = "scientific_name", values_from = count) %>%
-  dplyr::ungroup() %>%
-  dplyr::mutate(total_abundance = rowSums(.[, 3:(ncol(.))], na.rm = T),
-                species_richness = rowSums(.[, 3:(ncol(.))] > 0)) %>%
+  dplyr::mutate(
+    total_abundance = rowSums(across(-c(campaignid, sample)), na.rm = TRUE),
+    species_richness = rowSums(across(-c(campaignid, sample)) > 0)
+  ) %>%
   dplyr::select(campaignid, sample, total_abundance, species_richness) %>%
   pivot_longer(cols = c("total_abundance", "species_richness"), names_to = "response", values_to = "count") %>%
-  glimpse() # Should be nsamps * 2 = 594
+  glimpse()
 
 # -----------------------------
 # Species Accumulation
@@ -187,113 +159,16 @@ cti <- CheckEM::create_cti(data = count) %>%
   dplyr::mutate(response = "cti") %>%
   glimpse()
 
-tidy_maxn <- bind_rows(ta.sr, cti) %>% ## HE need to check missing aspects
+tidy_maxn <- bind_rows(ta.sr, cti) %>% # TODO check which samples are removed in this chunk
   dplyr::select(-c(log_count, w_sti)) %>%
-  dplyr::left_join(benthos) %>%
   dplyr::left_join(metadata) %>% # To join samples without valid bathymetry derivatives
+  dplyr::left_join(benthos) %>%
   dplyr::left_join(metadata_bathy_derivatives) %>%
-  dplyr::filter(!is.na(reef), # GBR3-4 has no habitat
+  dplyr::filter(!is.na(reef),
                 !is.na(geoscience_aspect)) %>% # Not valid values for modelling so will remove them now
   glimpse()
 
 saveRDS(tidy_maxn, file = paste0("data/", park, "/tidy/", name, "_tidy-count.rds"))
-
-# length <- readRDS(paste0("data/", park, "/raw/_length-with-zeros.RDS")) %>%
-#   dplyr::select(campaignid, sample, family, genus, species, length_mm, count) %>%
-#   left_join(large_bodied_carnivores) %>%
-#   dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
-#   glimpse()
-# length(unique(length$sample))
-#
-# all_species <- length %>%
-#   distinct(scientific_name) %>%
-#   glimpse()
-#
-# test_species <- length %>%
-#   dplyr::filter(!is.na(l50)) %>%
-#   distinct(scientific_name) %>%
-#   glimpse()
-#
-# metadata_length <- length %>%
-#   distinct(campaignid, sample) %>%
-#   glimpse()
-#
-# big_carn <- length %>%
-#   dplyr::filter(length_mm > l50) %>%
-#   dplyr::group_by(campaignid, sample) %>%
-#   dplyr::summarise(count = sum(count)) %>%
-#   ungroup() %>%
-#   right_join(metadata_length) %>%
-#   dplyr::mutate(count = ifelse(is.na(count), 0, count)) %>%
-#   dplyr::mutate(response = "greater than Lm carnivores") %>%
-#   left_join(benthos) %>%
-#   dplyr::glimpse()
-# # Check number of samples that are > 0
-# nrow(filter(big_carn, count > 0))/nrow(big_carn)
-#
-# small_carn <- length %>%
-#   dplyr::filter(length_mm < l50) %>%
-#   dplyr::group_by(campaignid, sample) %>%
-#   dplyr::summarise(count = sum(count)) %>%
-#   ungroup() %>%
-#   right_join(metadata_length) %>%
-#   dplyr::mutate(count = ifelse(is.na(count), 0, count)) %>%
-#   dplyr::mutate(response = "smaller than Lm carnivores") %>%
-#   left_join(benthos) %>%
-#   dplyr::glimpse()
-# # Check number of samples that are > 0
-# nrow(filter(small_carn, count > 0))/nrow(small_carn)
-#
-# big_snap <- length %>%
-#   dplyr::filter(species %in% "auratus",
-#                 length_mm > l50) %>%
-#   dplyr::group_by(campaignid, sample) %>%
-#   dplyr::summarise(count = sum(count)) %>%
-#   ungroup() %>%
-#   right_join(metadata_length) %>%
-#   dplyr::mutate(count = ifelse(is.na(count), 0, count)) %>%
-#   dplyr::mutate(response = "greater than Lm Pink snapper") %>%
-#   left_join(benthos) %>%
-#   dplyr::glimpse()
-# # Check number of samples that are > 0
-# nrow(filter(big_snap, count > 0))/nrow(big_snap) # This won't run in model
-#
-# small_snap <- length %>%
-#   dplyr::filter(species %in% "auratus",
-#                 length_mm < l50) %>%
-#   dplyr::group_by(campaignid, sample) %>%
-#   dplyr::summarise(count = sum(count)) %>%
-#   ungroup() %>%
-#   right_join(metadata_length) %>%
-#   dplyr::mutate(count = ifelse(is.na(count), 0, count)) %>%
-#   dplyr::mutate(response = "smaller than Lm Pink snapper") %>%
-#   left_join(benthos) %>%
-#   dplyr::glimpse()
-# # Check number of samples that are > 0
-# nrow(filter(small_snap, count > 0))/nrow(small_snap)
-#
-# tidy_length <- bind_rows(big_carn, small_carn, big_snap, small_snap) %>% # Removed snapper - not enough non-zero data ##HE added snap
-#   dplyr::left_join(metadata) %>%
-#   dplyr::left_join(metadata_bathy_derivatives) %>%
-#   dplyr::filter(!is.na(reef), # GBR3-4 missing habitat ##HE This will remove all 2024 until habitat is included
-#                 !is.na(geoscience_aspect)) %>% # Not valid values for modelling so will remove them now
-#   glimpse()
-#
-# # Visualise spatial patterns
-# preds <- readRDS(paste0("data/", park, "/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
-# plot(preds) ##HE change aspect palette to cyclic
-# names(preds)
-#
-# ggplot() +
-#   geom_spatraster(data = preds, aes(fill = geoscience_depth)) +
-#   geom_point(data = tidy_length,
-#              aes(x = longitude_dd, y = latitude_dd, size = count, colour = I(if_else(count == 0, "white", "darkblue"))),
-#              show.legend = F) +
-#   facet_wrap(~response) +
-#   theme_classic() +
-#   coord_sf()
-#
-# saveRDS(tidy_length, file = paste0("data/", park, "/tidy/", name, "_tidy-length.rds"))
 
 # Create df for calculating B20
 b20_length <- readRDS(paste0("data/", park, "/raw/_length-with-zeros.RDS")) %>%
@@ -301,7 +176,7 @@ b20_length <- readRDS(paste0("data/", park, "/raw/_length-with-zeros.RDS")) %>%
   mutate(length_cm = length_mm / 10) %>%
   left_join(CheckEM::australia_life_history) %>%
   dplyr::mutate(scientific_name = paste(genus, species, sep = " ")) %>%
-  glimpse() ##HE 8 metre KGW?
+  glimpse()
 
 # 1) Calculate mass from lengths
 biomass <- b20_length %>%
@@ -337,7 +212,7 @@ b20_mass <- biomass %>%
       include_b20 & is.na(mass_g) ~ NA_real_ # included but missing -> NA (flag)
     )
   ) %>%
-  filter(b20_mass_g <= 30000 | is.na(b20_mass_g)) # 190cm Centroberyx lineatus
+  filter(b20_mass_g <= 30000 | is.na(b20_mass_g))
 
 b20_mass_check <- b20_mass %>%
   select(sample, year, scientific_name, b20_mass_g, length_cm)
@@ -367,7 +242,6 @@ all_samples <- metadata %>%
   distinct(year, sample)
 
 b20_by_sample_complete <- b20_by_sample %>%
-  # filter(!sample %in% "GB-BV-125") %>% # heaps of huge pinkies
   right_join(all_samples, by = c("year","sample")) %>%
   tidyr::complete(nesting(year, sample), scientific_name,
                   fill = list(b20_sample = 0, present_n = 0)) %>%
@@ -470,7 +344,7 @@ b20_mass_amp <- biomass_amp %>%
       include_b20 & is.na(mass_g) ~ NA_real_ # included but missing -> NA (flag)
     )
   ) %>%
-  filter(b20_mass_g <= 30000 | is.na(b20_mass_g)) # 190cm Centroberyx lineatus
+  filter(b20_mass_g <= 30000 | is.na(b20_mass_g))
 
 b20_mass_check_amp <- b20_mass_amp %>%
   select(sample, year, scientific_name, b20_mass_g, length_cm)
@@ -539,7 +413,7 @@ saveRDS(
   file = paste0("data/", park, "/tidy/", name, "_b20-species_amp.rds")
 )
 
-##HE The below is to work out which species are missing fishbase data
+## The below is to work out which species are missing fishbase data
 # message(paste(length(which(!is.na(biomass$length_cm))), "measured lengths in data"))
 # message(paste(length(which(!is.na(biomass$adj_length))), "adjusted lengths in data"))
 # message(paste(length(which(!is.na(biomass$length_cm))) - length(which(!is.na(biomass$adj_length))),
@@ -567,7 +441,7 @@ saveRDS(
 #   dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
 #                               "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
 #                               "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
-#   dplyr::filter(!length_cm < 20) %>%
+#   dplyr::filter(length_cm >= 20) %>%
 #   filter(is.na(adj_length)) %>%
 #   distinct(scientific_name, australian_common_name, .keep_all = TRUE) %>%
 #   select(family, genus, species, australian_common_name, fb_length_weight_measure,
@@ -579,7 +453,7 @@ b20_metadata <- biomass %>%
   glimpse()
 
 # Calculate B20* for each sample
-b20_tidy <- biomass %>% ##HE this needs tweaking, not working 100% because some lengths have NA mass (fix in biomass)
+b20_tidy <- biomass %>% # TODO this needs tweaking, not working 100% because some lengths have NA mass (fix in biomass)
   mutate(
     include_b20 = class == "Actinopterygii" &
       # exclude pelagic non-site attached

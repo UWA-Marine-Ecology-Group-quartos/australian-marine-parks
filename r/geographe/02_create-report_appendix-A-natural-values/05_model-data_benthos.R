@@ -19,15 +19,19 @@ config <- yaml::read_yaml(
 
 name <- config$name
 park <- config$park
+years <- config$years
+
+## TODO Run below to install FSSgam package
+# if (!requireNamespace("remotes", quietly = TRUE)) {
+#   install.packages("remotes")
+# }
+# remotes::install_github("beckyfisher/FSSgam_package")
 
 library(CheckEM)
 library(tidyverse)
 library(mgcv)
-library(devtools)
 library(FSSgam)
 library(patchwork)
-library(foreach)
-library(doParallel)
 library(terra)
 library(sf)
 
@@ -39,7 +43,7 @@ metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_me
 habi <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")) %>%
   left_join(metadata_bathy_derivatives) %>%
   dplyr::filter(!is.na(geoscience_roughness)) %>%
-  dplyr::filter(!geoscience_roughness > 3) %>% # Filter outliers - check later when more data is added
+  dplyr::filter(geoscience_roughness < 4) %>% # TODO Filter outliers - check and adjust
   glimpse()
 
 model_dat <- habi %>%
@@ -50,14 +54,14 @@ model_dat <- habi %>%
 # Set predictor variables---
 pred.vars <- c("geoscience_depth", "geoscience_aspect", "geoscience_roughness", "geoscience_detrended")
 
-# Check for correlation of predictor variables- remove anything highly correlated (>0.95)---
+# TODO Check for correlation of predictor variables- remove anything highly correlated (>0.95)---
 round(cor(model_dat[ , pred.vars]), 2) # Roughness and depth 0.43 correlated
 
-# Review of individual predictors for even distribution---
+# TODO Review of individual predictors for even distribution---
 CheckEM::plot_transformations(pred.vars = pred.vars, dat = model_dat)
 
-# Check to make sure Response vector has not more than 80% zeros----
-unique.vars = unique(as.character(model_dat$response))
+# TODO Check to make sure Response vector has not more than 80% zeros---
+(unique.vars = unique(as.character(model_dat$response)))
 
 unique.vars.use = character()
 for(i in 1:length(unique.vars)){
@@ -66,20 +70,20 @@ for(i in 1:length(unique.vars)){
     unique.vars.use = c(unique.vars.use, unique.vars[i])}
 }
 
-unique.vars.use   # All good
+unique.vars.use
 unique.vars.use <- c("macroalgae",
                      "sand",
                      "rock",
                      "sessile_invertebrates",
+                     "reef",
                      "seagrasses")
 
 # Run the full subset model selection----
 outdir    <- paste0("output/model-output/", park, "/habitat/")
-use.dat   <- model_dat[model_dat$response %in% c(unique.vars.use), ]
 out.all   <- list()
 var.imp   <- list()
 resp.vars <- unique.vars.use
-factor.vars <- c("year")
+factor.vars <- c("year") # TODO set factors
 
 # Loop through the FSS function for each Abiotic taxa----
 for(i in 1:length(resp.vars)){
@@ -88,16 +92,16 @@ for(i in 1:length(resp.vars)){
   use.dat   <- as.data.frame(use.dat)
   Model1  <- gam(cbind(number, (total_pts - number)) ~
                    s(geoscience_depth, bs = 'cr'),
-                 family = binomial("logit"),  data = use.dat)
+                 family = binomial("logit"),  data = use.dat) # TODO check family
 
   model.set <- generate.model.set(use.dat = use.dat,
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
                                   pred.vars.fact = factor.vars,
                                   cyclic.vars = c("geoscience_aspect"),
-                                  k = 3,
-                                  cov.cutoff = 0.7, #HE need to check - maybe loer? Fisher recommends 0.28
-                                  max.predictors = 4 #HE changed from 5
+                                  k = 3, # TODO check this
+                                  cov.cutoff = 0.7, # TODO need to check - Fisher recommends 0.28
+                                  max.predictors = 4 # TODO check this
   )
   out.list <- fit.model.set(model.set,
                             max.models = 600,
@@ -136,6 +140,10 @@ all.mod.fits <- list_rbind(out.all, names_to = "response")
 all.var.imp  <- do.call("rbind", var.imp)
 write.csv(all.mod.fits[ , -2], file = paste0(outdir, name, "_abiotic_all.mod.fits.csv"))
 write.csv(all.var.imp,         file = paste0(outdir, name, "_abiotic_all.var.imp.csv"))
+
+## TODO Select best models from above then write them below (check all.mod.fits and all.var.imp)
+# For each response, carefully write the selected model choosing model type (family),
+# predictor variables, factor variables, k and bs
 
 # Sand
 m_sand <- gam(cbind(sand, total_pts - sand) ~
@@ -183,13 +191,13 @@ m_inverts <- gam(cbind(sessile_invertebrates, total_pts - sessile_invertebrates)
 summary(m_inverts)
 
 # Reef
-# m_reef <- gam(cbind(reef, total_pts - reef) ~
-#                 year +
-#                 s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
-#                 s(geoscience_detrended, by = year, k = 5, bs = "cr") +
-#                 s(geoscience_roughness, by = year, k = 5, bs = "cr"),
-#               data = habi, method = "REML", family = binomial("logit"))
-# summary(m_reef)
+m_reef <- gam(cbind(reef, total_pts - reef) ~
+                year +
+                s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
+                s(geoscience_detrended, by = year, k = 5, bs = "cr") +
+                s(geoscience_roughness, by = year, k = 5, bs = "cr"),
+              data = habi, method = "REML", family = binomial("logit"))
+summary(m_reef)
 
 # Read predictor rasters to predict onto
 preds <- readRDS(paste0("data/", park, "/spatial/rasters/", name, "_bathymetry-derivatives.rds"))
@@ -198,7 +206,7 @@ preddf <- preds %>%
 
 # Extract status to predict onto
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>% # TODO select marine parks in your area
   dplyr::filter(zone_type %in% c("Sanctuary Zone (IUCN VI)",
                                  "National Park Zone (IUCN II)")) %>%
   dplyr::mutate(status = "No-Take") %>%
@@ -211,11 +219,11 @@ preddf_s <- cbind(preddf, terra::extract(marine_parks, predv)) %>%
   dplyr::mutate(status = as.factor(ifelse(is.na(status), "Fished", "No-Take"))) %>%
   glimpse()
 
-preddf_s2014 <- preddf_s %>% dplyr::mutate(year = 2014L)
-preddf_s2024 <- preddf_s %>% dplyr::mutate(year = 2024L)
+preddf_sy1 <- preddf_s %>% dplyr::mutate(year = years[1])
+preddf_sy2 <- preddf_s %>% dplyr::mutate(year = years[2])
 
-preddf_sy <- dplyr::bind_rows(preddf_s2014, preddf_s2024) %>%
-  dplyr::mutate(year = factor(year, levels = levels(habi$year))) %>%  # <- critical
+preddf_sy <- dplyr::bind_rows(preddf_sy1, preddf_sy2) %>%
+  dplyr::mutate(year = factor(year, levels = levels(habi$year))) %>%
   glimpse()
 
 # predict, rasterise and plot
@@ -224,28 +232,28 @@ predhab <- cbind(preddf_sy,
                  "p_sand"     = predict(m_sand, preddf_sy, type = "response", se.fit = T),
                  "p_seagrass" = predict(m_seagrass, preddf_sy, type = "response", se.fit = T),
                  "p_inverts"  = predict(m_inverts, preddf_sy, type = "response", se.fit = T),
-                 "p_rock"     = predict(m_rock, preddf_sy, type = "response", se.fit = T)
-                 # "p_reef"     = predict(m_reef, preddf_sy, type = "response", se.fit = T)
+                 "p_rock"     = predict(m_rock, preddf_sy, type = "response", se.fit = T),
+                 "p_reef"     = predict(m_reef, preddf_sy, type = "response", se.fit = T)
                  ) %>%
   glimpse()
 
-prasts_2014 <- rast(predhab %>%
-                      dplyr::filter(as.character(year) %in% "2014") %>%
+prasts_y1 <- rast(predhab %>%
+                      dplyr::filter(as.character(year) %in% years[1]) %>%
                       dplyr::select(x, y, starts_with("p_")),
                     crs = "epsg:4326")
 
-prasts_2024 <- rast(predhab %>%
-                      dplyr::filter(as.character(year) %in% "2024") %>%
+prasts_y2 <- rast(predhab %>%
+                      dplyr::filter(as.character(year) %in% years[2]) %>%
                       dplyr::select(x, y, starts_with("p_")),
                     crs = "epsg:4326")
-plot(prasts_2014)
-summary(prasts_2014)
-plot(prasts_2024)
-summary(prasts_2024)
+plot(prasts_y1)
+summary(prasts_y1)
+plot(prasts_y2)
+summary(prasts_y2)
 
 # Calculate MESS and mask predictions ----
-resp.vars <- c("p_sand", "p_macro", "p_seagrass", "p_inverts", "p_rock")
-pred.years <- c("2014", "2024")
+resp.vars <- c("p_sand", "p_macro", "p_seagrass", "p_inverts", "p_rock", "p_reef")
+pred.years <- years
 
 # Labels and colours for dominant habitat outputs
 dom_labels <- c(
@@ -253,6 +261,7 @@ dom_labels <- c(
   macro = "Macroalgae",
   seagrass = "Seagrass",
   inverts = "Sessile invertebrates",
+  reef = "Reef",
   rock = "Rock"
 )
 
@@ -339,7 +348,7 @@ for (this_year in pred.years) {
   se_rasts <- terra::subset(
     preddf_m,
     c("p_macro.se.fit", "p_rock.se.fit", "p_sand.se.fit",
-      "p_seagrass.se.fit", "p_inverts.se.fit")
+      "p_seagrass.se.fit", "p_inverts.se.fit", "p_reef.se.fit")
   )
 
   se_rasts_norm <- terra::rast(
@@ -360,7 +369,7 @@ for (this_year in pred.years) {
       dom_tag = factor(
         dom_tag,
         levels = c("Sand", "Macroalgae", "Seagrass",
-                   "Rock", "Sessile invertebrates")
+                   "Rock", "Sessile invertebrates", "Reef")
       )
     )
 
@@ -454,16 +463,3 @@ for (this_year in pred.years) {
     overwrite = TRUE
   )
 }
-
-
-### Combined Standard Error
-###########################
-
-ggplot() +
-  geom_sf(data = aus, fill = "seashell") +
-  geom_spatraster(data = mean_se, maxcell = Inf) +
-  scale_fill_viridis_c(option = "A", na.value = "transparent", name = "Normalised\nSE") +
-  theme_minimal() +
-  coord_sf(xlim = c(115, 115.7),
-           ylim = c(-33.75, -33.3),
-           crs = 4326)

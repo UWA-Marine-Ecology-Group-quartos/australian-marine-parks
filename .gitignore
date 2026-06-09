@@ -24,3 +24,4 @@ data/**/uploads
 !data/TEMPLATE/raw
 !data/TEMPLATE/tidy
 !data/TEMPLATE/uploads
+.positai

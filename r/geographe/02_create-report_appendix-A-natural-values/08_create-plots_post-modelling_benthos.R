@@ -20,6 +20,7 @@ config <- yaml::read_yaml(
 
 name <- config$name
 park <- config$park
+years <- config$years
 
 # Load libraries
 library(tidyverse)
@@ -38,7 +39,7 @@ library(viridis)
 file.sources <- list.files(pattern = "*.R", path = "functions/", full.names = TRUE)
 sapply(file.sources, source, .GlobalEnv)
 
-# Set cropping extent - larger than most zoomed out plot
+# TODO Set cropping extent - larger than most zoomed out plot
 e <- ext(114.2, 115.8, -34.7, -33.1)
 
 # Load necessary spatial files
@@ -47,7 +48,7 @@ ausc <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-inve
   st_transform(4326)
 
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner"))
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) # TODO select relevant parks
 
 marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth") %>%
@@ -74,9 +75,6 @@ bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__
 
 names(bathy)[3] <- "Depth"
 
-# Years to compare
-years <- c(2014L, 2024L)
-
 # Map pretty habitat names to raster layer prefixes in dat
 habitat_lookup <- c(
   "Sand" = "sand",
@@ -95,7 +93,7 @@ hab_cols <- c(
   "Sessile invertebrates" = "plum"
 )
 
-# Plot extent
+# TODO Plot extent
 prediction_limits <- c(115.035, 115.57, -33.665, -33.34)
 
 # Read all years once
@@ -308,7 +306,7 @@ control_all <- purrr::map(years, \(yy) {
       name, "_predicted-habitat_", yy, ".rds"
     )
   )
-  controldata_benthos(dat = dat_yy, year = yy, amp_abbrv = "GMP", state_abbrv = "NCMP")
+  controldata_benthos(dat = dat_yy, year = yy, amp_abbrv = "GMP", state_abbrv = "NCMP") # TODO set park abbreviations
 })
 
 park_dat.shallow <- purrr::map_dfr(control_all, "shallow") %>%
@@ -352,7 +350,7 @@ for (taxa_code in names(taxa_lookup)) {
   p_taxa <- controlplot_benthos(
     data = park_dat.control,
     taxa = taxa_code,
-    amp_abbrv = "GMP",
+    amp_abbrv = "GMP", # TODO set park abbreviations
     state_abbrv = "NCMP",
     taxa_label = taxa_lookup[[taxa_code]]
   )
@@ -387,7 +385,7 @@ for (taxa_code in names(taxa_lookup)) {
 
 # ---- Scatterpie data prep ----
 
-# Set the extent of the study
+# TODO Set the extent of the study
 e <- ext(114.8, 116, -33.8, -33)
 
 # Load the bathymetry data (GA 250m resolution)
@@ -445,9 +443,7 @@ depth_fills <- scale_fill_manual(
   guide = "none"
 )
 
-site_limits <- c(115.0, 115.67, -33.3, -33.65)
-
-years <- c(2014, 2024)
+site_limits <- c(115.0, 115.67, -33.3, -33.65) # TODO set limits
 
 for (yr in years) {
 

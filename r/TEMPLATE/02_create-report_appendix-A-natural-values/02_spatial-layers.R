@@ -27,15 +27,13 @@ library(terra)
 library(stars)
 library(starsExtra)
 library(tidyverse)
-library(tidyterra)
-library(patchwork)
 library(RNetCDF)
 library(rerddap)
 
-# Set the extent of the study
+# TODO Set the extent of the study
 e <- ext(115.04, 115.60, -33.67, -33.346)
 
-# Download AusBathyTopo 2024 from https://pid.geoscience.gov.au/dataset/ga/150050
+# TODO Download AusBathyTopo 2024 from https://pid.geoscience.gov.au/dataset/ga/150050
 # and save in below folder
 
 # Load the bathymetry data (GA 250m resolution)
@@ -46,7 +44,6 @@ bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__
 plot(bathy)
 
 # Create terrain metrics (bathymetry derivatives)
-##HE Does roughness get undervalued because of the big node/blip/point in the middle of the map?
 preds <- terrain(bathy, neighbors = 8,
                  v = c("aspect", "roughness"),
                  unit = "degrees")
@@ -67,13 +64,6 @@ saveRDS(preds, file = paste0("data/", park, "/spatial/rasters/",
                       name, "_bathymetry-derivatives.rds"))
 
 # Read in the metadata
-
-# metadata <- readRDS(paste0("data/tidy/",
-#                            name, "_metadata.rds")) %>%
-#   dplyr::mutate(longitude_dd = as.numeric(longitude_dd),
-#                 latitude_dd = as.numeric(latitude_dd)) %>%
-#   glimpse()
-
 metadata <- readRDS(paste0("data/", park, "/raw/metadata.RDS")) %>%
   dplyr::select(campaignid, sample, longitude_dd, latitude_dd, status, year) %>%
   glimpse()
@@ -88,8 +78,8 @@ plot(metadata_sf, add = T)
 # Extract bathymetry derivatives at each of the samples
 metadata.bathy.derivatives   <- cbind(metadata,
                                       terra::extract(preds, metadata_sf)) %>%
-  filter_at(vars(geoscience_depth, geoscience_aspect, geoscience_roughness, geoscience_detrended),
-            all_vars(!is.na(.))) %>% # Removes samples missing bathymetry derivatives - check these!! HE one removed - maybe too close to coast?
+  filter(if_all(c(geoscience_depth, geoscience_aspect, geoscience_roughness, geoscience_detrended),
+                ~!is.na(.))) %>% # TODO Removes samples missing bathymetry derivatives - check these!
   dplyr::select(-ID) %>%
   glimpse()
 
@@ -121,7 +111,7 @@ for (month in unique(month(time(rast_sst)))) {
     mean(na.rm = T) %>%
     app(fun = function(i) {i - 273.15})
   names(monthly_rast) <- month.abb[month]
-  if (month == 3) { ##HE might need to change this for other data (make blank list before loop)
+  if (month == 3) { # TODO might need to change this for other data (make blank list before loop)
     sst <- monthly_rast
   }
   else {
@@ -141,7 +131,7 @@ sst_tsdf <- terra::global(rast_sst, fun = "mean", na.rm = T) %>%
   summarise(sst = mean(mean, na.rm = T) - 273.15, # Convert kelvin to celsius
             sd = mean(sd, na.rm = T)) %>%
   ungroup() %>%
-  dplyr::mutate(season = case_when(month %in% c("04", "05", "06") ~ "Autumn", ##HE seasons are based on SST not euro seasons
+  dplyr::mutate(season = case_when(month %in% c("04", "05", "06") ~ "Autumn", # seasons are based on SST not euro seasons
                                    month %in% c("07", "08", "09") ~ "Winter",
                                    month %in% c("10", "11", "12") ~ "Spring",
                                    month %in% c("01", "02", "03") ~ "Summer")) %>%
@@ -152,8 +142,6 @@ saveRDS(sst_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_SST_ti
 boxplot(sst_tsdf$sst ~ sst_tsdf$month)
 
 # Sea Level Anomaly
-# nc_sla <- open.nc(paste0("data/geographe/spatial/oceanography/", name, "-SLA.nc"),
-#                   write = TRUE)
 nc_sla <- open.nc(paste0("data/", park, "/spatial/oceanography/SLA.nc"),
                   write = TRUE)
 print.nc(nc_sla) # shows you all the file details
@@ -277,7 +265,7 @@ dhw_tsdf <- terra::global(rast_dhw, fun = "mean", na.rm = T) %>%
 
 saveRDS(dhw_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_DHW_time-series.rds"))
 
-# Acifidication
+# Acidification
 nc_acid <- open.nc(paste0("data/", park, "/spatial/oceanography/Acidification.nc"),
                   write = TRUE)
 print.nc(nc_acid) # shows you all the file details

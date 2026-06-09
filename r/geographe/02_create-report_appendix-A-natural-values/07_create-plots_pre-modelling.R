@@ -41,12 +41,12 @@ library(CheckEM)
 library(geosphere)
 
 # Load functions
-file.sources = list.files(pattern = "*.R", path = "functions/", full.names = T)
+file.sources <- list.files(pattern = "*.R", path = "functions/", full.names = T)
 sapply(file.sources, source, .GlobalEnv)
 
-# Set cropping extent - larger than most zoomed out plot
+# TODO Set cropping extent - larger than most zoomed out plot
 e <- ext(114.2, 115.8,-34.7, -33.1)
-# e <- ext(115.04, 115.60, -33.67, -33.346) ##HE sscript 02 uses this extent
+# e <- ext(115.04, 115.60, -33.67, -33.346) ##HE script 02 uses this extent
 
 # Load necessary spatial files
 sf_use_s2(T)
@@ -56,13 +56,11 @@ aus    <- st_read("data/south-west network/spatial/shapefiles/STE_2021_AUST_GDA2
 ausc <- st_crop(aus, e)
 
 # Load marine parks
-# aus_marine_parks <- st_read("data/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp")
-
 # All australian marine parks - for inset plotting
 aus_marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp")
 
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>% # TODO select relevant parks
   glimpse()
 
 # Australian Marine Parks only (for separate ggplot legends)
@@ -78,7 +76,7 @@ terrnp <- st_read("data/south-west network/spatial/shapefiles/Legislated_Lands_a
   dplyr::filter(leg_catego %in% c("Nature Reserve", "National Park"))
 plot(terrnp["leg_catego"])
 
-terr_fills <- scale_fill_manual(values = c("National Park" = "#c4cea6",          # Set the colours for terrestrial parks
+terr_fills <- scale_fill_manual(values = c("National Park" = "#c4cea6", # Set the colours for terrestrial parks
                                            "Nature Reserve" = "#e4d0bb"),
                                 name = "Terrestrial Parks")
 
@@ -114,9 +112,9 @@ bathdf <- as.data.frame(bathy, xy = T)
 
 # 1. Location overview plot
 # Set plot inputs
-plot_limits = c(114.4, 115.67, -33.3, -34.6) # Extent of the main plot
-study_limits = c(114.88, 115.67,-33.3, -33.67) # Extent of sampling
-annotation_labels = data.frame(x = c(115.6409, 115.3473, 115.1074, 115.0630, 115.1573), # Labels for annotation e.g. nearby towns
+plot_limits <- c(114.4, 115.67, -33.3, -34.6) # TODO Extent of the main plot
+study_limits <- c(114.88, 115.67,-33.3, -33.67) # TODO Extent of sampling
+annotation_labels <- data.frame(x = c(115.6409, 115.3473, 115.1074, 115.0630, 115.1573), # TODO Labels for annotation e.g. nearby towns
                                y = c(-33.3270,-33.65, -33.6177, -33.9535, -34.3110),
                                label = c("Bunbury", "Busselton", "Dunsborough", "Margaret River", "Augusta"))
 # Create plot
@@ -132,7 +130,7 @@ metadata <- readRDS(paste0("data/", park, "/tidy/", name, "_metadata-bathymetry-
   st_as_sf(coords = c("longitude_dd", "latitude_dd"), crs = 4326) %>%
   glimpse()
 # Set plot inputs
-site_limits = c(115.0, 115.67, -33.3, -33.65) # Plot limits for subsequent plots - tighter zoom
+site_limits <- c(115.0, 115.67, -33.3, -33.65) # TODO Plot limits for subsequent plots - tighter zoom
 # Create plot
 site_plot(site_limits, annotation_labels) ##HE spot missing around HMAS Swan?
 # Save plot
@@ -165,9 +163,9 @@ ggsave(filename = paste(paste0('plots/', park, '/spatial/', name) , 'old-sea-lev
 
 # 5. Bathymetry cross sections
 # Create data
-bath_df1 <- dem_cross_section(115.096, 115.000, -33.804, -33.105, maxdist = 10)
+bath_df1 <- dem_cross_section(115.096, 115.000, -33.804, -33.105, maxdist = 10) # TODO set coords
 # Set plot inputs
-crosssection_labels = data.frame(x = c(-33, 3), # Labels for annotation
+crosssection_labels <- data.frame(x = c(-33, 3), # TODO Labels for annotation
                                  y = c(-10, 145),
                                  label = c("Naturaliste Reefs", "Cape Naturaliste"))
 

@@ -20,6 +20,7 @@ config <- yaml::read_yaml(
 
 name <- config$name
 park <- config$park
+years <- config$years
 
 # Load libraries
 library(tidyverse)
@@ -31,17 +32,15 @@ library(scales)
 library(viridis)
 library(patchwork)
 library(tidyterra)
-library(png)
-library(lwgeom)
 library(tidytext)
 library(ggtext)
-library(grid)
+library(CheckEM)
 
 # Load functions
 file.sources <- list.files(pattern = "*.R", path = "functions/", full.names = TRUE)
 sapply(file.sources, source, .GlobalEnv)
 
-# Set cropping extent - larger than most zoomed out plot
+# TODO et cropping extent - larger than most zoomed out plot
 e <- ext(114.2, 115.8, -34.7, -33.1)
 
 # Load necessary spatial files
@@ -49,7 +48,7 @@ sf_use_s2(FALSE)
 
 # Australian outline and state and commonwealth marine parks
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner"))
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) # TODO select relevant parks
 
 marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth") %>%
@@ -79,11 +78,8 @@ bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__
 
 names(bathy)[3] <- "Depth"
 
-# Spatial predictions limits
+# TODO Spatial predictions limits
 prediction_limits <- c(115.035, 115.57, -33.665, -33.34)
-
-# Years to compare
-years <- c(2014L, 2024L)
 
 # Pretty fish metric names mapped to raster layer stubs
 fish_metric_lookup <- c(
@@ -180,7 +176,7 @@ control_all <- purrr::map(years, \(yy) {
   if (!inherits(dat_yy, "SpatRaster")) dat_yy <- terra::rast(dat_yy)
   terra::crs(dat_yy) <- "EPSG:4326"
 
-  controldata_fish(dat = dat_yy, year = yy, amp_abbrv = "GMP", state_abbrv = "NCMP")
+  controldata_fish(dat = dat_yy, year = yy, amp_abbrv = "GMP", state_abbrv = "NCMP") # TODO park abbreviations
 })
 
 park_dat.shallow <- purrr::map_dfr(control_all, "shallow") %>%
@@ -222,7 +218,7 @@ for (metric_code in names(metric_lookup)) {
   p_metric <- controlplot_fish(
     data = park_dat.control,
     metric = metric_code,
-    amp_abbrv = "GMP",
+    amp_abbrv = "GMP", # TODO park abbreviations
     state_abbrv = "NCMP",
     metric_label = metric_lookup[[metric_code]]
   )
@@ -255,29 +251,6 @@ for (metric_code in names(metric_lookup)) {
 
 # Stacked plots
 
-# Clear your environment
-rm(list = ls())
-
-# Set the study name
-name <- "GeographeAMP"
-park <- "geographe"
-
-# Load libraries
-library(tidyverse)
-library(terra)
-library(sf)
-library(ggplot2)
-library(ggnewscale)
-library(scales)
-library(viridis)
-library(patchwork)
-library(tidyterra)
-library(png)
-library(lwgeom)
-library(tidytext)
-library(ggtext)
-library(CheckEM)
-
 theme_collapse<-theme(
   panel.grid.major=element_line(colour = "white"),
   panel.grid.minor=element_line(colour = "white", size = 0.25),
@@ -303,7 +276,7 @@ sti <- CheckEM::australia_life_history %>%
 
 # Create DF filter for Commonwealth waters only
 marine_parks_amp <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
+  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>% # TODO select relevant parks
   dplyr::filter(epbc == "Commonwealth") %>%
   st_transform(4326)
 
@@ -346,9 +319,9 @@ sac_sample <- ggplot(
   ) +
   geom_line(linewidth = 1.2) +
   scale_linetype_manual(
-    values = c(
-      "2014" = "22",
-      "2024" = "solid"
+    values = setNames(
+      c("22", "solid"),
+      as.character(years)
     )
   ) +
   scale_colour_manual(name = "Status",
@@ -402,9 +375,9 @@ sac_individual <- ggplot(
   ) +
   geom_line(linewidth = 1.2) +
   scale_linetype_manual(
-    values = c(
-      "2014" = "22",
-      "2024" = "solid"
+    values = setNames(
+      c("22", "solid"),
+      as.character(years)
     )
   ) +
   scale_colour_manual(name = "Status",
@@ -458,9 +431,6 @@ maxn <- readRDS(paste0("data/", park, "/raw/_count-with-zeros.RDS")) %>%
     year, sample, scientific_name, family, genus, species, count,
     rls_thermal_niche
   ) %>%
-  # dplyr::filter(!count > 200, # Remove some outliers
-  #               # !sample %in% "779", ##HE what was 779?
-  #               geoscience_roughness < 4) %>% # Remove outliers in roughness
   glimpse()
 
 length(unique(maxn$sample)) * length(unique(maxn$scientific_name))
@@ -473,19 +443,18 @@ maxn.10 <- maxn %>%
     maxn = mean(count, na.rm = TRUE),
     se   = sd(count, na.rm = TRUE) / sqrt(dplyr::n()),
     .groups = "drop") %>%
-  # dplyr::filter(!scientific%in%c('Carangoides sp1', 'Unknown spp'))%>%
   group_by(year) %>%
   slice_max(order_by = maxn, n = 10, with_ties = FALSE) %>%
   ungroup() %>%
   left_join(sti) %>%
   glimpse()
 
-sp14 <- maxn.10 %>% filter(year == 2014) %>% pull(scientific)
-sp24 <- maxn.10 %>% filter(year == 2024) %>% pull(scientific)
+spy1 <- maxn.10 %>% filter(year == years[1]) %>% pull(scientific)
+spy2 <- maxn.10 %>% filter(year == years[2]) %>% pull(scientific)
 
 unique_species <- union(
-  setdiff(sp14, sp24),
-  setdiff(sp24, sp14))
+  setdiff(spy1, spy2),
+  setdiff(spy2, spy1))
 
 bar_maxn <- ggplot(
   maxn.10 %>%
@@ -521,7 +490,6 @@ cti.10 <- maxn %>%
     maxn = mean(count, na.rm = TRUE),
     se   = sd(count, na.rm = TRUE) / sqrt(dplyr::n()),
     .groups = "drop") %>%
-  # dplyr::filter(!scientific%in%c('Carangoides sp1', 'Unknown spp'))%>%
   left_join(sti) %>%
   filter(!is.na(rls_thermal_niche)) %>%
   group_by(year) %>%
@@ -529,12 +497,12 @@ cti.10 <- maxn %>%
   ungroup() %>%
   glimpse()
 
-sp.cti.14 <- cti.10 %>% filter(year == 2014) %>% pull(scientific)
-sp.cti.24 <- cti.10 %>% filter(year == 2024) %>% pull(scientific)
+sp.cti.y1 <- cti.10 %>% filter(year == years[1]) %>% pull(scientific)
+sp.cti.y2 <- cti.10 %>% filter(year == years[2]) %>% pull(scientific)
 
 unique_species_cti <- union(
-  setdiff(sp.cti.14, sp.cti.24),
-  setdiff(sp.cti.24, sp.cti.14))
+  setdiff(sp.cti.y1, sp.cti.y2),
+  setdiff(sp.cti.y2, sp.cti.y1))
 
 log1p10_trans <- trans_new(
   name = "log10p1",
@@ -542,7 +510,7 @@ log1p10_trans <- trans_new(
   inverse   = function(x) 10^x - 1
 )
 
-# choose the centering statistic (mean is what you asked for)
+# choose the centering statistic
 mid_niche <- median(cti.10$rls_thermal_niche, na.rm = TRUE)
 
 # global limits across both facets/years
@@ -617,17 +585,17 @@ b20.10 <- b20 %>%
   ungroup()
 
 # species unique to either year's top 10 (for bold labels)
-sp14_b20 <- b20.10 %>%
-  filter(year == 2014) %>%
+spy1_b20 <- b20.10 %>%
+  filter(year == years[1]) %>%
   pull(scientific_name)
 
-sp24_b20 <- b20.10 %>%
-  filter(year == 2024) %>%
+spy2_b20 <- b20.10 %>%
+  filter(year == years[2]) %>%
   pull(scientific_name)
 
 unique_species_b20 <- union(
-  setdiff(sp14_b20, sp24_b20),
-  setdiff(sp24_b20, sp14_b20)
+  setdiff(spy1_b20, spy2_b20),
+  setdiff(spy2_b20, spy1_b20)
 )
 
 # common plot function
@@ -720,8 +688,8 @@ ggsave(
 b20_plot_mixed <- b20 %>%
   semi_join(b20.10, by = c("year", "scientific_name")) %>%
   filter(
-    (year == 2014 & status == "Combined") |
-      (year == 2024 & status %in% c("Fished", "No-Take"))
+    (year == years[1] & status == "Combined") |
+      (year == years[2] & status %in% c("Fished", "No-Take"))
   ) %>%
   mutate(
     status = if_else(status %in% c("Combined", "Fished"), "Open", status),
