@@ -1,17 +1,29 @@
 ###
-# Project: NESP 4.20 - Marine Park Dashboard reporting
+# Project: NESP 5.6 Project - South west Corner Report
 # Data:    Marine Park, oceanographic data, marine park boundary files and
 #          image legend for bathy network map, cropped to have no title
 #          This image can be found and saved from this link:
 #          https://geoserver.imas.utas.edu.au/geoserver/seamap/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetLegendGraphic&LAYER=seamap:bathymetry_AMP_grp&FORMAT=image/png
 # Task:    Create South west network map
-# Author:  Claude Spencer modified by Annika Leunig
+# Author:  Annika Leunig (modified from Claude Spencer's code)
 # Date:    Feb 2026
+# Outputs: 1. South-west network zones map (overall location plot, with inset and legend)
+#          2. South-west Corner zoom-in map
 ###
 
 # Table of contents
-# 1. Overall location plot (including State and Commonwealth Marine Parks)
-# 2. Zoom-ins of the plots
+#     1.  Set up and load data
+#     2.  Standardise State marine park zones
+#     3.  Plot inputs
+#     4.  Map function
+#     5.  FIGURE 1: South-west network zones map
+#     6.  Zoom-in set up and map function
+#     7.  FIGURE 2: South-west Corner zoom-in map
+
+
+# ==============================================================================
+# 1. SET UP AND LOAD DATA
+# ==============================================================================
 
 # Clear your environment
 rm(list = ls())
@@ -40,48 +52,12 @@ sapply(file.sources, source, .GlobalEnv)
 e <- ext(106.0, 145.0, -45.0, -22.0)
 # e <- ext(ext(110, 155, -45, -10)) # Inset map uses this extent
 
-# Load necessary spatial files
+# ── Load spatial files ────────────────────────────────────────────────────────
 sf_use_s2(T)
 # Australian outline and state and commonwealth marine parks
 aus    <- st_read("data/south-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
   st_make_valid()
 ausc <- st_crop(aus, e)
-
-# Load marine parks
-capad <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp")
-
-# All australian marine parks - for inset plotting
-aus_marine_parks <- st_read("data/south-west network/spatial/shapefiles/south-and-western-australia_marine-parks-all.shp")
-
-# Filter for SWC network
-marine_parks <- st_read("data/south-west network/spatial/shapefiles/south-and-western-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Abrolhos", "Abrolhos Islands", "Bremer", "Eastern Recherche", "Ngari Capes", "Geographe",
-                            "South-west Corner","Great Australian Bight", "Jurien","Murat", "Jurien Bay", "Perth Canyon",
-                            "Southern Kangaroo Island", "Twilight", "Two Rocks", "Western Eyre", "Western Kangaroo Island",
-                            "Nuyts Archipelgo", "Thorny Passage", "Sir Joseph Banks Group", "Investigator", "West coast Bays",
-                            "Southern Spencer Gulf", "Upper Spencer Gulf", "Cottesloe Reef", "Rottnest", "Shoalwater Islands")) %>%
-  glimpse()
-
-# Standardize naming between Western and South Australia State marine parks
-
-# Australian Marine Parks only (for separate ggplot legends)
-marine_parks_amp <- marine_parks %>%
-  dplyr::filter(epbc %in% "Commonwealth")
-
-# State Marine Parks only (for separate ggplot legends)
-marine_parks_state <- marine_parks %>%
-  dplyr::filter(epbc %in% "State")
-
-marine_parks_state <- marine_parks %>%
-  dplyr::filter(epbc %in% "State") %>%
-  dplyr::mutate(zone = case_when(
-    zone == "Reef Observation Area" ~ "Sanctuary Zone",
-    zone == "National Park Zone" ~ "Sanctuary Zone",
-    zone == "Habitat Protection Zone" ~ "Recreational Use Zone",
-    TRUE ~ zone
-  ))
-
-unique(marine_parks_state$zone)
 
 #Add terrestrial parks in
 terrnp <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%  # Terrestrial reserves
@@ -102,15 +78,50 @@ bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__
   crop(e) %>%
   clamp(upper = 0, values = F)
 names(bathy) <- "Depth"
-
 bathdf <- as.data.frame(bathy, xy = T)
 
-# 1. Plot map
-# Set plot inputs
+# Filter for SWC network
+marine_parks <- st_read("data/south-west network/spatial/shapefiles/south-and-western-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c("Abrolhos", "Abrolhos Islands", "Bremer", "Eastern Recherche", "Ngari Capes", "Geographe",
+                            "South-west Corner","Great Australian Bight", "Jurien","Murat", "Jurien Bay", "Perth Canyon",
+                            "Southern Kangaroo Island", "Twilight", "Two Rocks", "Western Eyre", "Western Kangaroo Island",
+                            "Nuyts Archipelgo", "Thorny Passage", "Sir Joseph Banks Group", "Investigator", "West coast Bays",
+                            "Southern Spencer Gulf", "Upper Spencer Gulf", "Cottesloe Reef", "Rottnest", "Shoalwater Islands")) %>%
+  glimpse()
+
+# ==============================================================================
+# 2. STANDARDISE STATE MARINE PARK ZONES
+# ==============================================================================
+# Australian Marine Parks only (for separate ggplot legends)
+marine_parks_amp <- marine_parks %>%
+  dplyr::filter(epbc %in% "Commonwealth")
+
+# State Marine Parks only (for separate ggplot legends)
+marine_parks_state <- marine_parks %>%
+  dplyr::filter(epbc %in% "State")
+
+marine_parks_state <- marine_parks %>%
+  dplyr::filter(epbc %in% "State") %>%
+  dplyr::mutate(zone = case_when(
+    zone == "Reef Observation Area" ~ "Sanctuary Zone",
+    zone == "National Park Zone" ~ "Sanctuary Zone",
+    zone == "Habitat Protection Zone" ~ "Recreational Use Zone",
+    TRUE ~ zone
+  ))
+
+# check zone names
+unique(marine_parks_state$zone)
+
+# ==============================================================================
+# 3. PLOT INPUTS
+# ==============================================================================
 plot_limits = c(108.0, 138.0, -40.0, -24.0) # Extent of the main plot
 study_limits = NULL # Extent of sampling
 annotation_labels = NULL
 
+# ==============================================================================
+# 4. MAP FUNCTION
+# ==============================================================================
 network_map <- function(plot_limits, study_limits, annotation_labels) {
   require(tidyverse)
   require(tidyterra)
@@ -172,7 +183,7 @@ network_map <- function(plot_limits, study_limits, annotation_labels) {
           legend.box = "horizontal",
           legend.direction = "vertical") +
     guides(fill = guide_legend(ncol = 1))
-  # Inset - full australia (ONLY USE IF YOU WANT INSET)
+  # Inset
    p1.1 <- ggplot(data = aus) +
     geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
     geom_sf(data = capad, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
@@ -185,15 +196,6 @@ network_map <- function(plot_limits, study_limits, annotation_labels) {
           panel.grid.major = element_blank(),
           panel.border = element_rect(colour = "grey70"))
 
-  # Lines below change where the inset is
-  ## Top right inset (inside map)
-  # p1 + inset_element(p1.1, left = 0.7, bottom = 0.7, right = 1, top = 1)
-  #
-  # Side by side (inset left, map right)
-  # p1.1 + p1
-  #
-  # Bottom left inset (inside map)
-  # p1 + inset_element(p1.1, left = 0, bottom = 0, right = 0.2, top = 0.25)
    legend <- cowplot::get_legend(p1 + theme(
      legend.text = element_text(size = 7),
      legend.title = element_text(size = 8),
@@ -207,6 +209,9 @@ network_map <- function(plot_limits, study_limits, annotation_labels) {
      plot_layout(heights = c(4, 1))
 }
 
+# ==============================================================================
+# 5. FIGURE 1: SOUTH-WEST NETWORK ZONES MAP
+# ==============================================================================
 network_map(plot_limits,
             study_limits,
             annotation_labels)
@@ -215,7 +220,9 @@ network_map(plot_limits,
 ggsave(paste(paste0('plots/', park, '/spatial/', name) , 'network_zones.png',
              sep = "-"), dpi = 600, width = 8, height = 5, bg = "white")
 
-
+# ==============================================================================
+# 6. ZOOM-IN SET UP AND MAP FUNCTION
+# ==============================================================================
 # Zoom in plots
 marine_parks_wa <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
   dplyr::filter(name %in% c(
@@ -250,12 +257,6 @@ marine_parks_state <- marine_parks %>%
     zone == "Other State Marine Park Zone" ~ "#f7d0dc",
     TRUE                                   ~ colour
   ))
-
-# Note: marine_parks_wa_amp and marine_parks_wa_state are the same as
-# marine_parks_amp and marine_parks_state above — assign for compatibility
-# with park_map_panel() and legend_source_plot() which use the _wa_ names
-marine_parks_wa_amp   <- marine_parks_amp
-marine_parks_wa_state <- marine_parks_state
 
 network_map_zoomed <- function(plot_limits, study_limits = NULL, annotation_labels = NULL) {
   require(tidyverse)
@@ -362,7 +363,13 @@ network_map_zoomed <- function(plot_limits, study_limits = NULL, annotation_labe
     plot_layout(heights = c(4, 1))
 }
 
-#swc
+# ==============================================================================
+# 7. FIGURE 2: SOUTH-WEST CORNER ZOOM-IN MAP
+# ==============================================================================
 network_map_zoomed(plot_limits = c(113.5, 116.4, -34.7857, -33.2643))
 ggsave(paste(paste0('plots/', park, '/spatial/', name), 'swc-MPs.png', sep = "-"),
        dpi = 600, width = 8, height = 5, bg = "white")
+
+# ==============================================================================
+# End of script
+# ==============================================================================

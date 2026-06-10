@@ -1,11 +1,29 @@
 ###
-# Project: NESP 4.20 - Marine Park Dashboard reporting
+# Project: NESP 5.6 Project - South west Corner Report
 # Data:    Marine Parks, bathymetry, terrestrial parks, aus outline
 # Task:    Two Rocks & Geographe zone maps — network style, faceted
 # Author:  Annika Leunig
 # Date:    May 2026
+# Outputs: 1. Two Rocks & Geographe faceted zone map
+#          2. Individual park zoom-in zone maps (Abrolhos, Jurien Bay, Two Rocks,
+#             Rottnest Island Canyon, Geographe, Bremer Bay, SWC east, Eastern
+#             Recherche, Great Australian Bight, Murat & Western Eyre,
+#             Kangaroo Island)
 ###
 
+# Table of contents
+#     1.  Set up and load data
+#     2.  Helper functions
+#     3.  Panel function
+#     4.  Build Two Rocks & Geographe panels
+#     5.  FIGURE 1: TWO ROCKS & GEOGRAPHE FACETED MAP (assemble and save)
+#     6.  Zoom-in map function (legend on left)
+#     7.  FIGURES 2-12: Individual park zoom-ins (assemble and save)
+
+
+# ==============================================================================
+# 1. SET UP AND LOAD DATA
+# ==============================================================================
 # Clear environment
 rm(list = ls())
 
@@ -22,20 +40,14 @@ library(ggnewscale)
 library(cowplot)
 library(metR)
 
-# ==============================================================================
-# SPATIAL EXTENTS
-# ==============================================================================
-
+# Set cropping and plot extents
 e                <- ext(106.0, 145.0, -45.0, -22.0)
 tworocks_limits  <- c(114.7, 116.0, -32.0, -31.3)
 geographe_limits <- c(114.4, 115.9, -33.9, -33.1)
 
-# ==============================================================================
-# LOAD SPATIAL DATA
-# ==============================================================================
-
+# ── Load spatial files  ───────────────────────────────────────────────────────
 sf_use_s2(TRUE)
-
+# Aus outline, terrestrial parks and coastal waters outline
 aus <- st_read("data/south-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
   st_make_valid()
 
@@ -48,6 +60,7 @@ cwatr <- st_read("data/south-west network/spatial/shapefiles/amb_coastal_waters_
   st_make_valid() %>%
   st_crop(e)
 
+# Marine parks
 marine_parks <- st_read("data/south-west network/spatial/shapefiles/south-and-western-australia_marine-parks-all.shp") %>%
   dplyr::filter(name %in% c("Abrolhos", "Abrolhos Islands", "Bremer", "Eastern Recherche",
                             "Ngari Capes", "Geographe", "South-west Corner",
@@ -78,15 +91,15 @@ marine_parks_state <- marine_parks %>%
     )
   )
 
+# Bathymetry data
 bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
   crop(e) %>%
   clamp(upper = 0, values = FALSE)
 names(bathy) <- "Depth"
 
 # ==============================================================================
-# HELPER FUNCTIONS
+# 2. HELPER FUNCTIONS
 # ==============================================================================
-
 filter_to_extent <- function(layer, limits) {
   box <- st_as_sfc(st_bbox(
     c(xmin = limits[1], xmax = limits[2], ymin = limits[3], ymax = limits[4]),
@@ -95,6 +108,7 @@ filter_to_extent <- function(layer, limits) {
   dplyr::filter(layer, st_intersects(geometry, box, sparse = FALSE)[, 1])
 }
 
+# to manually set the tick marks for the plots
 thin_breaks <- function(limits, step = 0.2) {
   b <- seq(from = floor(min(limits)   / step) * step,
            to   = ceiling(max(limits) / step) * step,
@@ -103,7 +117,7 @@ thin_breaks <- function(limits, step = 0.2) {
 }
 
 # ==============================================================================
-# PANEL FUNCTION
+# 3. PANEL FUNCTION
 # ==============================================================================
 
 make_zone_panel <- function(plot_limits, mp_amp, mp_state, break_step = 0.1) {
@@ -194,9 +208,9 @@ make_zone_panel <- function(plot_limits, mp_amp, mp_state, break_step = 0.1) {
 }
 
 # ==============================================================================
-# BUILD PANELS
+# 4. BUILD TWO ROCKS & GEOGRAPHE PANELS
 # ==============================================================================
-
+# Call functions
 tr_amp   <- filter_to_extent(marine_parks_amp,   tworocks_limits)
 tr_state <- filter_to_extent(marine_parks_state, tworocks_limits)
 
@@ -206,10 +220,7 @@ geo_state <- filter_to_extent(marine_parks_state, geographe_limits)
 p_tr  <- make_zone_panel(tworocks_limits,  tr_amp,  tr_state,  break_step = 0.1)
 p_geo <- make_zone_panel(geographe_limits, geo_amp, geo_state, break_step = 0.1)
 
-# ==============================================================================
-# LEGEND
-# ==============================================================================
-
+# Build the legend
 legend <- cowplot::get_legend(p_tr + theme(
   legend.position  = "left",
   legend.box       = "vertical",
@@ -220,11 +231,7 @@ legend <- cowplot::get_legend(p_tr + theme(
   legend.spacing.y = unit(0.2, "cm")
 ))
 
-
-# ==============================================================================
-# INSET MAP — south-west Australia only
-# ==============================================================================
-
+# Build the inset map
 p_inset <- ggplot(data = aus) +
   geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
   geom_sf(data = capad, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
@@ -254,9 +261,9 @@ p_inset <- ggplot(data = aus) +
         panel.border     = element_rect(colour = "grey70"))
 
 # ==============================================================================
-# ASSEMBLE
+# 5. FIGURE 1: TWO ROCKS & GEOGRAPHE FACETED MAP (assemble and save)
 # ==============================================================================
-
+# ── Assemble ──────────────────────────────────────────────────────────────────
 label_tr  <- ggdraw() + draw_label("Two Rocks",  size = 14, angle = 90)
 label_geo <- ggdraw() + draw_label("Geographe",  size = 14, angle = 90)
 
@@ -280,8 +287,6 @@ maps_grid <- cowplot::plot_grid(
   rel_heights = c(1, 1)
 )
 
-# Left column: legend top-aligned, inset bottom-aligned
-# plot_spacer() in the middle absorbs remaining space
 left_col <- cowplot::plot_grid(
   legend,
   NULL,
@@ -299,10 +304,7 @@ figure <- cowplot::plot_grid(
   theme(plot.background = element_rect(fill = "white", colour = NA),
         plot.margin     = margin(5, 5, 5, 5))
 
-# ==============================================================================
-# SAVE
-# ==============================================================================
-
+# ── Save ──────────────────────────────────────────────────────────────────────
 ggsave(paste(paste0("plots/", park, "/spatial/", name),
              "tworocks-geographe-MPs.png", sep = "-"),
        plot   = figure,
@@ -311,10 +313,11 @@ ggsave(paste(paste0("plots/", park, "/spatial/", name),
        height = 9,
        bg     = "white")
 
-# ==============================================================================
-# Fuction to make plots with legends on the left
-# ==============================================================================
 
+# ==============================================================================
+# 6. ZOOM-IN MAP FUNCTION (LEGEND ON LEFT)
+# ==============================================================================
+# Function
 make_zone_plot_left_legend <- function(plot_limits,
                                        inset_xlim   = c(108, 138),
                                        inset_ylim   = c(-40, -24),
@@ -403,8 +406,9 @@ make_zone_plot_left_legend <- function(plot_limits,
 }
 
 # ==============================================================================
-# ABROLHOS
+# 7. FIGURES 2-12: INDIVIDUAL PARK ZOOM-INS (assemble and save)
 # ==============================================================================
+# ── Abrolhos ──────────────────────────────────────────────────────────────────
 
 make_zone_plot_left_legend(
   plot_limits = c(108.5, 116.1, -30, -24.2),
@@ -417,10 +421,7 @@ make_zone_plot_left_legend(
   height      = 6
 )
 
-# ==============================================================================
-# JURIEN BAY
-# ==============================================================================
-
+# ── Jurien Bay ────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
   plot_limits = c(114.2, 115.5, -31.0, -30),
   inset_xlim  = c(108, 138),
@@ -432,10 +433,7 @@ make_zone_plot_left_legend(
   height      = 5
 )
 
-# ==============================================================================
-# TWO ROCKS
-# ==============================================================================
-
+# ── Two Rocks ─────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
   plot_limits = c(114.7, 116.0, -32.0, -31.3),
   inset_xlim  = c(108, 138),
@@ -447,11 +445,7 @@ make_zone_plot_left_legend(
   height      = 5
 )
 
-
-# ==============================================================================
-# ROTTNEST ISLAND CANYON
-# ==============================================================================
-
+# ── Rottnest Island Canyon ────────────────────────────────────────────────────
 make_zone_plot_left_legend(
   plot_limits = c(113.8, 115.8, -32.8, -31.3),
   inset_xlim  = c(108, 138),
@@ -463,10 +457,7 @@ make_zone_plot_left_legend(
   height      = 6
 )
 
-# ==============================================================================
-# Geographe
-# ==============================================================================
-
+# ── Geographe ─────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
   plot_limits = c(114.8, 115.7, -33.7, -33.2),
   inset_xlim  = c(108.0, 138.0),
@@ -478,10 +469,7 @@ make_zone_plot_left_legend(
   height      = 6
 )
 
-# ==============================================================================
-# BREMER BAY
-# ==============================================================================
-
+# ── Bremer Bay ────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
   plot_limits = c(119.3, 120.3, -35.3, -33.9),
   inset_xlim  = c(108, 138),
@@ -493,10 +481,7 @@ make_zone_plot_left_legend(
   height      = 8
 )
 
-# ==============================================================================
-# SWC eastern arm
-# ==============================================================================
-
+# ── SWC Eastern arm ───────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
   plot_limits = c(120.35, 122.2, -35.5, -33.7),
   inset_xlim  = c(108, 138),
@@ -508,10 +493,7 @@ make_zone_plot_left_legend(
   height      = 6
 )
 
-# ==============================================================================
-# Eastern recherche
-# ==============================================================================
-
+# ── Eastern Recherche ─────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
   plot_limits = c(123.2, 124.4, -34.9, -33.5),
   inset_xlim  = c(108, 138),
@@ -523,10 +505,7 @@ make_zone_plot_left_legend(
   height      = 8
 )
 
-# ==============================================================================
-# Great aus bight
-# ==============================================================================
-
+# ── Great Aus Bight ───────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
   plot_limits = c(128.7, 132.5, -33.6, -31.3),
   inset_xlim  = c(108, 138),
@@ -538,10 +517,7 @@ make_zone_plot_left_legend(
   height      = 5
 )
 
-# ==============================================================================
-# Murat and Western Eyre
-# ==============================================================================
-
+# ── Murat and Western Eyre ────────────────────────────────────────────────────
 make_zone_plot_left_legend(
   plot_limits = c(132.45, 135.5, -35.4, -31.9),
   inset_xlim  = c(108, 138),
@@ -553,10 +529,7 @@ make_zone_plot_left_legend(
   height      = 7
 )
 
-# ==============================================================================
-# Kangaroo island
-# ==============================================================================
-
+# ── Kangaroo Island ───────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
   plot_limits = c(136, 137.85, -36.5, -35.5),
   inset_xlim  = c(108, 138),
@@ -567,3 +540,7 @@ make_zone_plot_left_legend(
   width       = 9,
   height      = 6
 )
+
+# ==============================================================================
+# End of script
+# ==============================================================================
