@@ -1,7 +1,7 @@
 ###
 # Project: NESP 4.20 - Marine Park Dashboard reporting
 # Data:    Spatial covariates
-# Task:    Format spatial covariates, extract covariates for each sampling location
+# Task:    Format spatial covariates
 # Author:  Claude Spencer
 # Date:    June 2024
 ###
@@ -9,7 +9,6 @@
 # Clear the environment
 rm(list = ls())
 
-# TODO fix below to work with this folder
 # # Set the study name
 script_dir <- dirname(
   rstudioapi::getActiveDocumentContext()$path
@@ -35,14 +34,18 @@ library(rerddap)
 e <- ext(115.04, 115.60, -33.67, -33.346)
 
 # Oceanography/Pressures
-# Sea surface temperature
+# ── Sea Surface Temperature ───────────────────────────────────────────────────────────────────────
+# Load data
 nc_sst <- open.nc(paste0("data/", park, "/spatial/oceanography/SST.nc"), write = TRUE)
 print.nc(nc_sst) # shows you all the file details
-time_nc <- var.get.nc(nc_sst, 'time')  # NC_CHAR time:units = "seconds since 1981-01-01 00:00:00" ;
+
+# Convert time to dates and save
+time_nc <- var.get.nc(nc_sst, 'time')  # NC_CHAR time:units = "seconds since 1981-01-01 00:00:00"
 time_nc_sst <- utcal.nc("seconds since 1981-01-01 00:00:00", time_nc, type = "c")
 dates_sst <- as.Date(time_nc_sst)
 close.nc(nc_sst) # GDAL errors otherwise
 
+# Load temperature data and assign to correct dates
 rast_sst <- rast(paste0("data/", park, "/spatial/oceanography/SST.nc"),
                  subds = "sea_surface_temperature") %>%
   crop(e) %>%
@@ -53,7 +56,8 @@ time(rast_sst) <- dates_sst
 
 winter_sst_ts <- rast_sst[[names(rast_sst)[str_detect(names(rast_sst), "-07-|-08-|-09-")]]]
 
-
+# Build monthly climatology
+# Average across years for each month and convert from Kelvin to Celsius
 sst_list <- list()
 for (month in sort(unique(month(time(rast_sst))))) {
   monthly_rast <- subset(rast_sst, month(time(rast_sst)) == month) %>%
@@ -64,27 +68,13 @@ for (month in sort(unique(month(time(rast_sst))))) {
 }
 sst <- rast(sst_list)
 
-# for (month in unique(month(time(rast_sst)))) {
-#   print(month)
-#   monthly_rast <- subset(rast_sst, month(time(rast_sst)) == month) %>%
-#     mean(na.rm = T) %>%
-#     app(fun = function(i) {i - 273.15})
-#   names(monthly_rast) <- month.abb[month]
-#   if (month == 1) { # TODO might need to change this for other data (make blank list before loop)
-#     sst <- monthly_rast
-#   }
-#   else {
-#     sst <- rast(list(sst, monthly_rast))
-#   }
-# }
-
+# Save as rds
 saveRDS(sst, paste0("data/", park, "/spatial/oceanography/", name, "_SST_raster.rds"))
 
+# Build a monthly time-series summary
 sst_tsdf <- terra::global(rast_sst, fun = "mean", na.rm = T) %>%
   tibble::rownames_to_column() %>%
   cbind(terra::global(rast_sst, fun = "sd", na.rm = T)) %>%
-  # dplyr::mutate(temp = mean - 273.15, # Convert kelvin to celsius
-  #               date = date(rowname)) %>%
   tidyr::separate(rowname, into = c("year", "month", "day"), sep = "-") %>%
   dplyr::group_by(year, month) %>%
   summarise(sst = mean(mean, na.rm = T) - 273.15, # Convert kelvin to celsius
@@ -96,14 +86,19 @@ sst_tsdf <- terra::global(rast_sst, fun = "mean", na.rm = T) %>%
                                    month %in% c("01", "02", "03") ~ "Summer")) %>%
   glimpse()
 
+# Save time series
 saveRDS(sst_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_SST_time-series.rds"))
 
+# Check data
 boxplot(sst_tsdf$sst ~ sst_tsdf$month)
 
-# Sea Level Anomaly
+# ── Sea Level anomaly ─────────────────────────────────────────────────────────────────────────────
+# Load data
 nc_sla <- open.nc(paste0("data/", park, "/spatial/oceanography/SLA.nc"),
                   write = TRUE)
-print.nc(nc_sla) # shows you all the file details
+print.nc(nc_sla)
+
+# Convert time to dates
 time_nc <- var.get.nc(nc_sla, 'TIME')
 time_nc_sla <- utcal.nc("days since 1985-01-01 00:00:00 UTC", time_nc, type = "c")
 dates_sla <- as.Date(time_nc_sla)
@@ -114,12 +109,10 @@ rast_sla <- terra::rast(paste0("data/", park, "/spatial/oceanography/SLA.nc"),
 time(rast_sla) <- dates_sla
 names(rast_sla) <- dates_sla
 plot(rast_sla)
-
 sla <- mean(rast_sla, na.rm = T)
-# plot(sla)
-# saveRDS(sla, paste0("data/geographe/spatial/oceanography/", name, "_SLA_raster.rds"))
 
-
+# Build monthly climatology
+# Average across years for each month and convert from Kelvin to Celsius
 sla_list <- list()
 for (month in sort(unique(month(time(rast_sla))))) {
   monthly_rast <- subset(rast_sla, month(time(rast_sla)) == month) %>%
@@ -128,19 +121,6 @@ for (month in sort(unique(month(time(rast_sla))))) {
   sla_list[[month.abb[month]]] <- monthly_rast
 }
 sla <- rast(sla_list)
-
-# for (month in unique(month(time(rast_sla)))) {
-#   print(month)
-#   monthly_rast <- subset(rast_sla, month(time(rast_sla)) == month) %>%
-#     mean(na.rm = T)
-#   names(monthly_rast) <- month.abb[month]
-#   if (month == 1) {
-#     sla <- monthly_rast
-#   }
-#   else {
-#     sla <- rast(list(sla, monthly_rast))
-#   }
-# }
 
 saveRDS(sla, paste0("data/", park, "/spatial/oceanography/", name, "_SLA_raster.rds"))
 
@@ -158,11 +138,11 @@ sla_tsdf <- terra::global(rast_sla, fun = "mean", na.rm = T) %>%
                                    month %in% c("12", "01", "02") ~ "Summer")) %>%
   glimpse()
 
+#Save
 saveRDS(sla_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_SLA_time-series.rds"))
 
-
-
-# Degree Heating Weeks
+# ── Degree Heating Weeks ──────────────────────────────────────────────────────────────────────────
+# TODO Download DHW either through the next few lines of code or visiting below link
 # https://coastwatch.pfeg.noaa.gov/erddap/griddap/NOAA_DHW.html
 # Specify the new desired filename
 new_filename <- paste0("data/", park, "/spatial/oceanography/DHW.nc")
@@ -192,9 +172,12 @@ if (!file.exists(new_filename)) {
   message("File already exists: ", new_filename)
 }
 
+# Load data
 nc_dhw <- open.nc(paste0("data/", park, "/spatial/oceanography/DHW.nc"),
                   write = TRUE)
-print.nc(nc_dhw) # shows you all the file details
+print.nc(nc_dhw)
+
+# Convert time to dates
 time_nc <- var.get.nc(nc_dhw, 'time')
 time_nc_dhw <- utcal.nc("seconds since 1970-01-01T00:00:00Z", time_nc, type = "c")
 dates_dhw <- as.Date(time_nc_dhw)
@@ -206,15 +189,7 @@ time(rast_dhw) <- dates_dhw
 names(rast_dhw) <- dates_dhw
 plot(rast_dhw)
 
-for (m in 1:12) {
-  r <- subset(rast_dhw, year(time(rast_dhw)) == 2025 & month(time(rast_dhw)) == m)
-  if (nlyr(r) == 0) next
-  mm <- mean(r, na.rm = TRUE)
-  cat(sprintf("2025-%02d  mean=%.2f  max=%.2f\n", m,
-              global(mm, "mean", na.rm = TRUE)[1, 1],
-              global(mm, "max",  na.rm = TRUE)[1, 1]))
-}
-
+# Highest periods
 dhw.2011 <- subset(rast_dhw, year(time(rast_dhw)) == 2011 & month(time(rast_dhw)) == 5) %>%
   mean(na.rm = T)
 names(dhw.2011) <- "May 2011"
@@ -224,11 +199,17 @@ dhw.2012 <- subset(rast_dhw, year(time(rast_dhw)) == 2012 & month(time(rast_dhw)
 names(dhw.2012) <- "April 2012"
 plot(dhw.2012)
 
-dhw <- rast(list(dhw.2011, dhw.2012))
+dhw.2025 <- subset(rast_dhw, year(time(rast_dhw)) == 2025 & month(time(rast_dhw)) == 4) %>%
+  mean(na.rm = T)
+names(dhw.2025) <- "April 2025"
+plot(dhw.2025)
+
+dhw <- rast(list(dhw.2011, dhw.2025))
 plot(dhw)
 
 saveRDS(dhw, paste0("data/", park, "/spatial/oceanography/", name, "_DHW_raster.rds"))
 
+# Create time series and save
 dhw_tsdf <- terra::global(rast_dhw, fun = "mean", na.rm = T) %>%
   tibble::rownames_to_column() %>%
   cbind(terra::global(rast_dhw, fun = "sd", na.rm = T)) %>%
@@ -245,10 +226,12 @@ dhw_tsdf <- terra::global(rast_dhw, fun = "mean", na.rm = T) %>%
 
 saveRDS(dhw_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_DHW_time-series.rds"))
 
-# Acidification
+# ── Acidification ─────────────────────────────────────────────────────────────────────────────────
 nc_acid <- open.nc(paste0("data/", park, "/spatial/oceanography/Acidification.nc"),
                    write = TRUE)
-print.nc(nc_acid) # shows you all the file details
+print.nc(nc_acid)
+
+# Convert time to dates
 time_nc <- var.get.nc(nc_acid, 'TIME')
 time_nc_acid <- utcal.nc("months since 1800-01-01 00:00:00", time_nc, type = "c")
 dates_acid <- as.Date(time_nc_acid)
@@ -260,6 +243,7 @@ time(rast_acid) <- dates_acid
 names(rast_acid) <- dates_acid
 plot(rast_acid)
 
+# Create time series
 acid_tsdf <- terra::global(rast_acid, fun = "mean", na.rm = T) %>%
   tibble::rownames_to_column() %>%
   cbind(terra::global(rast_acid, fun = "sd", na.rm = T)) %>%
@@ -274,4 +258,5 @@ acid_tsdf <- terra::global(rast_acid, fun = "mean", na.rm = T) %>%
                                    month %in% c("12", "01", "02") ~ "Summer")) %>%
   glimpse()
 
+# Save
 saveRDS(acid_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_Acidification_time-series.rds"))
