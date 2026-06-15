@@ -29,6 +29,20 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
       )
     )
 
+  habitat_colours <- c(
+    "Rock" = "grey40",
+    "Sessile invertebrates" = "plum",
+    "Macroalgae" = "darkgoldenrod4",
+    "Seagrass" = "forestgreen",
+    "Sand" = "wheat"
+  )
+
+  ngari_colours <- wasanc %>%
+    st_drop_geometry() %>%
+    distinct(zone, colour) %>%
+    arrange(zone) %>%  # match the order ggplot uses
+    pull(colour)
+
   ggplot() +
     geom_tile(
       data = pred_cat,
@@ -36,19 +50,22 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
     ) +
     scale_fill_manual(
       name = "Habitat",
-      limits = c("Rock", "Sessile invertebrates", "Macroalgae", "Seagrass", "Sand"),
-      values = c(
-        "Rock" = "grey40",
-        "Sessile invertebrates" = "plum",
-        "Macroalgae" = "darkgoldenrod4",
-        "Seagrass" = "forestgreen",
-        "Sand" = "wheat"
-      ),
+      limits = names(habitat_colours),
+      values = habitat_colours,
       na.value = "transparent",
       drop = FALSE
     ) +
-    labs(x = NULL, y = NULL, fill = NULL) +
-    new_scale_color() +
+    guides(
+      fill = guide_legend(
+        order = 1,
+        override.aes = list(
+          colour = NA,
+          fill = unname(habitat_colours),
+          linewidth = 0.5
+        )
+      )
+    ) +
+    labs(x = NULL, y = NULL) +
     geom_contour(
       data = bathy,
       aes(x = x, y = y, z = Depth),
@@ -57,27 +74,53 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
       linewidth = 0.2
     ) +
     geom_sf(data = ausc, fill = "seashell2", colour = "grey80", linewidth = 0.5) +
+    new_scale_color() +
+    geom_sf(
+      data = wasanc,
+      aes(colour = zone),
+      fill = NA,
+      linewidth = 0.7,
+      show.legend = TRUE
+    ) +
+    scale_colour_manual(
+      name = "State Marine Park",
+      guide = "legend",
+      values = with(wasanc, setNames(colour, zone))
+    ) +
+    guides(
+      colour = guide_legend(
+        order = 3,
+        override.aes = list(
+          colour = ngari_colours,
+          fill = NA,
+          linewidth = 1.2
+        )
+      )
+    ) +
+    new_scale_color() +
     geom_sf(
       data = marine_parks_amp,
       aes(colour = zone),
       fill = NA,
       linewidth = 1.2,
-      show.legend = FALSE
+      show.legend = TRUE
     ) +
     scale_colour_manual(
+      name = "Australian Marine Park",
+      guide = "legend",
       values = with(marine_parks_amp, setNames(colour, zone))
     ) +
-    new_scale_color() +
-    geom_sf(
-      data = wasanc,
-      colour = "#bfd054",
-      fill = NA,
-      linewidth = 0.7,
-      show.legend = FALSE
+    guides(
+      colour = guide_legend(
+        order = 2,
+        override.aes = list(
+          fill = NA,
+          linewidth = 1.2
+        )
+      )
     ) +
-    new_scale_color() +
     geom_sf(
-      data = cwatr,
+      data = st_buffer(cwatr_offset, dist = 0.005),
       colour = "red",
       linewidth = 0.9
     ) +
@@ -94,10 +137,10 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
       legend.position = "bottom",
-      legend.direction = "horizontal",
+      legend.direction = "vertical",
       legend.box = "horizontal",
       legend.text = element_text(size = 10),
-      legend.title = element_blank(),
-      strip.text = element_text(size = 10, face = "bold")
+      legend.title = element_text(size = 10, face = "bold"),
+      strip.text = element_text(size = 12, face = "bold")
     )
 }
