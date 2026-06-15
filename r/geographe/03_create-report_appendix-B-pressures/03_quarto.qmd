@@ -34,24 +34,24 @@ Understanding of Pressures
 
 ```{r}
 #| out-width: "100%"
-#| fig-cap: "Figure 40. Seasonal sea level anomaly, seasonal sea surface temperature and Degree Heating Weeks at the scale of the GMP. Solid lines represent mean values for sea level anomaly (SLA), sea surface temperature (SST) and Degree HEating Weeka (DHW). Confidence bounds represent standard errors. REd dashed vertical lines represent maximum DHW values that are plotted spatially in Figure 43."
+#| fig-cap: "Figure 1. Seasonal sea level anomaly, seasonal sea surface temperature and Degree Heating Weeks at the scale of the GMP. Solid lines represent mean values for sea level anomaly (SLA), sea surface temperature (SST) and Degree Heating Weeks (DHW). Confidence bounds represent standard errors. Red dashed vertical lines represent maximum DHW values that are plotted spatially in Figure 4."
 include_graphics(here("plots/geographe/spatial/GeographeAMP_oceanography_time-series.png"))
 ```
 
 ```{r}
 #| out-width: "90%"
-#| fig-cap: "Figure 41. Sea level anomaly, as an index of upwelling, at the scale of the GMP. Heatmap values represent high (yellow) and low (blue) bimonthy sea level anomaly (SLA). Grey polygons represent State spatial management and Australian Marine Park boundaries."
+#| fig-cap: "Figure 2. Sea level anomaly, as an index of upwelling, at the scale of the GMP. Heatmap values represent high (yellow) and low (blue) bimonthy sea level anomaly (SLA). Grey polygons represent State spatial management and Australian Marine Park boundaries."
 include_graphics(here("plots/geographe/spatial/GeographeAMP_SLA.png"))
 ```
 
 ```{r}
 #| out-width: "90%"
-#| fig-cap: "Figure 42. Sea surface temperature at the scale of the GMP. Heatmap values represent high (yellow) and low (blue) bimonthy sea surface temperature (SST). Grey polygons represent State spatial management and Australian Marine Park boundaries."
+#| fig-cap: "Figure 3. Sea surface temperature at the scale of the GMP. Heatmap values represent high (yellow) and low (blue) bimonthy sea surface temperature (SST). Grey polygons represent State spatial management and Australian Marine Park boundaries."
 include_graphics(here("plots/geographe/spatial/GeographeAMP_SST.png"))
 ```
 
 ```{r}
 #| out-width: "90%"
-#| fig-cap: "Figure 43. Maximum Degree HEating Weeks at the scale of the GMP. Heatmap values representing hihg (yellow) and low (blue) monthly Degree Heating Weeks (DHW) for the two highest periods on record. Grey polygons represent State spatial management and Australian Marine Park boundaries."
+#| fig-cap: "Figure 4. Maximum Degree Heating Weeks at the scale of the GMP. Heatmap values representing high (yellow) and low (blue) monthly Degree Heating Weeks (DHW) for the two highest periods on record. Grey polygons represent State spatial management and Australian Marine Park boundaries."
 include_graphics(here("plots/geographe/spatial/GeographeAMP_DHW.png"))
 ```

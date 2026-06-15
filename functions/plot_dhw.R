@@ -1,8 +1,9 @@
 plot_dhw <- function(prediction_limits) {
   ggplot() +
     geom_spatraster(data = dhw) +
-    scale_fill_viridis_c(na.value = NA) +
+    scale_fill_viridis_c(na.value = NA, limits = c(0, NA)) +
     geom_sf(data = aus) +
+    geom_sf(data = marine_parks, fill = NA, colour = "grey70", linewidth = 0.4) +
     facet_wrap(~lyr) +
     theme_minimal()  +
     labs(fill = "DHW (°C/weeks)") +

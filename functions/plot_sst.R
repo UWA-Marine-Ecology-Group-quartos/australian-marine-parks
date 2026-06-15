@@ -3,6 +3,7 @@ plot_sst <- function(prediction_limits) {
     geom_spatraster(data = sst) +
     scale_fill_viridis_c(na.value = NA) +
     geom_sf(data = ausc) +
+    geom_sf(data = marine_parks, fill = NA, colour = "grey70", linewidth = 0.4) +
     facet_wrap(~lyr) +
     theme_minimal() +
     # theme(axis.text = element_text(size = 6)) +

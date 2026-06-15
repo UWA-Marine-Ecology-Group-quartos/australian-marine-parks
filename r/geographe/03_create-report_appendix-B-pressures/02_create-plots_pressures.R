@@ -23,12 +23,16 @@ name <- config$name
 park <- config$park
 
 # Set the extent of the study
-e <- ext(115.05, 115.592, -33.67, -33.347)
-# e <- ext(115.04, 115.60, -33.67, -33.346) ##HE this was extent in script 02
+# e <- ext(115.05, 115.592, -33.67, -33.347)
+e <- ext(115.04, 115.60, -33.67, -33.346) ##HE this was extent in script 02
 
 # Read in shapefile data for maps
 aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp")
 ausc <- st_crop(aus, e)
+
+marine_parks <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c("Geographe", "Ngari Capes")) # TODO select relevant parks
+marine_parks <- st_crop(marine_parks, e)
 
 # Spatial plots
 ## SST
@@ -38,7 +42,7 @@ names(sst)
 sst <- sst[[c("Jan", "Mar", "May", "Jul", "Sep", "Nov")]]
 names(sst)
 
-prediction_limits = c(115.05, 115.592, -33.67, -33.347)
+prediction_limits = c(115.05, 115.592, -33.67, -33.346)
 
 plot_sst(prediction_limits) +
   theme(axis.text = element_text(size = 6))
