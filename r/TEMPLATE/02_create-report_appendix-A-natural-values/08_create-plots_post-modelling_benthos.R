@@ -407,7 +407,7 @@ metadata_bathy_derivatives <- readRDS(
   clean_names()
 
 benthos <- readRDS(
-  paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")
+  paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")
 ) %>%
   dplyr::rename(
     Macroalgae = macroalgae,

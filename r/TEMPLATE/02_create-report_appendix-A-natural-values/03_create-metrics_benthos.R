@@ -22,7 +22,7 @@ config <- yaml::read_yaml(
 name <- config$name
 park <- config$park
 
-benthos <- readRDS(paste0("data/", park, "/raw/", name, "_benthos_combined.RDS")) %>%
+benthos <- readRDS(paste0("data/", park, "/raw/", name, "_benthos.RDS")) %>%
   dplyr::select(campaignid, sample, year, status, macroalgae, seagrasses,
                 sand = unconsolidated, rock = consolidated,
                 sessile_invertebrates, total_pts = total_points_annotated) %>%
@@ -31,4 +31,4 @@ benthos <- readRDS(paste0("data/", park, "/raw/", name, "_benthos_combined.RDS")
 
 length(unique(benthos$sample))
 
-saveRDS(benthos, paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS"))
+saveRDS(benthos, paste0("data/", park, "/tidy/", name, "_benthos-count.RDS"))

@@ -1,7 +1,7 @@
 "","geoscience_depth","geoscience_aspect","geoscience_roughness","geoscience_detrended","year"
-"macroalgae",0.999,0.999,0,0.999,0.999
-"sand",1,1,0,1,1
-"rock",0.999,0.999,0.999,0,0.999
-"sessile_invertebrates",1.001,1.001,1.001,0,1.001
+"macroalgae",1,1,0,1,1
+"sand",1.001,1.001,0,1.001,1.001
+"sessile_invertebrates",0.999,0.999,0.999,0,0.999
 "reef",0,1,1,1,1
+"rock",0.109,0.992,0.987,0.906,0.998
 "seagrasses",1,1,0,1,1

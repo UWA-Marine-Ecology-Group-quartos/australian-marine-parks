@@ -40,7 +40,7 @@ metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_me
   glimpse()
 
 # Bring in and format the data----
-habi <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")) %>%
+habi <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) %>%
   left_join(metadata_bathy_derivatives) %>%
   dplyr::filter(!is.na(geoscience_roughness)) %>%
   dplyr::filter(geoscience_roughness < 4) %>% # TODO Filter outliers - check and adjust
@@ -73,9 +73,9 @@ for(i in 1:length(unique.vars)){
 unique.vars.use
 unique.vars.use <- c("macroalgae",
                      "sand",
-                     "rock",
                      "sessile_invertebrates",
                      "reef",
+                     "rock",
                      "seagrasses")
 
 # Run the full subset model selection----
@@ -150,7 +150,7 @@ m_sand <- gam(cbind(sand, total_pts - sand) ~
                 year +
                 s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
                 s(geoscience_depth, by = year, k = 5, bs = "cr") +
-                s(geoscience_roughness, by = year, k = 5, bs = "cr"),
+                s(geoscience_detrended, by = year, k = 5, bs = "cr"),
               data = habi, method = "REML", family = binomial("logit"))
 summary(m_sand)
 
@@ -158,7 +158,7 @@ summary(m_sand)
 m_rock <- gam(cbind(rock, total_pts - rock) ~
                 year +
                 s(geoscience_aspect, by = year, k = 5, bs = "cc")  +
-                s(geoscience_depth, by = year, k = 5, bs = "cr") +
+                s(geoscience_detrended, by = year, k = 5, bs = "cr") +
                 s(geoscience_roughness, by = year, k = 5, bs = "cr"),
               data = habi, method = "REML", family = binomial("logit"))
 summary(m_rock)

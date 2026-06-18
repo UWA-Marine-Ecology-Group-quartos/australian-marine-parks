@@ -159,6 +159,12 @@ for (metric_name in names(fish_metric_lookup)) {
     units = "in",
     bg = "white"
   )
+
+  saveRDS(p_metric,
+          paste0( "plots/", park, "/fish/", name,
+                  "_predicted-individual-fish-metric_", out_name, "_",
+                  paste(years, collapse = "-"), ".rds")
+  )
 }
 
 # -------------------------------------------------------------------
@@ -244,6 +250,10 @@ for (metric_code in names(metric_lookup)) {
       dpi = 300,
       units = "in",
       bg = "white"
+    )
+
+    saveRDS(p_metric,
+            paste0("plots/", park, "/fish/", name, "_control-plot_", out_name, ".rds")
     )
   }
 }
@@ -352,6 +362,10 @@ ggsave(
   dpi = 600,
   units = "in",
   bg = "white"
+)
+
+saveRDS(sac_sample,
+        paste0("plots/", park, "/fish/", name, "_SAC-sample.rds")
 )
 
 sac_individual <- ggplot(
@@ -481,6 +495,10 @@ bar_maxn
 ggsave(paste0("plots/", park, "/fish/", name, "_top_maxn_bar_plot.png"),
        plot = bar_maxn, height = 4, width = 9, dpi = 600, units = "in", bg = "white")
 
+saveRDS(bar_maxn,
+        paste0("plots/", park, "/fish/", name, "_top_maxn_bar_plot.rds")
+)
+
 
 # Thermal Index stacked plot
 cti.10 <- maxn %>%
@@ -571,6 +589,10 @@ bar_cti
 
 ggsave(paste0("plots/", park, "/fish/", name, "_top_maxn_cti_bar_plot.png"),
        plot = bar_cti, height = 4, width = 9, dpi = 600, units = "in", bg = "white")
+
+saveRDS(bar_cti,
+        paste0("plots/", park, "/fish/", name, "_top_maxn_cti_bar_plot.rds")
+)
 
 # B20 ---------------------------------------------------------------------
 
@@ -715,4 +737,8 @@ ggsave(
   dpi    = 600,
   units  = "in",
   bg     = "white"
+)
+
+saveRDS(bar_b20_v2,
+        paste0("plots/", park, "/fish/", name, "_top_b20_bar_plot_mixed.rds")
 )

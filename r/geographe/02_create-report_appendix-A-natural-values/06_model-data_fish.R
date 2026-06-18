@@ -2,7 +2,7 @@
 # Project: NESP 4.20 - Marine Park Dashboard reporting
 # Data:    Fish data synthesis
 # Task:    Model fish data using the full subsets approach from @beckyfisher/FSSgam
-# Author:  Claude Spencer
+# Author:  Claude Spencer & Henry Evans
 # Date:    June 2024
 ###
 
@@ -31,11 +31,8 @@ library(FSSgam)
 library(CheckEM)
 
 tidy_maxn <- readRDS(paste0("data/", park, "/tidy/", name, "_tidy-count.rds")) %>% # TODO check outlier removal
-  dplyr::filter(!count > 500, # Remove some outliers
-                geoscience_roughness < 4, # Remove outliers in roughness
-                !sample %in% "779_NA") %>% ##HE what was 779?
+  dplyr::filter(geoscience_roughness < 4) %>% # Remove outliers in roughness
   glimpse()
-
 
 # Re-set the predictors for modeling----
 names(tidy_maxn)
@@ -153,7 +150,7 @@ for(i in 1:length(resp.vars)){
   print(resp.vars[i])
   use.dat = as.data.frame(tidy_b20[which(tidy_b20$response==resp.vars[i]),])
   Model1  <- gam(count ~ s(geoscience_depth, k = 3, bs = 'cr'),
-                 gaussian(link = "identity"),  data = use.dat) # TODO HE changed to gaussian
+                 tw(),  data = use.dat) # TODO HE changed to gaussian
 
   model.set <- generate.model.set(use.dat = use.dat,
                                   test.fit = Model1,
@@ -210,7 +207,6 @@ fabund <- bind_rows(tidy_maxn, tidy_b20) %>%
 
 #Total abundance
 m_abundance <- gam(count ~ year + status +
-                    s(geoscience_detrended, by = year, k = 3, bs = "cr") +
                     s(reef, by = year, k = 3, bs = "cr"),
                   data = fabund %>% dplyr::filter(response %in% "total_abundance"),
                   family = poisson)
@@ -219,11 +215,11 @@ summary(m_abundance)
 
 # Species richness
 m_richness <- gam(count ~ year + status +
-                    s(geoscience_depth, by = year, k = 3, bs = "cr") +
+                    s(geoscience_aspect, by = year, k = 3, bs = "cc") +
                     s(geoscience_detrended, by = year, k = 3, bs = "cr") +
                     s(reef, by = year, k = 3, bs = "cr"),
                   data = fabund %>% dplyr::filter(response %in% "species_richness"),
-                  family = poisson)
+                  family = gaussian(link = "identity"))
 summary(m_richness)
 # plot(m_richness)
 
@@ -239,7 +235,8 @@ summary(m_cti)
 
 # B20
 m_b20 <- gam(count ~ year + status +
-               s(reef, by = year, k = 3, bs = "cr"),
+               s(geoscience_depth, by = year, k = 3, bs = "cr") +
+               s(geoscience_detrended, by = year, k = 3, bs = "cr"),
              data = fabund %>% dplyr::filter(response %in% "b20"),
              family = tw())
 summary(m_b20)

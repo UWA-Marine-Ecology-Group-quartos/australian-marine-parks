@@ -37,7 +37,7 @@ metadata_bathy_derivatives <- readRDS(paste0("data/", park, "/tidy/", name, "_me
 metadata <- readRDS(paste0("data/", park, "/raw/metadata.RDS"))
 
 # This is formatted habitat from 03_create-metrics_habitat
-benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count_combined.RDS")) %>%
+benthos <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) %>%
   CheckEM::clean_names() %>%
   dplyr::select(campaignid, sample, year, status, reef, total_pts) %>%
   dplyr::mutate(reef = reef/total_pts) %>% # Model reef as proportion for fish prediction
@@ -202,7 +202,6 @@ biomass <- b20_length %>%
 b20_mass <- biomass %>%
   mutate(
     include_b20 = class == "Actinopterygii" &
-      (is.na(rls_water_column) | rls_water_column != "pelagic non-site attached" ) &
       (count == 0 | (length_cm >= 20 & length_cm <= 800)),
 
     b20_mass_g = case_when(
@@ -211,8 +210,7 @@ b20_mass <- biomass %>%
       include_b20 & !is.na(mass_g) ~ mass_g, # included + computable biomass
       include_b20 & is.na(mass_g) ~ NA_real_ # included but missing -> NA (flag)
     )
-  ) %>%
-  filter(b20_mass_g <= 30000 | is.na(b20_mass_g))
+  )
 
 b20_mass_check <- b20_mass %>%
   select(sample, year, scientific_name, b20_mass_g, length_cm)
@@ -334,7 +332,6 @@ biomass_amp <- b20_length_amp %>%
 b20_mass_amp <- biomass_amp %>%
   mutate(
     include_b20 = class == "Actinopterygii" &
-      (is.na(rls_water_column) | rls_water_column != "pelagic non-site attached" ) &
       (count == 0 | (length_cm >= 20 & length_cm <= 800)),
 
     b20_mass_g = case_when(
@@ -343,8 +340,7 @@ b20_mass_amp <- biomass_amp %>%
       include_b20 & !is.na(mass_g) ~ mass_g, # included + computable biomass
       include_b20 & is.na(mass_g) ~ NA_real_ # included but missing -> NA (flag)
     )
-  ) %>%
-  filter(b20_mass_g <= 30000 | is.na(b20_mass_g))
+  )
 
 b20_mass_check_amp <- b20_mass_amp %>%
   select(sample, year, scientific_name, b20_mass_g, length_cm)
@@ -438,9 +434,6 @@ saveRDS(
 #
 # missing_info <- biomass %>%
 #   dplyr::filter(class %in% "Actinopterygii") %>%
-#   dplyr::filter(!order %in% c("Anguilliformes", "Ophidiiformes", "Notacanthiformes","Tetraodontiformes","Syngnathiformes",
-#                               "Synbranchiformes", "Stomiiformes", "Siluriformes", "Saccopharyngiformes", "Osmeriformes",
-#                               "Osteoglossiformes", "Lophiiformes", "Lampriformes", "Beloniformes", "Zeiformes", "Carangiformes")) %>%
 #   dplyr::filter(length_cm >= 20) %>%
 #   filter(is.na(adj_length)) %>%
 #   distinct(scientific_name, australian_common_name, .keep_all = TRUE) %>%
@@ -456,8 +449,6 @@ b20_metadata <- biomass %>%
 b20_tidy <- biomass %>% # TODO this needs tweaking, not working 100% because some lengths have NA mass (fix in biomass)
   mutate(
     include_b20 = class == "Actinopterygii" &
-      # exclude pelagic non-site attached
-      (is.na(rls_water_column) | rls_water_column != "pelagic non-site attached") &
       # B20 size rule, but keep absences
       (count == 0 | (length_cm >= 20 & length_cm <= 800)),
 
