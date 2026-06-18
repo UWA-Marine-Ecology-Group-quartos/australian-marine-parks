@@ -9,6 +9,9 @@
 #          2. Geographe and Two rocks benthic habitat comparisons
 #          3. Individual park extent benthic habitat plots
 #          4. Change in ecosystem by area bar graph
+#          5. 2025 SW network scale raster of updated predicted habitat
+#          6. 2018 natural values layer recoloured aus extent
+#          7. 2018 natural values layer recoloured sw network extent
 ###
 
 # Table of contents
@@ -19,7 +22,8 @@
 #     5.  FIGURES 2-9: Individual park figures
 #     6.  FIGURE 10: Network benthic habitat extent
 #     7.  Figure 11: 2018 vs 2025 ecosystem change bar graph
-#     [NOT IN USE] 8.  Figure 12: 2018 vs 2025 ecosystem change bar graph
+#     8. Save 2025 classified habitat rasters
+#     [NOT IN USE] 9.  Figure 12: 2018 vs 2025 ecosystem change bar graph
 
 
 # ==============================================================================
@@ -358,7 +362,7 @@ naturalvalues_map_network_classified <- function(plot_limits,
   # ── 1. Crop rasters ──────────────────────────────────────────────────────
   bathy_crop <- crop(bathy,          ext_plot)
   ph_crop    <- crop(predictedhabitat, ext_plot)
-  nv_crop    <- crop(naturalvalues,  ext_plot)   # <- was naturalvalues_clipped
+  nv_crop    <- crop(naturalvalues,  ext_plot)
   ph_resamp  <- resample(ph_crop, bathy_crop, method = "bilinear")
   ph_resamp  <- mask(ph_resamp, resample(mask_250, bathy_crop, method = "near"))
 
@@ -1109,7 +1113,6 @@ ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
 # ==============================================================================
 # 6. FIGURE 10: Network benthic habitat extent
 # ==============================================================================
-
 network_limits <- c(108.0, 138.0, -42.0, -24.0)
 
 p_network_nv <- naturalvalues_map__network_dynamic(
@@ -1154,7 +1157,7 @@ figure3 <- cowplot::plot_grid(
         plot.margin = margin(t = 2, r = 15, b = 15, l = 5))
 
 ggsave(paste(paste0('plots/', park, '/spatial/benthic_habitat/', name),
-             'network-benthic-habitats_TEST.png', sep = "-"),
+             'network-benthic-habitats.png', sep = "-"),
        plot   = figure3,
        dpi    = 600,
        width  = 9,
@@ -1164,7 +1167,6 @@ ggsave(paste(paste0('plots/', park, '/spatial/benthic_habitat/', name),
 # ==============================================================================
 # 7. Figure 11: 2018 vs 2025 shelf ecosystems (by AREA)
 # ==============================================================================
-
 # --- Reproject rasters to equal-area for accurate area calculations ---
 aea_crs <- "EPSG:3577"  # Australian Albers equal area
 
@@ -1298,7 +1300,134 @@ ggsave(
 )
 
 # ==============================================================================
-# 8. [NOT IN USE]
+# 8. Save 2025 classified habitat raster — SW network extent
+# ==============================================================================
+# ── Save 2025 just swc raster ─────────────────────────────────────────────────
+network_ext <- ext(108.0, 138.0, -42.0, -24.0)
+
+# Crop and align rasters
+bathy_net <- crop(bathy,            network_ext)
+ph_net    <- crop(predictedhabitat, network_ext)
+nv_net    <- crop(naturalvalues,    network_ext)
+
+ph_net  <- resample(ph_net, bathy_net, method = "bilinear")
+ph_net  <- mask(ph_net, resample(mask_250, bathy_net, method = "near"))
+nv_net  <- resample(nv_net, bathy_net, method = "near")
+
+bathy_net <- bathy_net[[1]]; names(bathy_net) <- "depth"
+ph_net    <- ph_net[[1]];    names(ph_net)    <- "prob"
+nv_net    <- nv_net[[1]];    names(nv_net)    <- "nv"
+
+# Classify: NV as base, predicted reef overwrites on top
+r_classified_network <- lapp(
+  c(nv_net, bathy_net, ph_net),
+  fun = function(nv, depth, prob) {
+    base <- ifelse(nv == 1,               0L,
+            ifelse(nv == 9,               1L,
+            ifelse(nv %in% c(8, 10, 11),  2L,
+            ifelse(nv %in% c(12, 13, 14), 3L,
+            ifelse(nv == 15,              4L,
+            ifelse(nv == 16,              5L,
+            ifelse(nv == 17,              6L,
+            ifelse(nv == 18,              7L,
+            ifelse(nv == 2,               8L,
+            ifelse(nv == 3,               9L,
+            ifelse(nv == 4,              10L,
+            ifelse(nv == 5,              11L,
+            ifelse(nv == 6,              12L,
+            ifelse(nv == 7,              13L,
+            NA_integer_))))))))))))))
+    ifelse(!is.na(prob) & prob >= 0.5 & depth >= -30  & depth <= 0,  2L,
+           ifelse(!is.na(prob) & prob >= 0.5 & depth >= -70  & depth < -30, 3L,
+                  ifelse(!is.na(prob) & prob >= 0.5 & depth >= -200 & depth < -70, 4L,
+                         base)))
+  }
+)
+
+# Remove any cells outside valid class range
+r_classified_network <- ifel(r_classified_network >= 0 &
+                               r_classified_network <= 13,
+                             r_classified_network, NA)
+# Attach class names
+levels(r_classified_network) <- data.frame(
+  value     = 0:13,
+  classname = c("Shelf unvegetated sediments",    "Shelf vegetated sediments",
+                "Shallow reefs",                  "Mesophotic reefs",
+                "Rariphotic reefs",               "Upper slope reefs",
+                "Mid slope reefs",                "Seamount reefs",
+                "Upper slope sediments",          "Mid slope sediments",
+                "Lower slope reef and sediments", "Abyssal reef and sediments",
+                "Seamount sediments",             "Shelf incising canyons")
+)
+
+# Full colour table 0:14 — 0 used as nodata, rendered transparent in QGIS
+coltab(r_classified_network) <- data.frame(
+  value = 0:13,
+  col   = c("cornsilk1",       # 1  Shelf unvegetated sediments
+            "seagreen3",       # 2  Shelf vegetated sediments
+            "darkgoldenrod1",  # 3  Shallow reefs
+            "khaki4",          # 4  Mesophotic reefs
+            "steelblue3",      # 5  Rariphotic reefs
+            "indianred3",      # 6  Upper slope reefs
+            "palevioletred3",  # 7  Mid slope reefs
+            "mediumpurple3",   # 8  Seamount reefs
+            "wheat1",          # 9  Upper slope sediments
+            "navajowhite1",    # 10 Mid slope sediments
+            "lightsteelblue2", # 11 Lower slope reef and sediments
+            "slategrey",       # 12 Abyssal reef and sediments
+            "rosybrown2",      # 13 Seamount sediments
+            "grey50")          # 14 Shelf incising canyons
+)
+
+writeRaster(r_classified_network,
+            filename  = "data/south-west network/spatial/rasters/classified_habitat_2025_sw-network.tif",
+            datatype  = "INT1U",
+            overwrite = TRUE)
+
+# ── Save 2018 aus and swc raster ─────────────────────────────────────────────────
+# --- Helper: classify NV 1:18, attach names + colours, write out ---
+save_nv_2018 <- function(r, filename) {
+  r <- r[[1]]
+  names(r) <- "habitat"
+
+  # Keep only valid 1:18 classes
+  r <- ifel(r >= 1 & r <= 18, r, NA)
+
+  # Class names (matching nv_lookup)
+  levels(r) <- data.frame(
+    value     = 1:18,
+    classname = nv_lookup[as.character(1:18)]
+  )
+
+  # Colour table (matching hab_colours)
+  coltab(r) <- data.frame(
+    value = 1:18,
+    col   = unname(hab_colours[nv_lookup[as.character(1:18)]])
+  )
+
+  writeRaster(r,
+              filename  = filename,
+              datatype  = "INT1U",
+              overwrite = TRUE)
+}
+
+# --- Full Australia extent ---
+naturalvalues_full <- rast("data/south-west network/spatial/rasters/ecosystem-types-27class-naland.tif")
+
+# Same treatment as naturalvalues in Section 2: projecting strips the source's
+# baked-in colour table + categories, leaving clean numeric 1:18 values
+if (!same.crs(naturalvalues_full, target_crs)) {
+  naturalvalues_full <- project(naturalvalues_full, target_crs, method = "near")
+}
+
+save_nv_2018(naturalvalues_full,
+             "data/south-west network/spatial/rasters/classified_habitat_2018_aus.tif")
+
+# --- SW network extent (uses naturalvalues already cropped to e + projected) ---
+save_nv_2018(crop(naturalvalues, network_ext),
+             "data/south-west network/spatial/rasters/classified_habitat_2018_sw-network.tif")
+# ==============================================================================
+# 9. [NOT IN USE]
 #    Figure 12: 2018 vs 2025 shelf ecosystems (by %)
 # ==============================================================================
 

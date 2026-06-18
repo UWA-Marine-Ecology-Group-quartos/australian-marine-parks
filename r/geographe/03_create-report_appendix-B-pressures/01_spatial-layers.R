@@ -260,3 +260,4 @@ acid_tsdf <- terra::global(rast_acid, fun = "mean", na.rm = T) %>%
 
 # Save
 saveRDS(acid_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_Acidification_time-series.rds"))
+

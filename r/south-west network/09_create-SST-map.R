@@ -1,12 +1,13 @@
 ###
 # Project: NESP 5.6 Project - South west Corner Report
-# Data:    BRAN2023 monthly SST, marine park shapefiles, aus outline
+# Data:    BRAN2023 monthly SST, AusBathyTopo 2024 250 m topography,
+#          marine park shapefiles, aus outline
 # Task:    Extract June 2011 SST from BRAN2023 (Leeuwin Current heatwave)
-#          and map over SWC extent with MPAs
+#          and map over SWC extent with MPAs and land topography
 # Author:  Annika Leunig
 # Date:    May 2026
 # Outputs: 1. June 2011 mean SST map (Leeuwin Current marine heatwave)
-#             with marine park boundaries overlaid
+#             with marine park boundaries and land topography overlaid
 ###
 
 # Table of contents
@@ -76,6 +77,26 @@ marine_parks_state <- marine_parks %>%
     zone == "Habitat Protection Zone" ~ "Recreational Use Zone",
     TRUE ~ zone
   ))
+
+# ── Land topography (hillshade + DEM tint) ────────────────────────────────────
+# Land elevation only - clamp drops the sea floor (values <= 0 -> NA) so the
+# raster covers land only and leaves the ocean transparent for the SST layer.
+topo <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
+  crop(e) %>%
+  aggregate(fact = 10) %>%
+  clamp(lower = 1, values = FALSE)
+
+# Hillshade from slope + aspect (sun from the NW, 30 deg altitude)
+slope  <- terrain(topo, "slope", unit = "radians")
+aspect <- terrain(topo, "aspect", unit = "radians")
+hill   <- shade(slope, aspect, 30, 270)
+names(hill) <- "shades"
+
+# Inland water below sea level (e.g. Lake Eyre) - flagged for a blue fill
+lakes <- terra::ifel(topo <= 0, 1, NA)
+
+# Greyscale palette for the hillshade underlay
+pal_greys <- hcl.colors(1000, "Grays")
 
 
 # ==============================================================================
@@ -158,7 +179,22 @@ colnames(sst_mean_df)[3] <- "sst"
 
 p_sst_mean <- ggplot() +
 
-  # Layer 1: SST mean raster
+  # Layer 1: Land topography - greyscale hillshade underlay + green-to-brown tint
+  geom_spatraster(data = hill, alpha = 1, maxcell = Inf, show.legend = FALSE) +
+  scale_fill_gradientn(colors = pal_greys, na.value = NA) +
+  new_scale_fill() +
+  geom_spatraster(data = topo, alpha = 0.8, maxcell = Inf, show.legend = FALSE) +
+  scale_fill_gradientn(colours = c("#93b46a", "#cdd189", "#e8e1a6", "#d7bf82", "#ad8650", "#855a34"),
+                       values  = c(0, 0.10, 0.35, 0.60, 0.82, 1),
+                       na.value = "transparent") +
+  new_scale_fill() +
+
+  # Layer 1b: Inland water (Lake Eyre) - below sea level, filled blue
+  geom_spatraster(data = lakes, maxcell = Inf, show.legend = FALSE) +
+  scale_fill_gradientn(colours = c("#abd3e5", "#abd3e5"), na.value = "transparent") +
+  new_scale_fill() +
+
+  # Layer 2: SST mean raster
   geom_raster(data = sst_mean_df, aes(x = x, y = y, fill = sst), interpolate = FALSE) +
   scale_fill_gradientn(
     name     = "SST (°C)  June 2011",
@@ -173,22 +209,16 @@ p_sst_mean <- ggplot() +
     )
   ) +
 
-  # Layer 2: Land
-  new_scale_fill() +
-  geom_sf(data = aus, fill = "seashell2", colour = "grey80", linewidth = 0.15) +
+  # Coastline
+  geom_sf(data = aus, fill = NA, colour = "grey60", linewidth = 0.15) +
 
-  # Layer 3: Terrestrial parks
-  new_scale_fill() +
-  geom_sf(data = terrnp, aes(fill = TYPE), colour = NA, show.legend = FALSE) +
-  scale_fill_manual(values = c("National Park" = "#c4cea6", "Nature Reserve" = "#e4d0bb")) +
-
-  # Layer 4: State marine parks
+  # Layer 3: State marine parks
   geom_sf(data = marine_parks_state,
-          fill = alpha("grey70", 0.4), colour = "white", linewidth = 0.35) +
+          fill = alpha("white", 0.4), colour = "white", linewidth = 0.35) +
 
-  # Layer 5: Commonwealth marine parks
+  # Layer 4: Commonwealth marine parks
   geom_sf(data = marine_parks_amp,
-          fill = alpha("grey70", 0.4), colour = "white", linewidth = 0.35) +
+          fill = alpha("white", 0.4), colour = "white", linewidth = 0.35) +
 
   coord_sf(xlim = c(106, 145), ylim = c(-45, -22), crs = 4326, expand = FALSE) +
   scale_x_continuous(breaks = seq(110, 145, by = 5)) +
@@ -203,16 +233,15 @@ p_sst_mean <- ggplot() +
     legend.box           = "horizontal",
     legend.margin        = margin(t = 4),
     panel.grid           = element_blank(),
-    panel.background     = element_rect(fill = "white", colour = NA),
+    panel.background     = element_rect(fill = "#abd3e5", colour = NA),
     plot.background      = element_rect(fill = "white",   colour = NA),
     axis.text            = element_text(size = 9, colour = "grey40"),
     axis.ticks           = element_line(colour = "grey60"),
     plot.margin          = margin(t = 5, r = 10, b = 5, l = 5)
   )
 
-
 ggsave(paste(paste0("plots/", park, "/spatial/SST/", name),
-             "SST-june2011-mean.png", sep = "-"),
+             "SST-june2011-mean-t.png", sep = "-"),
        plot = p_sst_mean, dpi = 300, width = 14, height = 9, bg = "white"
 )
 

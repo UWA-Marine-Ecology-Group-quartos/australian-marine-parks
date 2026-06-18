@@ -52,6 +52,6 @@ include_graphics(here("plots/geographe/spatial/GeographeAMP_SST.png"))
 
 ```{r}
 #| out-width: "90%"
-#| fig-cap: "Figure 4. Maximum Degree Heating Weeks at the scale of the GMP. Heatmap values representing high (yellow) and low (blue) monthly Degree Heating Weeks (DHW) for the two highest periods on record. Grey polygons represent State spatial management and Australian Marine Park boundaries."
+#| fig-cap: "Figure 4. Maximum Degree Heating Weeks at the scale of the GMP. Heatmap values representing high (yellow) and low (blue) monthly Degree Heating Weeks (DHW) for the two most recent marine heatwave periods on record. Grey polygons represent State spatial management and Australian Marine Park boundaries."
 include_graphics(here("plots/geographe/spatial/GeographeAMP_DHW.png"))
 ```
