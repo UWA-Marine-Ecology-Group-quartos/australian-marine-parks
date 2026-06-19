@@ -2,8 +2,8 @@
 # Project: NESP 4.20 - Marine Park Dashboard reporting
 # Data:    Spatial covariates
 # Task:    Format spatial covariates
-# Author:  Claude Spencer
-# Date:    June 2024
+# Author:  Annika Leunig and Claude Spencer
+# Date:    June 2026
 ###
 
 ###
