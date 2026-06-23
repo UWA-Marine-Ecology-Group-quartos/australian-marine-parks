@@ -34,13 +34,13 @@ Understanding of Pressures
 
 ```{r}
 #| out-width: "100%"
-#| fig-cap: "Figure 1. Seasonal sea level anomaly, seasonal sea surface temperature and Degree Heating Weeks at the scale of the GMP. Solid lines represent mean values for sea level anomaly (SLA), sea surface temperature (SST) and Degree Heating Weeks (DHW). Confidence bounds represent standard errors. Red dashed vertical lines represent maximum DHW values that are plotted spatially in Figure 4."
-include_graphics(here("plots/geographe/spatial/GeographeAMP_oceanography_time-series.png"))
+#| fig-cap: "Figure 1. Seasonal sea level anomaly, seasonal sea surface temperature and Degree Heating Weeks at the scale of the [TEMPLATE]. Solid lines represent mean values for sea level anomaly (SLA), sea surface temperature (SST) and Degree Heating Weeks (DHW). Confidence bounds represent standard errors. Red dashed vertical lines represent maximum DHW values that are plotted spatially in Figure 4."
+include_graphics(here("plots/geographe/spatial/TEMPLATEAMP_oceanography_time-series.png"))
 ```
 
 ```{r}
 #| out-width: "90%"
-#| fig-cap: "Figure 2. Sea level anomaly, as an index of upwelling, at the scale of the GMP. Heatmap values represent high (yellow) and low (blue) bimonthy sea level anomaly (SLA). Grey polygons represent State spatial management and Australian Marine Park boundaries."
+#| fig-cap: "Figure 2. Sea level anomaly, as an index of upwelling, at the scale of the [TEMPLATE]. Heatmap values represent high (yellow) and low (blue) bimonthy sea level anomaly (SLA). Grey polygons represent State spatial management and Australian Marine Park boundaries."
 include_graphics(here("plots/geographe/spatial/TEMPLATEAMP_SLA.png"))
 ```
 

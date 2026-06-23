@@ -14,7 +14,9 @@
 # SST:  IMOS - Satellite Remote Sensing - SST - L3S - Single Sensor - 1 month - day and night time - Australia
 # SLA: IMOS - OceanCurrent - Gridded sea level anomaly - Near real time
 # Acidification: Ocean acidification historical reconstruction
-# DHW can be downloaded with this script or from here: https://coastwatch.pfeg.noaa.gov/erddap/griddap/NOAA_DHW.html
+# DHW can be downloaded from here: https://coastwatch.pfeg.noaa.gov/erddap/griddap/NOAA_DHW.html
+#
+# TODO move all those files to data/ 'the MP you are working on' /spatial/oceanography/
 ###
 
 # Clear the environment
@@ -46,26 +48,39 @@ e <- ext(115.04, 115.60, -33.67, -33.346)
 
 # Oceanography/Pressures
 # ── Sea Surface Temperature ───────────────────────────────────────────────────────────────────────
-# Load data
-nc_sst <- open.nc(paste0("data/", park, "/spatial/oceanography/SST.nc"), write = TRUE)
-print.nc(nc_sst) # shows you all the file details
+# SST data can sometimes be read strangely so this way prevents it from switching long and lat columns
+nc_sst <- open.nc(paste0("data/", park, "/spatial/oceanography/SST.nc"))
+print.nc(nc_sst)
 
-# Convert time to dates and save
-time_nc <- var.get.nc(nc_sst, 'time')  # NC_CHAR time:units = "seconds since 1981-01-01 00:00:00"
-time_nc_sst <- utcal.nc("seconds since 1981-01-01 00:00:00", time_nc, type = "c")
-dates_sst <- as.Date(time_nc_sst)
-close.nc(nc_sst) # GDAL errors otherwise
+# Extract raw arrays
+sst_var <- var.get.nc(nc_sst, "sea_surface_temperature")
+lat     <- var.get.nc(nc_sst, "lat")
+lon     <- var.get.nc(nc_sst, "lon")
+time_nc <- var.get.nc(nc_sst, "time")
 
-# Load temperature data and assign to correct dates
-rast_sst <- rast(paste0("data/", park, "/spatial/oceanography/SST.nc"),
-                 subds = "sea_surface_temperature") %>%
-  crop(e) %>%
-  trim()
-plot(rast_sst)
-names(rast_sst) <- dates_sst
-time(rast_sst) <- dates_sst
+# Convert time to dates
+dates_sst <- as.Date(utcal.nc("seconds since 1981-01-01 00:00:00", time_nc, type = "c"))
 
-winter_sst_ts <- rast_sst[[names(rast_sst)[str_detect(names(rast_sst), "-07-|-08-|-09-")]]]
+close.nc(nc_sst) # close before raster operations to avoid GDAL errors
+
+# Convert Kelvin to Celsius and fix dimension order [lon, lat, time] -> [lat, lon, time]
+sst_var       <- sst_var - 273.15
+sst_corrected <- aperm(sst_var, c(2, 1, 3))
+
+# Create raster stack
+rast_sst <- terra::rast(sst_corrected,
+                        extent = terra::ext(min(lon), max(lon), min(lat), max(lat)),
+                        crs = "EPSG:4326")
+
+# Assign dates, crop and trim to study extent
+names(rast_sst) <- as.character(dates_sst)
+time(rast_sst)  <- dates_sst
+rast_sst        <- terra::crop(rast_sst, e) %>% terra::trim()
+
+# Check orientation - if upside down run: rast_sst <- terra::flip(rast_sst, "vertical")
+plot(rast_sst[[1]])
+
+winter_sst_ts <- rast_sst[[which(month(dates_sst) %in% c(7, 8, 9))]]
 
 # Build monthly climatology
 # Average across years for each month and convert from Kelvin to Celsius
@@ -153,36 +168,6 @@ sla_tsdf <- terra::global(rast_sla, fun = "mean", na.rm = T) %>%
 saveRDS(sla_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_SLA_time-series.rds"))
 
 # ── Degree Heating Weeks ──────────────────────────────────────────────────────────────────────────
-# TODO Download DHW either through the next few lines of code or visiting below link
-# https://coastwatch.pfeg.noaa.gov/erddap/griddap/NOAA_DHW.html
-# Specify the new desired filename
-new_filename <- paste0("data/", park, "/spatial/oceanography/DHW.nc")
-
-# Only run the griddap function if the file doesn't exist
-if (!file.exists(new_filename)) {
-  response <- rerddap::griddap("NOAA_DHW",
-                               stride = 7,
-                               time = c('1992-03-18T12:00:00Z', '2026-01-01T12:00:00Z'),
-                               latitude = c(-33.67, -33.347),
-                               longitude = c(115.05, 115.592),
-                               fields = "CRW_DHW",
-                               store = disk(path = paste0("data/", park, "/spatial/oceanography"),
-                                            overwrite = TRUE))
-
-  # Get the actual filename that was saved
-  downloaded_file <- str_replace_all(response$summary$filename, "\\\\", "/") %>%
-    str_remove_all(paste0(getwd(), "/"))
-
-  # Rename the file
-  file.rename(from = downloaded_file, to = new_filename)
-
-  # Clear the rerddap cache
-  rerddap::cache_list()
-  rerddap::cache_delete_all()
-} else {
-  message("File already exists: ", new_filename)
-}
-
 # Load data
 nc_dhw <- open.nc(paste0("data/", park, "/spatial/oceanography/DHW.nc"),
                   write = TRUE)

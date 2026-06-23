@@ -183,10 +183,12 @@ p_sst_mean <- ggplot() +
   geom_spatraster(data = hill, alpha = 1, maxcell = Inf, show.legend = FALSE) +
   scale_fill_gradientn(colors = pal_greys, na.value = NA) +
   new_scale_fill() +
-  geom_spatraster(data = topo, alpha = 0.8, maxcell = Inf, show.legend = FALSE) +
-  scale_fill_gradientn(colours = c("#93b46a", "#cdd189", "#e8e1a6", "#d7bf82", "#ad8650", "#855a34"),
-                       values  = c(0, 0.10, 0.35, 0.60, 0.82, 1),
-                       na.value = "transparent") +
+  # geom_spatraster(data = topo, alpha = 0.8, maxcell = Inf, show.legend = FALSE) +
+  # scale_fill_gradientn(colours = c("#93b46a", "#cdd189", "#e8e1a6", "#d7bf82", "#ad8650", "#855a34"),
+  #                      values  = c(0, 0.10, 0.35, 0.60, 0.82, 1),
+  #                      na.value = "transparent") +
+  geom_spatraster(data = topo, maxcell = Inf, show.legend = FALSE) +
+  scale_fill_hypso_tint_c(palette = "dem_poster", alpha = 0.6, na.value = "transparent") +
   new_scale_fill() +
 
   # Layer 1b: Inland water (Lake Eyre) - below sea level, filled blue
@@ -241,7 +243,7 @@ p_sst_mean <- ggplot() +
   )
 
 ggsave(paste(paste0("plots/", park, "/spatial/SST/", name),
-             "SST-june2011-mean-t.png", sep = "-"),
+             "SST-june2011-mean-t-darker.png", sep = "-"),
        plot = p_sst_mean, dpi = 300, width = 14, height = 9, bg = "white"
 )
 
