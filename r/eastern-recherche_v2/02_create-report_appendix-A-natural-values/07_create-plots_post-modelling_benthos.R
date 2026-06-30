@@ -70,7 +70,7 @@ cwatr_offset <- st_as_sf(geos_offset_curve(as_geos_geometry(cwatr), distance = 0
 st_crs(cwatr_offset) <- 4326
 
 # Load the bathymetry data (GA 250m resolution) ----
-bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
+bathy <- rast("data/eastern-recherche_v2/spatial/rasters/CapePasleytoPollockReef_SI1054_epsg3857_Bathymetry_SI51_Depth_30m_2025_cog.tiff") %>%
   crop(e) %>%
   clamp(upper = 0, lower = -250, values = FALSE) %>%
   trim() %>%
@@ -358,13 +358,6 @@ normalise_se <- function(data) {
   return(data)
 }
 
-# NOTE (ERMP): benthos benchmark/control plots are NOT produced for ERMP.
-# Habitat is modelled as a single pooled prediction (no year dimension), so the
-# controldata_benthos() / controlplot_benthos() functions and Part 4 have been
-# removed. A year-comparison benchmark plot built from a pooled prediction would
-# show identical values for 2022 and 2025 (flat lines), which is misleading.
-# Restore both functions and Part 4 from the template if per-year habitat
-# predictions are ever produced.
 
 # Fill scales used inside scatterpie_plot_single ----
 hab_fills <- scale_fill_manual(

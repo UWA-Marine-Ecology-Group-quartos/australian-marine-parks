@@ -119,12 +119,6 @@ controlplot_fish <- function(data, metric, amp_abbrv, state_abbrv,
 
   if (metric == "cti") {
 
-    # SST series supplied as <name>_SST_time-series.rds
-    # (columns: year, month, sst, sd, season). Aggregated to an annual mean below
-    # (matching the original code) and plotted as a line on the year x-axis.
-    # NOTE: the supplied sst column is offset by -273.15; +273.15 returns it to
-    # degrees C so it is comparable to CTI on the shared y-axis. Set to 0 to use
-    # the raw stored values.
     sst_offset <- 273.15
 
     sst <- readRDS(
@@ -136,9 +130,6 @@ controlplot_fish <- function(data, metric, amp_abbrv, state_abbrv,
         sst  = sst + sst_offset
       ) %>%
       dplyr::filter(!is.na(sst), year >= 2016, year <= 2026) %>%
-      # annual mean SST (matches the original code) - avoids the busy monthly
-      # seasonal sawtooth. For a monthly line, drop this group_by/summarise and
-      # plot on a decimal-year x instead.
       dplyr::group_by(year) %>%
       dplyr::summarise(
         sst = mean(sst, na.rm = TRUE),
@@ -292,8 +283,7 @@ cwatr <- st_read("data/south-west network/spatial/shapefiles/amb_coastal_waters_
   st_crop(e) %>%
   st_transform(4326)
 
-bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
-  crop(e) %>%
+bathy <- rast("data/eastern-recherche_v2/spatial/rasters/CapePasleytoPollockReef_SI1054_epsg3857_Bathymetry_SI51_Depth_30m_2025_cog.tiff") %>%
   clamp(upper = 0, lower = -250, values = FALSE) %>%
   trim() %>%
   as.data.frame(xy = TRUE, na.rm = TRUE)

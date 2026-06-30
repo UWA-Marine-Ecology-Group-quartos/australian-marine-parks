@@ -414,3 +414,4 @@ for (y in seq_along(pred.years)) {
                      names(preddf_m), "_predicted_", this_year, ".tif"),
               overwrite = TRUE)
 }
+
