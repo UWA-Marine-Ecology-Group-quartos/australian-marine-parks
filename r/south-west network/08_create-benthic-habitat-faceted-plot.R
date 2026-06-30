@@ -171,11 +171,13 @@ thin_breaks <- function(limits, step = 0.2) {
 
 # --- Shared legend builder function ---
 build_network_legend <- function(park_extents,
-                                 reef_threshold = 0.5,
-                                 depth_breaks   = c(shallow    = -30,
-                                                    mesophotic = -70,
-                                                    rariphotic = -200),
-                                 ncol_legend    = 4) {
+                                 reef_threshold    = 0.5,
+                                 combine_shallow   = FALSE,
+                                 combine_mesophotic = FALSE,
+                                 depth_breaks      = c(shallow    = -30,
+                                                       mesophotic = -70,
+                                                       rariphotic = -200),
+                                 ncol_legend       = 4) {
 
   all_present <- character(0)
 
@@ -188,6 +190,14 @@ build_network_legend <- function(park_extents,
     nv_df   <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
     colnames(nv_df)[3] <- "value"
     nv_df$classname <- nv_lookup[as.character(nv_df$value)]
+    # Optionally merge shallow coral + shallow rocky into a single shallow reef class
+    if (combine_shallow) {
+      nv_df$classname[nv_df$classname == "Shallow coral reefs"] <- "Shallow rocky reefs"
+    }
+    # Optionally merge mesophotic coral + mesophotic rocky into a single mesophotic reef class
+    if (combine_mesophotic) {
+      nv_df$classname[nv_df$classname == "Mesophotic coral reefs"] <- "Mesophotic rocky reefs"
+    }
     nv_df <- dplyr::filter(nv_df, !is.na(classname))
     all_present <- union(all_present, unique(nv_df$classname))
 
@@ -633,18 +643,20 @@ naturalvalues_map__network_dynamic <- function(plot_limits,
 
 # --- FUNCTION 3: Hillshade background, NV shelf classes, optional predicted reef ---
 naturalvalues_map_hillshade_nv <- function(plot_limits,
-                                           use_clipped     = TRUE,
-                                           show_predicted  = FALSE,
-                                           reef_threshold  = 0.5,
-                                           depth_breaks    = c(shallow    = -30,
-                                                               mesophotic = -70,
-                                                               rariphotic = -200),
-                                           hs_altitude     = 40,
-                                           hs_azimuth      = 270,
-                                           show_legend     = TRUE,
-                                           year            = "2018",
-                                           title           = NULL,
-                                           break_step      = 0.2) {
+                                           use_clipped       = TRUE,
+                                           show_predicted    = FALSE,
+                                           combine_shallow   = FALSE,
+                                           combine_mesophotic = FALSE,
+                                           reef_threshold    = 0.5,
+                                           depth_breaks      = c(shallow    = -30,
+                                                                 mesophotic = -70,
+                                                                 rariphotic = -200),
+                                           hs_altitude       = 40,
+                                           hs_azimuth        = 270,
+                                           show_legend       = TRUE,
+                                           year              = "2018",
+                                           title             = NULL,
+                                           break_step        = 0.2) {
 
   require(tidyverse); require(terra); require(sf); require(ggnewscale)
 
@@ -664,6 +676,14 @@ naturalvalues_map_hillshade_nv <- function(plot_limits,
   nv_df   <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
   colnames(nv_df)[3] <- "value"
   nv_df$classname <- nv_lookup[as.character(nv_df$value)]
+  # Optionally merge shallow coral + shallow rocky into a single shallow reef class
+  if (combine_shallow) {
+    nv_df$classname[nv_df$classname == "Shallow coral reefs"] <- "Shallow rocky reefs"
+  }
+  # Optionally merge mesophotic coral + mesophotic rocky into a single mesophotic reef class
+  if (combine_mesophotic) {
+    nv_df$classname[nv_df$classname == "Mesophotic coral reefs"] <- "Mesophotic rocky reefs"
+  }
   nv_df <- dplyr::filter(nv_df, !is.na(classname))
 
   shelf_classes <- c(
@@ -800,44 +820,56 @@ tworocks_limits  <- c(114.7, 116.0, -32.0,    -31.3)
 check_ratio(geographe_limits)
 check_ratio(tworocks_limits)
 
+# 2018 panels: keep coral + rocky split for both shallow and mesophotic (defaults FALSE)
 tworocks_2018_hs <- naturalvalues_map_hillshade_nv(
-  plot_limits    = tworocks_limits,
-  year           = "2018",
-  show_predicted = FALSE,
-  show_legend    = FALSE,
-  break_step     = 0.1
+  plot_limits       = tworocks_limits,
+  year              = "2018",
+  show_predicted    = FALSE,
+  combine_shallow   = FALSE,
+  combine_mesophotic = FALSE,
+  show_legend       = FALSE,
+  break_step        = 0.1
 )
 
+# 2025 panels: merge shallow coral->rocky and mesophotic coral->rocky
 tworocks_2025_hs <- naturalvalues_map_hillshade_nv(
-  plot_limits    = tworocks_limits,
-  year           = "2025",
-  show_predicted = TRUE,
-  reef_threshold = 0.5,
-  show_legend    = FALSE,
-  break_step     = 0.1
+  plot_limits       = tworocks_limits,
+  year              = "2025",
+  show_predicted    = TRUE,
+  combine_shallow   = TRUE,
+  combine_mesophotic = TRUE,
+  reef_threshold    = 0.5,
+  show_legend       = FALSE,
+  break_step        = 0.1
 )
 
 geographe_2018_hs <- naturalvalues_map_hillshade_nv(
-  plot_limits    = geographe_limits,
-  year           = "2018",
-  show_predicted = FALSE,
-  show_legend    = FALSE,
-  break_step     = 0.1
+  plot_limits       = geographe_limits,
+  year              = "2018",
+  show_predicted    = FALSE,
+  combine_shallow   = FALSE,
+  combine_mesophotic = FALSE,
+  show_legend       = FALSE,
+  break_step        = 0.1
 )
 
 geographe_2025_hs <- naturalvalues_map_hillshade_nv(
-  plot_limits    = geographe_limits,
-  year           = "2025",
-  show_predicted = TRUE,
-  reef_threshold = 0.5,
-  show_legend    = FALSE,
-  break_step     = 0.1
+  plot_limits       = geographe_limits,
+  year              = "2025",
+  show_predicted    = TRUE,
+  combine_shallow   = TRUE,
+  combine_mesophotic = TRUE,
+  reef_threshold    = 0.5,
+  show_legend       = FALSE,
+  break_step        = 0.1
 )
 
 legend_fig1 <- build_network_legend(
-  park_extents   = list(tworocks = tworocks_limits, geographe = geographe_limits),
-  reef_threshold = 0.5,
-  ncol_legend    = 4
+  park_extents      = list(tworocks = tworocks_limits, geographe = geographe_limits),
+  reef_threshold    = 0.5,
+  combine_shallow   = FALSE,
+  combine_mesophotic = FALSE,
+  ncol_legend       = 4
 )
 
 label_tworocks_hs  <- ggdraw() + draw_label("Two Rocks",  size = 16, angle = 90)
@@ -881,7 +913,7 @@ figure1 <- cowplot::plot_grid(
         plot.margin = margin(t = 5, r = 15, b = 5, l = 5))
 
 ggsave(paste(paste0('plots/', park, '/spatial/benthic_habitat/', name),
-             'tworocks-geographe-benthic-habitats.png', sep = "-"),
+             'tworocks-geographe-benthic-habitats-test.png', sep = "-"),
        plot   = figure1,
        dpi    = 600,
        width  = 15,
@@ -920,17 +952,21 @@ assemble_park_figure_2025 <- function(map, legend) {
 
 # ── Figure 2:  Geographe ──────────────────────────────────────────────────────
 geo_2025 <- naturalvalues_map_hillshade_nv(
-  plot_limits    = geo_limits,
-  year           = "2025",
-  show_predicted = TRUE,
-  reef_threshold = 0.5,
-  show_legend    = FALSE,
-  break_step     = 0.1
+  plot_limits       = geo_limits,
+  year              = "2025",
+  show_predicted    = TRUE,
+  combine_shallow   = TRUE,
+  combine_mesophotic = TRUE,
+  reef_threshold    = 0.5,
+  show_legend       = FALSE,
+  break_step        = 0.1
 )
 legend_geo <- build_network_legend(
-  park_extents   = list(geo = geo_limits),
-  reef_threshold = 0.5,
-  ncol_legend    = 3
+  park_extents      = list(geo = geo_limits),
+  reef_threshold    = 0.5,
+  combine_shallow   = TRUE,
+  combine_mesophotic = TRUE,
+  ncol_legend       = 3
 )
 figure_geo <- assemble_park_figure_2025(geo_2025, legend_geo)
 
@@ -944,17 +980,21 @@ ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
 
 # ── Figure 3: Two Rocks ───────────────────────────────────────────────────────
 tworocks_2025 <- naturalvalues_map_hillshade_nv(
-  plot_limits    = tworocks_limits,
-  year           = "2025",
-  show_predicted = TRUE,
-  reef_threshold = 0.5,
-  show_legend    = FALSE,
-  break_step     = 0.1
+  plot_limits       = tworocks_limits,
+  year              = "2025",
+  show_predicted    = TRUE,
+  combine_shallow   = TRUE,
+  combine_mesophotic = TRUE,
+  reef_threshold    = 0.5,
+  show_legend       = FALSE,
+  break_step        = 0.1
 )
 legend_tworocks <- build_network_legend(
-  park_extents   = list(tworocks = tworocks_limits),
-  reef_threshold = 0.5,
-  ncol_legend    = 3
+  park_extents      = list(tworocks = tworocks_limits),
+  reef_threshold    = 0.5,
+  combine_shallow   = TRUE,
+  combine_mesophotic = TRUE,
+  ncol_legend       = 3
 )
 figure_tworocks <- assemble_park_figure_2025(tworocks_2025, legend_tworocks)
 
@@ -1103,7 +1143,7 @@ legend_swc_east <- build_network_legend(
 figure_swc_east <- assemble_park_figure_2025(swc_east_2025, legend_swc_east)
 
 ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
-            "corner-eastern-arm-benthic-habitats.png", sep = "-"),
+             "corner-eastern-arm-benthic-habitats.png", sep = "-"),
        plot   = figure_swc_east,
        dpi    = 600,
        width  = 9,
@@ -1323,20 +1363,20 @@ r_classified_network <- lapp(
   c(nv_net, bathy_net, ph_net),
   fun = function(nv, depth, prob) {
     base <- ifelse(nv == 1,               0L,
-            ifelse(nv == 9,               1L,
-            ifelse(nv %in% c(8, 10, 11),  2L,
-            ifelse(nv %in% c(12, 13, 14), 3L,
-            ifelse(nv == 15,              4L,
-            ifelse(nv == 16,              5L,
-            ifelse(nv == 17,              6L,
-            ifelse(nv == 18,              7L,
-            ifelse(nv == 2,               8L,
-            ifelse(nv == 3,               9L,
-            ifelse(nv == 4,              10L,
-            ifelse(nv == 5,              11L,
-            ifelse(nv == 6,              12L,
-            ifelse(nv == 7,              13L,
-            NA_integer_))))))))))))))
+                   ifelse(nv == 9,               1L,
+                          ifelse(nv %in% c(8, 10, 11),  2L,
+                                 ifelse(nv %in% c(12, 13, 14), 3L,
+                                        ifelse(nv == 15,              4L,
+                                               ifelse(nv == 16,              5L,
+                                                      ifelse(nv == 17,              6L,
+                                                             ifelse(nv == 18,              7L,
+                                                                    ifelse(nv == 2,               8L,
+                                                                           ifelse(nv == 3,               9L,
+                                                                                  ifelse(nv == 4,              10L,
+                                                                                         ifelse(nv == 5,              11L,
+                                                                                                ifelse(nv == 6,              12L,
+                                                                                                       ifelse(nv == 7,              13L,
+                                                                                                              NA_integer_))))))))))))))
     ifelse(!is.na(prob) & prob >= 0.5 & depth >= -30  & depth <= 0,  2L,
            ifelse(!is.na(prob) & prob >= 0.5 & depth >= -70  & depth < -30, 3L,
                   ifelse(!is.na(prob) & prob >= 0.5 & depth >= -200 & depth < -70, 4L,

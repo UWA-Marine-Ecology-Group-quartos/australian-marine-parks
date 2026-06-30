@@ -541,6 +541,19 @@ make_zone_plot_left_legend(
   height      = 6
 )
 
+# ── Twilight Marine Park ──────────────────────────────────────────────────────
+make_zone_plot_left_legend(
+  plot_limits = c(125.2, 127.15, -33.3, -32.1),
+  inset_xlim  = c(108, 138),
+  inset_ylim  = c(-40, -24),
+  break_step  = 0.2,
+  show_inset = TRUE,
+  save_name   = "twilight-MPs",
+  width       = 9,
+  height      = 5
+)
+
+
 # ==============================================================================
 # End of script
 # ==============================================================================

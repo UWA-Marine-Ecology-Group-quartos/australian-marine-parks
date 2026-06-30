@@ -35,23 +35,23 @@ Understanding of Pressures
 ```{r}
 #| out-width: "100%"
 #| fig-cap: "Figure 1. Seasonal sea level anomaly, seasonal sea surface temperature and Degree Heating Weeks at the scale of the Abrolhos MP. Solid lines represent mean values for sea level anomaly (SLA), sea surface temperature (SST) and Degree Heating Weeks (DHW). Confidence bounds represent standard errors. Red dashed vertical lines represent maximum DHW values that are plotted spatially in Figure 4."
-include_graphics(here("plots/abrolhos/spatial/abrolhosAMP_oceanography_time-series.png"))
+include_graphics(here("plots/abrolhos/pressures/abrolhosAMP_oceanography_time-series.png"))
 ```
 
 ```{r}
 #| out-width: "90%"
 #| fig-cap: "Figure 2. Sea level anomaly, as an index of upwelling, at the scale of the Abrolhos MP. Heatmap values represent high (yellow) and low (blue) bimonthy sea level anomaly (SLA). Grey polygons represent State spatial management and Australian Marine Park boundaries."
-include_graphics(here("plots/abrolhos/spatial/abrolhosAMP_SLA.png"))
+include_graphics(here("plots/abrolhos/pressures/abrolhosAMP_SLA.png"))
 ```
 
 ```{r}
 #| out-width: "90%"
 #| fig-cap: "Figure 3. Sea surface temperature at the scale of the Abrolhos MP. Heatmap values represent high (yellow) and low (blue) bimonthy sea surface temperature (SST). Grey polygons represent State spatial management and Australian Marine Park boundaries."
-include_graphics(here("plots/abrolhos/spatial/abrolhosAMP_SST.png"))
+include_graphics(here("plots/abrolhos/pressures/abrolhosAMP_SST.png"))
 ```
 
 ```{r}
 #| out-width: "90%"
 #| fig-cap: "Figure 4. Maximum Degree Heating Weeks at the scale of the Abrolhos MP. Heatmap values representing high (yellow) and low (blue) monthly Degree Heating Weeks (DHW) for the two most recent marine heatwave periods on record. Grey polygons represent State spatial management and Australian Marine Park boundaries."
-include_graphics(here("plots/abrolhos/spatial/abrolhosAMP_DHW.png"))
+include_graphics(here("plots/abrolhos/pressures/abrolhosAMP_DHW.png"))
 ```

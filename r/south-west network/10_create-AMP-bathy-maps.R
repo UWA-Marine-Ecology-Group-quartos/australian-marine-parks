@@ -677,6 +677,16 @@ network_map_wms_zoomed(
   inset_ylim  = swc_inset_ylim
 )
 
+# ── Twilight MP ─────────────────────────────────────────────────────────────────
+network_map_wms_zoomed(
+  plot_limits = c(125.2, 127.15, -33.3, -32.1),
+  save_name   = "twilight_AMP-bathy-plot",
+  width       = 9,
+  height      = 5,
+  inset_xlim  = swc_inset_xlim,
+  inset_ylim  = swc_inset_ylim
+)
+
 # ==============================================================================
 # End of script
 # ==============================================================================
