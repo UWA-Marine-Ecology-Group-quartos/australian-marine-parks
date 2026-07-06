@@ -77,17 +77,10 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits, habitat_l
     geom_sf(data = ausc, fill = "seashell2", colour = "grey80", linewidth = 0.5) +
     new_scale_color() +
     geom_sf(
-<<<<<<< HEAD
-      data = wasanc,
-      aes(colour = zone),
-      fill = NA,
-      linewidth = 0.8,
-=======
       data        = wasanc,
       aes(colour  = zone),
       fill        = NA,
-      linewidth   = 0.7,
->>>>>>> 165b4345511a660a5398622d2d9b58df66c31b97
+      linewidth   = 0.8,
       show.legend = TRUE
     ) +
     scale_colour_manual(
@@ -99,31 +92,18 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits, habitat_l
       colour = guide_legend(
         order        = 3,
         override.aes = list(
-<<<<<<< HEAD
-          colour = ngari_colours,
-          fill = NA,
-          linewidth = 1
-=======
           colour    = ngari_colours,
           fill      = NA,
-          linewidth = 1.2
->>>>>>> 165b4345511a660a5398622d2d9b58df66c31b97
+          linewidth = 1
         )
       )
     ) +
     new_scale_color() +
     geom_sf(
-<<<<<<< HEAD
-      data = marine_parks_amp,
-      aes(colour = zone),
-      fill = NA,
-      linewidth = 0.8,
-=======
       data        = marine_parks_amp,
       aes(colour  = zone),
       fill        = NA,
-      linewidth   = 1.2,
->>>>>>> 165b4345511a660a5398622d2d9b58df66c31b97
+      linewidth   = 0.8,
       show.legend = TRUE
     ) +
     scale_colour_manual(
@@ -133,28 +113,14 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits, habitat_l
     ) +
     guides(
       colour = guide_legend(
-<<<<<<< HEAD
-        order = 2,
-        override.aes = list(
-          fill = NA,
-          linewidth = 1
-        )
-      )
-    ) +
-    geom_sf(
-      data = st_buffer(cwatr_offset, dist = 0.005),
-      colour = "red",
-      linewidth = 0.5
-=======
         order        = 2,
-        override.aes = list(fill = NA, linewidth = 1.2)
+        override.aes = list(fill = NA, linewidth = 1)
       )
     ) +
     geom_sf(
       data      = st_buffer(cwatr_offset, dist = 0.005),
       colour    = "red",
-      linewidth = 0.9
->>>>>>> 165b4345511a660a5398622d2d9b58df66c31b97
+      linewidth = 0.5
     ) +
     coord_sf(
       xlim   = c(prediction_limits[1], prediction_limits[2]),
