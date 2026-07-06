@@ -79,7 +79,7 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
       data = wasanc,
       aes(colour = zone),
       fill = NA,
-      linewidth = 0.7,
+      linewidth = 0.8,
       show.legend = TRUE
     ) +
     scale_colour_manual(
@@ -93,7 +93,7 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
         override.aes = list(
           colour = ngari_colours,
           fill = NA,
-          linewidth = 1.2
+          linewidth = 1
         )
       )
     ) +
@@ -102,7 +102,7 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
       data = marine_parks_amp,
       aes(colour = zone),
       fill = NA,
-      linewidth = 1.2,
+      linewidth = 0.8,
       show.legend = TRUE
     ) +
     scale_colour_manual(
@@ -115,14 +115,14 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
         order = 2,
         override.aes = list(
           fill = NA,
-          linewidth = 1.2
+          linewidth = 1
         )
       )
     ) +
     geom_sf(
       data = st_buffer(cwatr_offset, dist = 0.005),
       colour = "red",
-      linewidth = 0.9
+      linewidth = 0.5
     ) +
     coord_sf(
       xlim = c(prediction_limits[1], prediction_limits[2]),

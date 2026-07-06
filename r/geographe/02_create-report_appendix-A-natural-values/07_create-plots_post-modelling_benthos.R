@@ -67,7 +67,7 @@ cwatr <- st_read("data/south-west network/spatial/shapefiles/amb_coastal_waters_
   st_crop(e) %>%
   st_transform(4326)
 
-cwatr_offset <- st_as_sf(geos_offset_curve(as_geos_geometry(cwatr), distance = 0.003))
+cwatr_offset <- st_as_sf(geos_offset_curve(as_geos_geometry(cwatr), distance = 0.002))
 st_crs(cwatr_offset) <- 4326
 
 # Load the bathymetry data (GA 250m resolution)
