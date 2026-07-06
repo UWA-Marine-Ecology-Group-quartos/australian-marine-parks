@@ -600,7 +600,7 @@ make_zone_plot_left_legend(
 
 # ── SWC Full Extent ───────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(110, 124, -39, -33),
+  plot_limits = c(110, 123, -39, -33),
   inset_xlim  = c(108, 138),
   inset_ylim  = c(-40, -24),
   break_step  = 1,

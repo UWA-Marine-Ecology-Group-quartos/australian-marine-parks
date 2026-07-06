@@ -19,7 +19,7 @@
 #     2.  Set CRS, colours and other housekeeping
 #     3.  Functions
 #     4.  FIGURE 1: Two Rocks and Geographe
-#     5.  FIGURES 2-9: Individual park figures
+#     5.  FIGURES 2-12: Individual park figures
 #     6.  FIGURE 10: Network benthic habitat extent
 #     7.  Figure 11: 2018 vs 2025 ecosystem change bar graph
 #     8. Save 2025 classified habitat rasters
@@ -933,6 +933,10 @@ bremer_limits   <- c(119.3, 120.3, -35.3, -33.9)
 er_limits       <- c(123.2, 124.4, -34.9, -33.5)
 ski_limits      <- c(136,   137.85, -36.5, -35.5)
 swc_east_limits <- c(120.35, 122.2, -35.5, -33.7)
+twilight_limits <- c(125.2, 127.15, -33.3, -32.1)
+gab_limits      <- c(128.7, 132.5,  -33.6, -31.3)
+murat_limits    <- c(132.3, 133.0,  -33.2, -32.15)
+
 
 # --- Assembly function (single panel, 2025 only) ---
 assemble_park_figure_2025 <- function(map, legend) {
@@ -1150,8 +1154,80 @@ ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
        height = 10,
        bg     = "white")
 
+# ── Figure 10: Twilight ───────────────────────────────────────────────────────
+twilight_2025 <- naturalvalues_map_hillshade_nv(
+  plot_limits    = twilight_limits,
+  year           = "2025",
+  show_predicted = TRUE,
+  reef_threshold = 0.5,
+  show_legend    = FALSE,
+  break_step     = 0.2
+)
+legend_twilight <- build_network_legend(
+  park_extents   = list(twilight = twilight_limits),
+  reef_threshold = 0.5,
+  ncol_legend    = 2
+)
+figure_twilight <- assemble_park_figure_2025(twilight_2025, legend_twilight)
+
+ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+             "twilight-benthic-habitats.png", sep = "-"),
+       plot   = figure_twilight,
+       dpi    = 600,
+       width  = 9,
+       height = 7.5,
+       bg     = "white")
+
+# ── Figure 11: Great Australian Bight ────────────────────────────────────────
+gab_2025 <- naturalvalues_map_hillshade_nv(
+  plot_limits    = gab_limits,
+  year           = "2025",
+  show_predicted = TRUE,
+  reef_threshold = 0.5,
+  show_legend    = FALSE,
+  break_step     = 0.4
+)
+legend_gab <- build_network_legend(
+  park_extents   = list(gab = gab_limits),
+  reef_threshold = 0.5,
+  ncol_legend    = 2
+)
+figure_gab <- assemble_park_figure_2025(gab_2025, legend_gab)
+
+ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+             "great-aus-bight-benthic-habitats.png", sep = "-"),
+       plot   = figure_gab,
+       dpi    = 600,
+       width  = 10,
+       height = 7.5,
+       bg     = "white")
+
+# ── Figure 12: Murat ──────────────────────────────────────────────────────────
+murat_2025 <- naturalvalues_map_hillshade_nv(
+  plot_limits    = murat_limits,
+  year           = "2025",
+  show_predicted = TRUE,
+  reef_threshold = 0.5,
+  show_legend    = FALSE,
+  break_step     = 0.2
+)
+legend_murat <- build_network_legend(
+  park_extents   = list(murat = murat_limits),
+  reef_threshold = 0.5,
+  ncol_legend    = 1
+)
+figure_murat <- assemble_park_figure_2025(murat_2025, legend_murat)
+
+ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+             "murat-benthic-habitats.png", sep = "-"),
+       plot   = figure_murat,
+       dpi    = 600,
+       width  = 7,
+       height = 11,
+       bg     = "white")
+
 # ==============================================================================
-# 6. FIGURE 10: Network benthic habitat extent
+# 6. FIGURE 13: Network benthic habitat extent
 # ==============================================================================
 network_limits <- c(108.0, 138.0, -42.0, -24.0)
 

@@ -51,7 +51,7 @@ tidy_habitat <- benthos_summarised %>%
   glimpse()
 
 # Read and process BOSS habitat data (Investigator MBH) ----
-# Source: CoralNet dot point export - not in GlobalArchive
+
 boss_meta <- read_csv(paste0("data/", park, "/raw/Salisbury_Investigator_MBH_BOSS_habitat_Metadata.csv")) %>%
   rename_with(tolower) %>%
   rename(sample = `sample`, longitude = longitude, latitude = latitude, depth = depth) %>%
