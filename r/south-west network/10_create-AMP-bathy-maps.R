@@ -10,7 +10,7 @@
 #          2. Individual park zoom-in AMP bathymetry maps (Abrolhos, Bremer Bay,
 #             Eastern Recherche, Geographe, Great Australian Bight, Jurien Bay,
 #             Kangaroo Island, Murat & Western Eyre, Rottnest Canyon, SWC east,
-#             SWC west, Two Rocks)
+#             SWC west, Two Rocks, Twilight)
 ###
 
 # Table of contents
@@ -19,7 +19,7 @@
 #     3.  Network figure builder (fixed Aus-extent inset)
 #     4.  FIGURE 1: SOUTH-WEST NETWORK MAP (assemble and save)
 #     5.  Zoom-in map function (legend on left)
-#     6.  FIGURES 2-13: Individual park zoom-ins (assemble and save)
+#     6.  FIGURES 2-14: Individual park zoom-ins (assemble and save)
 
 
 # ==============================================================================
@@ -150,6 +150,14 @@ get_amp_bathy <- function(bbox) {
   download.file(bathy_url, bth_tmp, mode = "wb")
 
   png::readPNG(bth_tmp)
+}
+
+# ── Helper: thinned axis breaks (keeps every 2nd break at a fixed step) ───────
+thin_breaks <- function(limits, step = 0.2) {
+  b <- seq(from = floor(min(limits)   / step) * step,
+           to   = ceiling(max(limits) / step) * step,
+           by   = step)
+  b[seq(1, length(b), by = 2)]
 }
 
 
@@ -318,6 +326,8 @@ network_map_wms_zoomed <- function(
     inset_xlim = c(108, 138),
     inset_ylim = c(-40, -24),
     show_inset = TRUE,
+    thin_lon_breaks = FALSE,   # thin the longitude axis breaks (useful for wide/short extents)
+    break_step      = 0.2,     # spacing used by thin_breaks() before thinning; only used when thin_lon_breaks = TRUE
     save_name  = NULL,
     width      = 10,
     height     = 6
@@ -334,6 +344,13 @@ network_map_wms_zoomed <- function(
   xmax <- bbox["xmax"]
   ymin <- bbox["ymin"]
   ymax <- bbox["ymax"]
+
+  # Thinned lon breaks for wide/short extents, ggplot default breaks otherwise
+  x_breaks <- if (thin_lon_breaks) {
+    thin_breaks(c(unname(xmin), unname(xmax)), step = break_step)
+  } else {
+    pretty(c(unname(xmin), unname(xmax)), n = 5)
+  }
 
   # Download rasters
   meri_img <- get_meri_grey(bbox)
@@ -414,6 +431,8 @@ network_map_wms_zoomed <- function(
       crs = 4326,
       expand = FALSE
     ) +
+
+    scale_x_continuous(breaks = x_breaks) +   # thinned or default lon breaks
 
     labs(x = NULL, y = NULL) +
 
@@ -555,7 +574,7 @@ network_map_wms_zoomed <- function(
 }
 
 # ==============================================================================
-# 6. FIGURES 2-13: INDIVIDUAL PARK ZOOM-INS (assemble and save)
+# 6. FIGURES 2-14: INDIVIDUAL PARK ZOOM-INS (assemble and save)
 # ==============================================================================
 # ── Abrolhos ──────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
@@ -587,6 +606,16 @@ network_map_wms_zoomed(
   inset_ylim  = swc_inset_ylim
 )
 
+network_map_wms_zoomed(
+  plot_limits = c(123, 124.6, -37.8, -33.5),
+  save_name   = "eastern-recherche_full-extent_AMP-bathy-plot",
+  thin_lon_breaks = TRUE,
+  break_step      = 0.4,
+  width       = 4.5,
+  height      = 6.5,
+  inset_xlim  = swc_inset_xlim,
+  inset_ylim  = swc_inset_ylim
+)
 # ── Geographe ─────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
   plot_limits = c(114.8, 115.7, -33.7, -33.2),
@@ -602,6 +631,17 @@ network_map_wms_zoomed(
   plot_limits = c(128.7, 132.5, -33.6, -31.3),
   save_name   = "great-aus-bight_AMP-bathy-plot",
   width       = 9,
+  height      = 5,
+  inset_xlim  = swc_inset_xlim,
+  inset_ylim  = swc_inset_ylim
+)
+
+network_map_wms_zoomed(
+  plot_limits = c(128.7, 132.5, -37.8, -31.3),
+  save_name   = "great-aus-bight_full-extent_AMP-bathy-plot",
+  thin_lon_breaks = TRUE,
+  break_step      = 1,
+  width       = 7,
   height      = 5,
   inset_xlim  = swc_inset_xlim,
   inset_ylim  = swc_inset_ylim
@@ -631,6 +671,28 @@ network_map_wms_zoomed(
 network_map_wms_zoomed(
   plot_limits = c(132.45, 135.5, -35.4, -31.9),
   save_name   = "murat-western-eyre_AMP-bathy-plot",
+  width       = 8,
+  height      = 7,
+  inset_xlim  = swc_inset_xlim,
+  inset_ylim  = swc_inset_ylim
+)
+
+network_map_wms_zoomed(
+  plot_limits = c(132.45, 135.5, -39.4, -31.9),
+  save_name   = "murat-western-eyre_full-extent_AMP-bathy-plot",
+  thin_lon_breaks = TRUE,
+  break_step      = 0.5,
+  width       = 7,
+  height      = 9,
+  inset_xlim  = swc_inset_xlim,
+  inset_ylim  = swc_inset_ylim
+)
+
+network_map_wms_zoomed(
+  plot_limits = c(132.3, 133, -33.2, -32.2),
+  save_name   = "murat_AMP-bathy-plot",
+  thin_lon_breaks = TRUE,
+  break_step      = 0.1,
   width       = 8,
   height      = 7,
   inset_xlim  = swc_inset_xlim,
@@ -672,6 +734,16 @@ network_map_wms_zoomed(
   plot_limits = c(114.7, 116.0, -32.0, -31.3),
   save_name   = "two-rocks_AMP-bathy-plot",
   width       = 11.5,
+  height      = 5,
+  inset_xlim  = swc_inset_xlim,
+  inset_ylim  = swc_inset_ylim
+)
+
+# ── Twilight MP ─────────────────────────────────────────────────────────────────
+network_map_wms_zoomed(
+  plot_limits = c(125.2, 127.15, -33.3, -32.1),
+  save_name   = "twilight_AMP-bathy-plot",
+  width       = 9,
   height      = 5,
   inset_xlim  = swc_inset_xlim,
   inset_ylim  = swc_inset_ylim

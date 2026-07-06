@@ -47,7 +47,7 @@ plot_sst(prediction_limits) +
   theme(axis.text = element_text(size = 6))
 
 
-ggsave(paste0("plots/", park, "/spatial/", name, "_SST.png"),
+ggsave(paste0("plots/", park, "/pressures/", name, "_SST.png"),
        height = 4.5, width = 8, dpi = 600, bg = "white", units = "in")
 
 ## SLA
@@ -58,7 +58,7 @@ names(sla)
 plot_sla(prediction_limits) +
   theme(axis.text = element_text(size = 6))
 
-ggsave(paste0("plots/", park, "/spatial/", name, "_SLA.png"),
+ggsave(paste0("plots/", park, "/pressures/", name, "_SLA.png"),
        height = 4.5, width = 8, dpi = 600, bg = "white", units = "in")
 
 ## DHW
@@ -68,7 +68,7 @@ names(dhw)
 plot_dhw(prediction_limits) +
   theme(axis.text = element_text(size = 6))
 
-ggsave(paste0("plots/", park, "/spatial/", name, "_DHW.png"),
+ggsave(paste0("plots/", park, "/pressures/", name, "_DHW.png"),
        height = 3.5, width = 8, dpi = 600, bg = "white", units = "in")
 
 pressure_data()
@@ -76,7 +76,7 @@ pressure_data()
 maxyear = c(2011, 2025)
 pressure_plot(maxyear)
 
-ggsave(filename = paste0('plots/', park, '/spatial/', name, '_oceanography_time-series.png'),
+ggsave(filename = paste0('plots/', park, '/pressures/', name, '_oceanography_time-series.png'),
        dpi = 300, units = "in", bg = "white",
        width = 6, height = 6.75)
 

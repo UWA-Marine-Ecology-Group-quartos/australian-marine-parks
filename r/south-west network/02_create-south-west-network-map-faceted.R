@@ -75,6 +75,7 @@ marine_parks <- st_read("data/south-west network/spatial/shapefiles/south-and-we
 marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth")
 
+
 marine_parks_state <- marine_parks %>%
   dplyr::filter(epbc %in% "State") %>%
   dplyr::mutate(
@@ -505,6 +506,18 @@ make_zone_plot_left_legend(
   height      = 8
 )
 
+make_zone_plot_left_legend(
+  plot_limits = c(123.2, 124.4, -37.8, -33.5),
+  inset_xlim  = c(108, 138),
+  inset_ylim  = c(-40, -24),
+  break_step  = 0.2,
+  show_inset = TRUE,
+  save_name   = "eastern-recherche_full-extent-MPs",
+  width       = 8,
+  height      = 10
+)
+
+
 # ── Great Aus Bight ───────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
   plot_limits = c(128.7, 132.5, -33.6, -31.3),
@@ -517,6 +530,16 @@ make_zone_plot_left_legend(
   height      = 5
 )
 
+make_zone_plot_left_legend(
+  plot_limits = c(128.7, 132.5, -37.8, -31.3),
+  inset_xlim  = c(108, 138),
+  inset_ylim  = c(-40, -24),
+  break_step  = 0.2,
+  show_inset = TRUE,
+  save_name   = "great-aus-bight_full-extent-MPs",
+  width       = 8,
+  height      = 9
+)
 # ── Murat and Western Eyre ────────────────────────────────────────────────────
 make_zone_plot_left_legend(
   plot_limits = c(132.45, 135.5, -35.4, -31.9),
@@ -525,6 +548,28 @@ make_zone_plot_left_legend(
   break_step  = 0.2,
   show_inset = TRUE,
   save_name   = "murat-western-eyre-MPs",
+  width       = 8,
+  height      = 7
+)
+
+make_zone_plot_left_legend(
+  plot_limits = c(132.45, 135.5, -39.4, -31.9),
+  inset_xlim  = c(108, 138),
+  inset_ylim  = c(-40, -24),
+  break_step  = 0.4,
+  show_inset = TRUE,
+  save_name   = "murat-western-eyre_full-extent_MPs",
+  width       = 8,
+  height      = 9
+)
+
+make_zone_plot_left_legend(
+  plot_limits = c(132.3, 133, -33.2, -32.2),
+  inset_xlim  = c(108, 138),
+  inset_ylim  = c(-40, -24),
+  break_step  = 0.2,
+  show_inset = TRUE,
+  save_name   = "murat-MPs",
   width       = 8,
   height      = 7
 )
@@ -540,6 +585,31 @@ make_zone_plot_left_legend(
   width       = 9,
   height      = 6
 )
+
+# ── Twilight Marine Park ──────────────────────────────────────────────────────
+make_zone_plot_left_legend(
+  plot_limits = c(125.2, 127.15, -33.3, -32.1),
+  inset_xlim  = c(108, 138),
+  inset_ylim  = c(-40, -24),
+  break_step  = 0.2,
+  show_inset = TRUE,
+  save_name   = "twilight-MPs",
+  width       = 9,
+  height      = 5
+)
+
+# ── SWC Full Extent ───────────────────────────────────────────────────────────
+make_zone_plot_left_legend(
+  plot_limits = c(110, 123, -39, -33),
+  inset_xlim  = c(108, 138),
+  inset_ylim  = c(-40, -24),
+  break_step  = 1,
+  show_inset = TRUE,
+  save_name   = "swc-full-extent-MPs",
+  width       = 14,
+  height      = 6
+)
+
 
 # ==============================================================================
 # End of script

@@ -129,8 +129,9 @@ for (yr in years) {
   pred_plot <- normalise_se(data = pred_class)
 
   p_cat <- categoricalhabitat_plot_single(
-    pred_plot = pred_plot,
-    prediction_limits = prediction_limits
+    pred_plot         = pred_plot,
+    prediction_limits = prediction_limits,
+    habitat_lookup    = habitat_lookup
   )
 
   print(p_cat)
@@ -156,8 +157,9 @@ for (yr in years) {
   )
 
   p_dom <- dominantbenthos_plot_single(
-    pred_plot = pred_plot,
-    prediction_limits = prediction_limits
+    pred_plot         = pred_plot,
+    prediction_limits = prediction_limits,
+    habitat_lookup    = habitat_lookup
   ) +
     theme(
       legend.position = "bottom",
@@ -197,8 +199,9 @@ for (yr in years) {
 # PART 2: Multi-year categorical and dominant benthos + combined SE plot
 # -------------------------------------------------------------------
 p_dom_se <- dominantbenthos_plot_multi(
-  dat_list = dat_list,
-  prediction_limits = prediction_limits
+  dat_list          = dat_list,
+  prediction_limits = prediction_limits,
+  habitat_lookup    = habitat_lookup
 )
 
 print(p_dom_se)
@@ -225,8 +228,9 @@ saveRDS(p_dom_se,
         ))
 
 p_cat_multi <- categoricalhabitat_plot_multi(
-  dat_list = dat_list,
-  prediction_limits = prediction_limits
+  dat_list          = dat_list,
+  prediction_limits = prediction_limits,
+  habitat_lookup    = habitat_lookup
 )
 
 print(p_cat_multi)
@@ -262,12 +266,12 @@ for (habitat_name in names(habitat_lookup)) {
   layer_stub <- habitat_lookup[[habitat_name]]
 
   p_hab <- individualbenthic_plot(
-    habitat_name = habitat_name,
-    layer_stub = layer_stub,
-    dat_list = dat_list,
+    habitat_name      = habitat_name,
+    layer_stub        = layer_stub,
+    dat_list          = dat_list,
     prediction_limits = prediction_limits,
-    pred_limits = NULL,   # use c(0, 1) for a fixed probability scale across taxa
-    se_limits = NULL      # auto-scale within habitat across years
+    pred_limits       = NULL,   # use c(0, 1) for a fixed probability scale across taxa
+    se_limits         = NULL    # auto-scale within habitat across years
   )
 
   print(p_hab)

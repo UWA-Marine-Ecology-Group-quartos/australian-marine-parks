@@ -1,0 +1,201 @@
+---
+title: "Appendix A - South-west Corner Eastern Arm Marine Park Natural Values Report"
+subtitle: "South-west Marine Parks Network"
+format:
+  pdf:
+    output-file: "Project 4.20-South-west Corner Eastern arm-2-Appendix A-q-Natural values.pdf"
+    geometry: 
+      - top=2cm
+      - bottom=2.5cm
+      - left=2cm
+      - right=2cm
+    include-in-header:
+      text: |
+        \usepackage{caption}
+        \captionsetup[figure]{labelformat=empty, labelsep=none}
+toc: true
+execute:
+  echo: false
+  warning: false
+  message: false
+post-render: 11_move-pdf.R
+---
+
+```{r}
+#| include: false
+library(here)
+library(ggplot2)
+library(knitr)
+library(terra)
+library(tidyterra)
+library(cowplot)
+library(png)
+library(grid)
+library(tidytext)
+library(ggtext)
+
+yr_suffix <- "2022-2024"
+```
+
+# Natural Values
+
+Understanding of natural values
+
+## Benthic ecosystem extent
+
+### Dominant habitat types
+
+```{r}
+#| fig-width: 8
+#| fig-height: 5
+#| fig-cap: "Figure 1. Predicted dominant habitat type from stereo-BRUV groundtruthing. Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown."
+p_cat <- base::readRDS(here("plots/swc_easternarm/habitat/swc_easternarmAMP_predicted-habitat-categorical.rds"))
+p_cat
+```
+
+### Habitat distribution and probability
+
+```{r}
+#| out-width: "100%"
+#| fig-cap: "Figure 2. Predicted habitat distribution probability and uncertainty from stereo-BRUV groundtruthing. Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown."
+include_graphics(here("plots/swc_easternarm/habitat/swc_easternarmAMP_predicted-dominant-benthos-and-combined-se.png"))
+```
+
+### Observations
+
+```{r}
+#| out-width: "90%"
+#| fig-cap: "Figure 3. Habitat classes observed in spatially balanced stereo-BRUV and drop-camera imagery visualised as spatial pie charts. Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown."
+include_graphics(here("plots/swc_easternarm/habitat/swc_easternarmAMP_scatterpie.png"))
+```
+
+## Benchmarks of benthic natural values
+
+```{r}
+#| out-width: "100%"
+#| fig-cap: "Figure 4. Sand: spatial plots of distribution probability and uncertainty from stereo-BRUV groundtruthing. SWCMP = South-west Corner Marine Park (Commonwealth). Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown."
+include_graphics(here("plots/swc_easternarm/habitat/swc_easternarmAMP_predicted-individual-habitat_sand.png"))
+```
+
+## Benchmarks of benthic natural values
+
+```{r}
+#| out-width: "100%"
+#| fig-cap: "Figure 5. Macroalgae: spatial plots of distribution probability and uncertainty from stereo-BRUV groundtruthing. SWCMP = South-west Corner Marine Park (Commonwealth). Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown."
+include_graphics(here("plots/swc_easternarm/habitat/swc_easternarmAMP_predicted-individual-habitat_macroalgae.png"))
+```
+
+## Benchmarks of benthic natural values
+
+```{r}
+#| out-width: "100%"
+#| fig-cap: "Figure 7. Sessile invertebrates: spatial plots of distribution probability and uncertainty from stereo-BRUV groundtruthing. SWCMP = South-west Corner Marine Park (Commonwealth). Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown."
+include_graphics(here("plots/swc_easternarm/habitat/swc_easternarmAMP_predicted-individual-habitat_sessile-invertebrates.png"))
+```
+
+## Benchmarks of benthic natural values
+
+```{r}
+#| out-width: "100%"
+#| fig-cap: "Figure 8. Reef: spatial plots of distribution probability and uncertainty from stereo-BRUV groundtruthing. SWCMP = South-west Corner Marine Park (Commonwealth). Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown."
+include_graphics(here("plots/swc_easternarm/habitat/swc_easternarmAMP_predicted-individual-habitat_reef.png"))
+```
+
+## Benchmarks of demersal fish natural values
+
+### Species richness
+
+```{r}
+#| fig-width: 8
+#| fig-height: 7
+#| fig-cap: "Figure 9. Demersal fish - Species richness: (a) benchmark plots by zone and depth contour and (b) species accumulation curve by year; from stereo-BRUV groundtruthing. SWCMP = South-west Corner Marine Park (Commonwealth) NPZ = National Park Zone. Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown."
+
+p_control <- base::readRDS(here("plots/swc_easternarm/fish/swc_easternarmAMP_control-plot_species-richness-per-bruv.rds"))
+p_bar     <- base::readRDS(here("plots/swc_easternarm/fish/swc_easternarmAMP_SAC-sample.rds"))
+
+top_row <- plot_grid(NULL, p_control, NULL, ncol = 3, rel_widths = c(0.15, 0.7, 0.15))
+mid_row <- plot_grid(NULL, p_bar,     NULL, ncol = 3, rel_widths = c(0.15, 0.7, 0.15))
+
+plot_grid(top_row, mid_row,
+          nrow = 2, labels = c("a)", "b)"),
+          rel_heights = c(0.6, 0.4))
+```
+
+```{r}
+#| out-width: "100%"
+#| fig-cap: "Figure 9 continued. Demersal fish - Species richness: (c) spatial plots of distribution probability and uncertainty; from stereo-BRUV groundtruthing."
+include_graphics(here(paste0("plots/swc_easternarm/fish/swc_easternarmAMP_predicted-individual-fish-metric_whole-assemblage_", yr_suffix, ".png")))
+```
+
+### Total abundance
+
+```{r}
+#| fig-width: 8
+#| fig-height: 7
+#| fig-cap: "Figure 10. Demersal fish - Total abundance: (a) benchmark plots by zone and depth contour and (b) top 10 most abundant species (pooled across deployments); from stereo-BRUV groundtruthing. SWCMP = South-west Corner Marine Park (Commonwealth) NPZ = National Park Zone. Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown."
+
+p_control <- base::readRDS(here("plots/swc_easternarm/fish/swc_easternarmAMP_control-plot_total-abundance-per-bruv.rds"))
+p_bar     <- base::readRDS(here("plots/swc_easternarm/fish/swc_easternarmAMP_top_maxn_bar_plot.rds"))
+
+top_row <- plot_grid(NULL, p_control, NULL, ncol = 3, rel_widths = c(0.15, 0.7, 0.15))
+
+plot_grid(top_row, p_bar,
+          nrow = 2, labels = c("a)", "b)"),
+          rel_heights = c(0.55, 0.45))
+```
+
+```{r}
+#| out-width: "100%"
+#| fig-cap: "Figure 10 continued. Demersal fish - Total abundance: (c) spatial plots of distribution probability and uncertainty; from stereo-BRUV groundtruthing."
+include_graphics(here(paste0("plots/swc_easternarm/fish/swc_easternarmAMP_predicted-individual-fish-metric_total-abundance_", yr_suffix, ".png")))
+```
+
+\newgeometry{top=2cm, bottom=2.1cm, left=2cm, right=2cm}
+
+### Large Reef Fish Index\*
+
+```{r}
+#| fig-width: 8
+#| fig-height: 7
+#| fig-cap: "Figure 11. Demersal fish - Large Reef Fish Index\\*: (a) benchmark plots by zone and depth contour and (b) top 10 greatest biomass species (pooled across deployments); from stereo-BRUV groundtruthing. SWCMP = South-west Corner Marine Park (Commonwealth), NPZ = National Park Zone. Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown. \\*Large Reef Fish Index representing the biomass of all fish greater than 20 cm (B20) has been adapted here for stereo-BRUV data by removing sharks and rays."
+
+p_control <- base::readRDS(here("plots/swc_easternarm/fish/swc_easternarmAMP_control-plot_large-reef-fish-index-biomass-g-per-bruv.rds"))
+p_bar     <- base::readRDS(here("plots/swc_easternarm/fish/swc_easternarmAMP_top_b20_bar_plot.rds"))
+
+top_row <- plot_grid(NULL, p_control, NULL, ncol = 3, rel_widths = c(0.15, 0.7, 0.15))
+
+plot_grid(top_row, p_bar,
+          nrow = 2, labels = c("a)", "b)"),
+          rel_heights = c(0.55, 0.45))
+```
+
+```{r}
+#| out-width: "100%"
+#| fig-cap: "Figure 11 continued. Demersal fish - Large Reef Fish Index\\*: (c) spatial plots of distribution probability and uncertainty; from stereo-BRUV groundtruthing."
+include_graphics(here(paste0("plots/swc_easternarm/fish/swc_easternarmAMP_predicted-individual-fish-metric_large-reef-fish-index_", yr_suffix, ".png")))
+```
+
+\restoregeometry
+
+### Reef fish thermal index
+
+```{r}
+#| fig-width: 8
+#| fig-height: 7
+#| fig-cap: "Figure 12. Demersal fish - Reef Fish Thermal Index: (a) benchmark plots by zone and depth contour, with monthly sea surface temperature (black line, grey band = SD) overlaid, and (b) species thermal niche of top 10 most abundant species (pooled across deployments); from stereo-BRUV groundtruthing. SWCMP = South-west Corner Marine Park (Commonwealth), NPZ = National Park Zone. Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown."
+
+p_control <- base::readRDS(here("plots/swc_easternarm/fish/swc_easternarmAMP_control-plot_community-thermal-index-c.rds"))
+p_bar     <- base::readRDS(here("plots/swc_easternarm/fish/swc_easternarmAMP_top_maxn_cti_bar_plot.rds"))
+
+top_row <- plot_grid(NULL, p_control, NULL, ncol = 3, rel_widths = c(0.15, 0.7, 0.15))
+
+plot_grid(top_row, p_bar,
+          nrow = 2, labels = c("a)", "b)"),
+          rel_heights = c(0.55, 0.45))
+```
+
+```{r}
+#| out-width: "100%"
+#| fig-cap: "Figure 12 continued. Demersal fish - Reef Fish Thermal Index: (c) spatial plots of distribution probability and uncertainty; from stereo-BRUV groundtruthing."
+include_graphics(here(paste0("plots/swc_easternarm/fish/swc_easternarmAMP_predicted-individual-fish-metric_cti_", yr_suffix, ".png")))
+```

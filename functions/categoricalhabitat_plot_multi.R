@@ -1,10 +1,25 @@
-categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
+categoricalhabitat_plot_multi <- function(dat_list, prediction_limits, habitat_lookup) {
 
   yrs <- names(dat_list)
 
   if (is.null(yrs) || any(yrs == "")) {
     stop("dat_list must be a named list")
   }
+
+  # All available colours in canonical display order
+  all_colours <- c(
+    "Rock"                  = "grey40",
+    "Sessile invertebrates" = "plum",
+    "Macroalgae"            = "darkgoldenrod4",
+    "Seagrass"              = "forestgreen",
+    "Sand"                  = "wheat"
+  )
+
+  # Filter to modelled taxa only, preserving canonical order
+  all_levels      <- names(all_colours)
+  modelled        <- names(habitat_lookup)
+  hab_levels      <- all_levels[all_levels %in% modelled]
+  habitat_colours <- all_colours[hab_levels]
 
   pred_cat <- purrr::map_dfr(seq_along(dat_list), function(i) {
     dat_list[[i]] %>%
@@ -13,54 +28,40 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
       normalise_se()
   }) %>%
     dplyr::mutate(
-      year = factor(year, levels = yrs),
+      year    = factor(year, levels = yrs),
       dom_tag = as.character(dom_tag),
       dom_tag = dplyr::case_when(
-        dom_tag %in% c("sand", "Sand") ~ "Sand",
-        dom_tag %in% c("macro", "macroalgae", "Macroalgae") ~ "Macroalgae",
-        dom_tag %in% c("seagrass", "seagrasses", "Seagrass", "Seagrasses") ~ "Seagrass",
-        dom_tag %in% c("rock", "Rock") ~ "Rock",
+        dom_tag %in% c("sand", "Sand")                                                        ~ "Sand",
+        dom_tag %in% c("macro", "macroalgae", "Macroalgae")                                   ~ "Macroalgae",
+        dom_tag %in% c("seagrass", "seagrasses", "Seagrass", "Seagrasses")                    ~ "Seagrass",
+        dom_tag %in% c("rock", "Rock")                                                        ~ "Rock",
         dom_tag %in% c("sessile invertebrates", "Sessile Invertebrates", "inverts", "Inverts") ~ "Sessile invertebrates",
         TRUE ~ dom_tag
       ),
-      dom_tag = factor(
-        dom_tag,
-        levels = c("Rock", "Sessile invertebrates", "Macroalgae", "Seagrass", "Sand")
-      )
+      dom_tag = factor(dom_tag, levels = hab_levels)
     )
-
-  habitat_colours <- c(
-    "Rock" = "grey40",
-    "Sessile invertebrates" = "plum",
-    "Macroalgae" = "darkgoldenrod4",
-    "Seagrass" = "forestgreen",
-    "Sand" = "wheat"
-  )
 
   ngari_colours <- wasanc %>%
     st_drop_geometry() %>%
     distinct(zone, colour) %>%
-    arrange(zone) %>%  # match the order ggplot uses
+    arrange(zone) %>%
     pull(colour)
 
   ggplot() +
-    geom_tile(
-      data = pred_cat,
-      aes(x = x, y = y, fill = dom_tag)
-    ) +
+    geom_tile(data = pred_cat, aes(x = x, y = y, fill = dom_tag)) +
     scale_fill_manual(
-      name = "Habitat",
-      limits = names(habitat_colours),
-      values = habitat_colours,
+      name     = "Habitat",
+      limits   = hab_levels,
+      values   = habitat_colours,
       na.value = "transparent",
-      drop = FALSE
+      drop     = FALSE
     ) +
     guides(
       fill = guide_legend(
-        order = 1,
-        override.aes = list(
-          colour = NA,
-          fill = unname(habitat_colours),
+        order         = 1,
+        override.aes  = list(
+          colour    = NA,
+          fill      = unname(habitat_colours),
           linewidth = 0.5
         )
       )
@@ -69,49 +70,70 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
     geom_contour(
       data = bathy,
       aes(x = x, y = y, z = Depth),
-      colour = "black",
-      breaks = c(-30, -70, -200),
+      colour    = "black",
+      breaks    = c(-30, -70, -200),
       linewidth = 0.2
     ) +
     geom_sf(data = ausc, fill = "seashell2", colour = "grey80", linewidth = 0.5) +
     new_scale_color() +
     geom_sf(
+<<<<<<< HEAD
       data = wasanc,
       aes(colour = zone),
       fill = NA,
       linewidth = 0.8,
+=======
+      data        = wasanc,
+      aes(colour  = zone),
+      fill        = NA,
+      linewidth   = 0.7,
+>>>>>>> 165b4345511a660a5398622d2d9b58df66c31b97
       show.legend = TRUE
     ) +
     scale_colour_manual(
-      name = "State Marine Park",
+      name  = "State Marine Park",
       guide = "legend",
       values = with(wasanc, setNames(colour, zone))
     ) +
     guides(
       colour = guide_legend(
-        order = 3,
+        order        = 3,
         override.aes = list(
+<<<<<<< HEAD
           colour = ngari_colours,
           fill = NA,
           linewidth = 1
+=======
+          colour    = ngari_colours,
+          fill      = NA,
+          linewidth = 1.2
+>>>>>>> 165b4345511a660a5398622d2d9b58df66c31b97
         )
       )
     ) +
     new_scale_color() +
     geom_sf(
+<<<<<<< HEAD
       data = marine_parks_amp,
       aes(colour = zone),
       fill = NA,
       linewidth = 0.8,
+=======
+      data        = marine_parks_amp,
+      aes(colour  = zone),
+      fill        = NA,
+      linewidth   = 1.2,
+>>>>>>> 165b4345511a660a5398622d2d9b58df66c31b97
       show.legend = TRUE
     ) +
     scale_colour_manual(
-      name = "Australian Marine Park",
+      name  = "Australian Marine Park",
       guide = "legend",
       values = with(marine_parks_amp, setNames(colour, zone))
     ) +
     guides(
       colour = guide_legend(
+<<<<<<< HEAD
         order = 2,
         override.aes = list(
           fill = NA,
@@ -123,11 +145,21 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
       data = st_buffer(cwatr_offset, dist = 0.005),
       colour = "red",
       linewidth = 0.5
+=======
+        order        = 2,
+        override.aes = list(fill = NA, linewidth = 1.2)
+      )
+    ) +
+    geom_sf(
+      data      = st_buffer(cwatr_offset, dist = 0.005),
+      colour    = "red",
+      linewidth = 0.9
+>>>>>>> 165b4345511a660a5398622d2d9b58df66c31b97
     ) +
     coord_sf(
-      xlim = c(prediction_limits[1], prediction_limits[2]),
-      ylim = c(prediction_limits[3], prediction_limits[4]),
-      crs = 4326,
+      xlim   = c(prediction_limits[1], prediction_limits[2]),
+      ylim   = c(prediction_limits[3], prediction_limits[4]),
+      crs    = 4326,
       expand = FALSE
     ) +
     facet_wrap(~year, nrow = 1) +
@@ -136,11 +168,11 @@ categoricalhabitat_plot_multi <- function(dat_list, prediction_limits) {
       panel.background = element_rect(fill = "white", colour = NA),
       panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
-      legend.position = "bottom",
+      legend.position  = "bottom",
       legend.direction = "vertical",
-      legend.box = "horizontal",
-      legend.text = element_text(size = 10),
-      legend.title = element_text(size = 10, face = "bold"),
-      strip.text = element_text(size = 12, face = "bold")
+      legend.box       = "horizontal",
+      legend.text      = element_text(size = 10),
+      legend.title     = element_text(size = 10, face = "bold"),
+      strip.text       = element_text(size = 12, face = "bold")
     )
 }

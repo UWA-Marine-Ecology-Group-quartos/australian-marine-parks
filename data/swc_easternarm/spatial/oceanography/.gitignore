@@ -7,3 +7,9 @@ swc_easternarmAMP_SST_time-series.rds
 swc_easternarmAMP_SLA_raster.rds
 swc_easternarmAMP_SLA_time-series.rds
 swc_easternarmAMP_SST_raster.rds
+SST_recent.nc
+swc_easternarmAMP_SST_raster-recent.rds
+swc_easternarmAMP_SST_time-series-recent.rds
+swc_easternarmAMP_Acidification_time-series.rds
+swc_easternarmAMP_DHW_raster.rds
+swc_easternarmAMP_DHW_time-series.rds
