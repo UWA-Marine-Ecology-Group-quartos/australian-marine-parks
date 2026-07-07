@@ -25,3 +25,4 @@ data/**/*
 !data/TEMPLATE
 !data/TEMPLATE/**
 .positai
+.posit/assistant

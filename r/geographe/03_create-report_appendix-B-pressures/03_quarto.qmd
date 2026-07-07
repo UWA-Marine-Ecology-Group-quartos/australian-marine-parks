@@ -4,6 +4,7 @@ subtitle: "South-west Marine Parks Network"
 format:
   pdf:
     output-file: "Project 4.21-Geographe-2-Appendix B-q-Pressures.pdf"
+    fig-pos: 'H'
     geometry:
       - top=2cm
       - bottom=2.5cm
@@ -12,7 +13,8 @@ format:
     include-in-header:
       text: |
         \usepackage{caption}
-        \captionsetup[figure]{labelformat=empty, labelsep=none}
+        \renewcommand{\thefigure}{B.\arabic{figure}}
+        \captionsetup{indention=0pt}
 toc: true
 execute:
   echo: false
