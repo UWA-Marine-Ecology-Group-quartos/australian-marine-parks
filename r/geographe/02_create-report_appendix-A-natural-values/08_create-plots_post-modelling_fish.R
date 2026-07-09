@@ -155,7 +155,7 @@ for (metric_name in names(fish_metric_lookup)) {
     plot = p_metric,
     height = 5,
     width = 8,
-    dpi = 900,
+    dpi = 300,
     units = "in",
     bg = "white"
   )
@@ -359,7 +359,7 @@ ggsave(
   plot = sac_sample,
   height = 4,
   width = 7,
-  dpi = 600,
+  dpi = 300,
   units = "in",
   bg = "white"
   )
@@ -431,7 +431,7 @@ ggsave(
   plot = sac_plot,
   height = 8,
   width = 7,
-  dpi = 600,
+  dpi = 300,
   units = "in",
   bg = "white"
 )
@@ -493,7 +493,7 @@ bar_maxn <- ggplot(
 bar_maxn
 
 ggsave(paste0("plots/", park, "/fish/", name, "_top_maxn_bar_plot.png"),
-       plot = bar_maxn, height = 4, width = 9, dpi = 600, units = "in", bg = "white")
+       plot = bar_maxn, height = 4, width = 9, dpi = 300, units = "in", bg = "white")
 
 saveRDS(bar_maxn,
         paste0("plots/", park, "/fish/", name, "_top_maxn_bar_plot.rds")
@@ -588,7 +588,7 @@ bar_cti <- ggplot(
 bar_cti
 
 ggsave(paste0("plots/", park, "/fish/", name, "_top_maxn_cti_bar_plot.png"),
-       plot = bar_cti, height = 4, width = 9, dpi = 600, units = "in", bg = "white")
+       plot = bar_cti, height = 4, width = 9, dpi = 300, units = "in", bg = "white")
 
 saveRDS(bar_cti,
         paste0("plots/", park, "/fish/", name, "_top_maxn_cti_bar_plot.rds")
@@ -698,7 +698,7 @@ ggsave(
   plot   = bar_b20,
   height = 4,
   width  = 9,
-  dpi    = 600,
+  dpi    = 300,
   units  = "in",
   bg     = "white"
 )
@@ -734,7 +734,7 @@ ggsave(
   plot   = bar_b20_v2,
   height = 4,
   width  = 9,
-  dpi    = 600,
+  dpi    = 300,
   units  = "in",
   bg     = "white"
 )

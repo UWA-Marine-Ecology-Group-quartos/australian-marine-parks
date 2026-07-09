@@ -9,12 +9,18 @@ format:
       - bottom=2.5cm
       - left=2cm
       - right=2cm
-toc: true
+    toc: true
+    fig-format: png
+    fig-dpi: 300
+  html:
+    output-file: "Project 4.21-Geographe-2-Appendix A-q-Natural values.html"
+    toc: true
+    fig-dpi: 96
 execute:
   echo: false
   warning: false
   message: false
-post-render: 11_move-pdf.R
+post-render: 10_move-pdf.R
 ---
 
 ```{r}
@@ -50,9 +56,13 @@ p_cat_multi
 ### Habitat distribution and probability
 
 ```{r}
-#| out-width: "100%"
+#| fig-width: 8
+#| fig-height: 7
 #| fig-cap: "Predicted habitat distribution probability and uncertainty from stereo-BRUV groundtruthing. The green polygon represents the extent of no-take National Park Zones. Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown."
-include_graphics(here("plots/geographe/habitat/GeographeAMP_predicted-dominant-benthos-and-combined-se_2014-2024.png"))
+
+img_path <- here("plots/geographe/habitat/GeographeAMP_predicted-dominant-benthos-and-combined-se_2014-2024.png")
+img <- png::readPNG(img_path)
+grid::grid.raster(img)
 ```
 
 ### Observations

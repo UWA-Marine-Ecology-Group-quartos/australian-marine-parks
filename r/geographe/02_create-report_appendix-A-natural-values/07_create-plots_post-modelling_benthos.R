@@ -144,7 +144,7 @@ for (yr in years) {
     plot = p_cat,
     height = 6,
     width = 8,
-    dpi = 600,
+    dpi = 300,
     units = "in",
     bg = "white"
   )
@@ -182,7 +182,7 @@ for (yr in years) {
     plot = p_dom,
     height = 6,
     width = 8,
-    dpi = 600,
+    dpi = 300,
     units = "in",
     bg = "white"
   )
@@ -215,7 +215,7 @@ ggsave(
   plot = p_dom_se,
   height = 7,
   width = 8,
-  dpi = 900,
+  dpi = 300,
   units = "in",
   bg = "white"
 )
@@ -244,7 +244,7 @@ ggsave(
   plot = p_cat_multi,
   height = 5,
   width = 10,
-  dpi = 600,
+  dpi = 300,
   units = "in",
   bg = "white"
 )
@@ -289,7 +289,7 @@ for (habitat_name in names(habitat_lookup)) {
     plot = p_hab,
     height = 5,
     width = 8,
-    dpi = 900,
+    dpi = 300,
     units = "in",
     bg = "white"
   )
