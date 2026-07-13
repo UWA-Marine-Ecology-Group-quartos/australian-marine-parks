@@ -37,7 +37,7 @@ library(ggtext)
 library(CheckEM)
 
 # Load functions
-file.sources <- list.files(pattern = "*.R", path = "functions/", full.names = TRUE)
+file.sources <- list.files(pattern = "*.R", path = paste0("r/", park, "/functions/"), full.names = TRUE)
 sapply(file.sources, source, .GlobalEnv)
 
 # TODO Set cropping extent - larger than most zoomed out plot

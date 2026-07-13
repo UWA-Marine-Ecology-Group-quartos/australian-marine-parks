@@ -1,5 +1,0 @@
-"","modname","AICc","BIC","r2.vals","r2.vals.unique","edf","edf.less.1","delta.AICc","delta.BIC","wi.AICc","wi.BIC","reef","geoscience_depth","geoscience_aspect","geoscience_roughness","geoscience_detrended","status","year","cumsum.wi"
-"b20.geoscience_depth+geoscience_detrended+year","geoscience_depth+geoscience_detrended+year",10254.8340221756,10282.2391364162,0.11073,NA,5.65,0,0,7.541,0.181,0.007,0,1,0,0,1,0,1,0.181
-"b20.geoscience_aspect+geoscience_depth+geoscience_detrended+year","geoscience_aspect+geoscience_depth+geoscience_detrended+year",10254.834022215,10282.2391406552,0.11073,NA,6.65,1,0,7.541,0.181,0.007,0,1,1,0,1,0,1,0.362
-"b20.geoscience_depth+geoscience_detrended+reef+year","geoscience_depth+geoscience_detrended+reef+year",10255.3021728933,10286.7143076248,0.11366,NA,6.63,0,0.468,12.017,0.143,0.001,1,1,0,0,1,0,1,0.505
-"b20.geoscience_aspect+geoscience_depth+geoscience_detrended+reef+year","geoscience_aspect+geoscience_depth+geoscience_detrended+reef+year",10255.3021728934,10286.7143076249,0.11366,NA,7.63,1,0.468,12.017,0.143,0.001,1,1,1,0,1,0,1,0.648

@@ -1,9 +1,9 @@
 ###
-# Project: NESP 4.20 - Marine Park Dashboard reporting
+# Project: NESP 4.21 - Australian Marine Parks Natural Values Reporting
 # Data:    Fish data synthesis
 # Task:    Model fish data using the full subsets approach from @beckyfisher/FSSgam
 # Author:  Claude Spencer & Henry Evans
-# Date:    June 2024
+# Date:    July 2026
 ###
 
 rm(list = ls())
@@ -56,7 +56,7 @@ for(i in 1:length(unique.vars)){
 resp.vars
 
 # Run the full subset model selection----
-savedir <- paste0("output/model-output/", park, "/fish/")
+savedir <- paste0("output/model-output/", park, "/fish/maxn/")
 factor.vars <- c("status", "year") # TODO set factors
 out.all     <- list()
 var.imp     <- list()
@@ -140,6 +140,7 @@ for(i in 1:length(unique.vars)){
 resp.vars
 
 # Run the full subset model selection----
+savedir <- paste0("output/model-output/", park, "/fish/length/")
 name_b20 <- paste(name,"b20", sep = "_")
 out.all <- list()
 var.imp <- list()

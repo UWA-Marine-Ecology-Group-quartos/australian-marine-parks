@@ -1,9 +1,9 @@
 ###
-# Project: NESP 4.20 - Marine Park Dashboard reporting
+# Project: NESP 4.21 - Australian Marine Parks Natural Values Reporting
 # Data:    Marine Park monitoring data syntheses
 # Task:    Call GlobalArchive API to download data syntheses
-# Author:  Claude Spencer
-# Date:    June 2024
+# Author:  Claude Spencer & Henry Evans
+# Date:    July 2026
 ###
 rm(list = ls())
 

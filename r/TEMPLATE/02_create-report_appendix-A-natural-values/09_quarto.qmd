@@ -10,18 +10,24 @@ format:
       - bottom=2.5cm
       - left=2cm
       - right=2cm
+    toc: true
+    fig-format: png
+    fig-dpi: 300
     include-in-header:
       text: |
         \usepackage{caption}
         \usepackage{float}
         \renewcommand{\thefigure}{A.\arabic{figure}}
         \captionsetup{format=plain, indention=0pt}
-toc: true
+  html:
+    output-file: "Project 4.21-Geographe-2-Appendix A-q-Natural values.html"
+    toc: true
+    fig-dpi: 96
 execute:
   echo: false
   warning: false
   message: false
-post-render: 11_move-pdf.R
+post-render: 10_move-pdf.R
 ---
 
 ```{r}
@@ -203,7 +209,6 @@ ggsave(total_abundance_path, p_total_abundance, width = 7.5, height = 6.2, devic
 \captionsetup{list=off, format=plain, indention=0pt}
 \caption*{Figure \thefigure{} continued. (c) spatial plots of distribution probability and uncertainty; from stereo-BRUV groundtruthing.Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown.}
 \end{figure}
-
 \clearpage
 \newgeometry{top=2cm, bottom=2.1cm, left=2cm, right=2cm}
 
@@ -240,7 +245,6 @@ ggsave(lrfi_path, p_lrfi, width = 7.5, height = 6.2, device = "pdf")
 \captionsetup{list=off, format=plain, indention=0pt}
 \caption*{Figure \thefigure{} continued. (c) spatial plots of distribution probability and uncertainty; from stereo-BRUV groundtruthing.Commonwealth marine park boundaries are shown. The red line delimits state and commonwealth waters. Bathymetric contour at 30 m is shown.}
 \end{figure}
-
 \clearpage
 \restoregeometry
 

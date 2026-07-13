@@ -79,7 +79,7 @@ length_raw <- read_csv("data/geographe/raw/temp/2007-2014-Geographe-stereo-BRUVs
 
 names(length_raw)
 
-# TODO check that the number column should be 1?
+# TO DO check that the number column should be 1?
 
 # fix synonyms ----
 length <- length_raw %>%

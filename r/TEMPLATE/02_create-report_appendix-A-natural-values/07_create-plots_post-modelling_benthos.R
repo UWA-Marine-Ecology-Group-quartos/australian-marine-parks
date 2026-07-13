@@ -1,9 +1,9 @@
 ###
-# Project: NESP 4.20 - Marine Park Dashboard reporting
+# Project: NESP 4.21 - Australian Marine Parks Natural Values Reporting
 # Data:    Habitat data synthesis & habitat models derived from FSSgam
 # Task:    Create post-modelling habitat figures for marine park reporting
-# Author:  Claude Spencer
-# Date:    June 2024
+# Author:  Claude Spencer & Henry Evans
+# Date:    July 2026
 ###
 
 # Clear your environment
@@ -37,7 +37,7 @@ library(viridis)
 library(geos)
 
 # Load functions
-file.sources <- list.files(pattern = "*.R", path = "functions/", full.names = TRUE)
+file.sources <- list.files(pattern = "*.R", path = paste0("r/", park, "/functions/"), full.names = TRUE)
 sapply(file.sources, source, .GlobalEnv)
 
 # TODO Set cropping extent - larger than most zoomed out plot
@@ -143,7 +143,7 @@ for (yr in years) {
     plot = p_cat,
     height = 6,
     width = 8,
-    dpi = 600,
+    dpi = 300,
     units = "in",
     bg = "white"
   )
@@ -180,7 +180,7 @@ for (yr in years) {
     plot = p_dom,
     height = 6,
     width = 8,
-    dpi = 600,
+    dpi = 300,
     units = "in",
     bg = "white"
   )
@@ -212,7 +212,7 @@ ggsave(
   plot = p_dom_se,
   height = 7,
   width = 8,
-  dpi = 900,
+  dpi = 300,
   units = "in",
   bg = "white"
 )
@@ -240,7 +240,7 @@ ggsave(
   plot = p_cat_multi,
   height = 5,
   width = 10,
-  dpi = 600,
+  dpi = 300,
   units = "in",
   bg = "white"
 )
@@ -285,7 +285,7 @@ for (habitat_name in names(habitat_lookup)) {
     plot = p_hab,
     height = 5,
     width = 8,
-    dpi = 900,
+    dpi = 300,
     units = "in",
     bg = "white"
   )

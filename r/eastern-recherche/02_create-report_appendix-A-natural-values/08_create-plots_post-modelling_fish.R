@@ -39,7 +39,7 @@ library(CheckEM)
 library(RNetCDF)
 
 # Load functions ----
-file.sources <- list.files(pattern = "*.R", path = "functions/", full.names = TRUE)
+file.sources <- list.files(pattern = "*.R", path = paste0("r/", park, "/functions/"), full.names = TRUE)
 sapply(file.sources, source, .GlobalEnv)
 
 # controlplot_fish() defined inline so the CTI panel carries the monthly SST

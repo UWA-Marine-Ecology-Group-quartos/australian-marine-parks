@@ -1,9 +1,9 @@
 ###
-# Project: NESP 4.20 - Marine Park Dashboard reporting
+# Project: NESP 4.21 - Australian Marine Parks Natural Values Reporting
 # Data:    Habitat data synthesis
 # Task:    Model habitat data using the full subsets approach from @beckyfisher/FSSgam
-# Author:  Claude Spencer
-# Date:    June 2024
+# Author:  Claude Spencer & Henry Evans
+# Date:    July 2026
 ###
 
 rm(list=ls())
@@ -229,6 +229,7 @@ preddf_sy <- dplyr::bind_rows(preddf_sy1, preddf_sy2) %>%
   glimpse()
 
 # predict, rasterise and plot
+# TODO comment-out any habitats not modeled above
 predhab <- cbind(preddf_sy,
                  "p_macro"    = predict(m_macro, preddf_sy, type = "response", se.fit = T),
                  "p_sand"     = predict(m_sand, preddf_sy, type = "response", se.fit = T),
@@ -254,6 +255,7 @@ plot(prasts_y2)
 summary(prasts_y2)
 
 # Calculate MESS and mask predictions ----
+# TODO remove habitats not predicted
 resp.vars <- c("p_sand", "p_macro", "p_seagrass", "p_inverts", "p_rock", "p_reef")
 pred.years <- years
 
@@ -346,7 +348,7 @@ for (this_year in pred.years) {
   # ---------------------------
   # Combined standard error
   # ---------------------------
-
+  # TODO remove irrelevant habitats
   se_rasts <- terra::subset(
     preddf_m,
     c("p_macro.se.fit", "p_rock.se.fit", "p_sand.se.fit",
@@ -365,6 +367,7 @@ for (this_year in pred.years) {
   preddf_m2 <- c(preddf_m, dom_rast, mean_se)
 
   # Data frame for ggplot categorical tiles
+  # TODO remove irrelevant habitats
   pred_dom_df <- as.data.frame(dom_rast, xy = TRUE, na.rm = TRUE) %>%
     dplyr::mutate(
       dom_tag = unname(dom_labels[as.character(dom_tag)]),
