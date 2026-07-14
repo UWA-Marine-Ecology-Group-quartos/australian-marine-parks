@@ -19,7 +19,7 @@ config <- yaml::read_yaml(
 
 name <- config$name
 park <- config$park
-years <- config$years
+years <- config$years #TODO hash out if only using ONE year
 
 ## TODO Run below to install FSSgam package
 # if (!requireNamespace("remotes", quietly = TRUE)) {
@@ -85,7 +85,7 @@ outdir    <- paste0("output/model-output/", park, "/habitat/")
 out.all   <- list()
 var.imp   <- list()
 resp.vars <- unique.vars.use
-factor.vars <- c("year") # TODO set factors
+factor.vars <- c("year") # TODO set factors - leave out if only one year
 
 # Loop through the FSS function for each Abiotic taxa----
 for(i in 1:length(resp.vars)){
@@ -99,7 +99,7 @@ for(i in 1:length(resp.vars)){
   model.set <- generate.model.set(use.dat = use.dat,
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
-                                  pred.vars.fact = factor.vars,
+                                  pred.vars.fact = factor.vars, # TODO drop this line if only one year of data
                                   cyclic.vars = c("geoscience_aspect"),
                                   k = 3, # TODO check this
                                   cov.cutoff = 0.7, # TODO need to check - Fisher recommends 0.28
@@ -146,6 +146,7 @@ write.csv(all.var.imp,         file = paste0(outdir, name, "_abiotic_all.var.imp
 ## TODO Select best models from above then write them below (check all.mod.fits and all.var.imp)
 # For each response, carefully write the selected model choosing model type (family),
 # predictor variables, factor variables, k and bs
+# TODO if only one year: remove "year +" and drop ", by = year" from each s() term for every model below
 
 # Sand
 m_sand <- gam(cbind(sand, total_pts - sand) ~
@@ -221,9 +222,10 @@ preddf_s <- cbind(preddf, terra::extract(marine_parks, predv)) %>%
   dplyr::mutate(status = as.factor(ifelse(is.na(status), "Fished", "No-Take"))) %>%
   glimpse()
 
+# TODO If data is only a single year replace the following block with line below
+# preddf_sy <- preddf_s
 preddf_sy1 <- preddf_s %>% dplyr::mutate(year = years[1])
 preddf_sy2 <- preddf_s %>% dplyr::mutate(year = years[2])
-
 preddf_sy <- dplyr::bind_rows(preddf_sy1, preddf_sy2) %>%
   dplyr::mutate(year = factor(year, levels = levels(habi$year))) %>%
   glimpse()
@@ -245,12 +247,17 @@ prasts_y1 <- rast(predhab %>%
                     dplyr::select(x, y, starts_with("p_")),
                   crs = "epsg:4326")
 
+# TODO if only modelling data from a single year - delete this block
 prasts_y2 <- rast(predhab %>%
                     dplyr::filter(as.character(year) %in% years[2]) %>%
                     dplyr::select(x, y, starts_with("p_")),
                   crs = "epsg:4326")
+# TODO if modelling more than two years, keep adding above code for as many years as there is in data
+
 plot(prasts_y1)
 summary(prasts_y1)
+
+# TODO Delete/hash out the below two lines if data from a single year
 plot(prasts_y2)
 summary(prasts_y2)
 
