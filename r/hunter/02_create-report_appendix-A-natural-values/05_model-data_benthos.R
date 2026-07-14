@@ -27,8 +27,8 @@ years <- config$years
  #}
  #remotes::install_github("beckyfisher/FSSgam_package")
 remotes::install_github("GlobalArchiveManual/CheckEM")
-remotes::install_version("patchwork", version = "1.2.0")
-remotes::install_version("ggplot2", version = "3.5.1")
+remotes::install_version("patchwork", version = "1.2.0") #older version required for ggplot to work
+remotes::install_version("ggplot2", version = "3.5.1") #older version required for CheckEM to work
 library(CheckEM)
 library(tidyverse)
 library(mgcv)
