@@ -277,16 +277,16 @@ saveRDS(b20_species, file = paste0("data/", park, "/tidy/", name, "_b20-species.
 # Commonwealth-only copy of metadata
 # -------------------------------------------------------------------------
 
-marine_parks_amp <- st_read("data/south-west network/spatial/shapefiles/western-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Ngari Capes", "Geographe", "South-west Corner")) %>%
-  dplyr::filter(epbc %in% "Commonwealth") %>%
+marine_parks_amp <- st_read("data/amp_shapefile/Australian_Marine_Parks.shp") %>%
+  dplyr::filter(RESNAME %in% c("Hunter")) %>%
+  dplyr::filter(ZONEIUCN %in% "VI") %>%
   st_transform(4326)
 
 metadata_amp <- metadata %>%
-  distinct(campaignid, sample, .keep_all = TRUE) %>%
+  distinct(campaignid, opcode, .keep_all = TRUE) %>%
   st_as_sf(coords = c("longitude_dd", "latitude_dd"), crs = 4326, remove = FALSE) %>%
   st_join(
-    marine_parks_amp %>% dplyr::select(name, epbc),
+    marine_parks_amp %>% dplyr::select(RESNAME, ZONEIUCN),
     join = st_within,
     left = FALSE
   ) %>%

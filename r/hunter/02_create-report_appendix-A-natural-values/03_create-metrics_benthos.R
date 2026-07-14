@@ -5,7 +5,6 @@
 # Author:  Claude Spencer
 # Date:    June 2024
 ###
-
 rm(list = ls())
 
 library(tidyverse)
@@ -23,7 +22,7 @@ name <- config$name
 park <- config$park
 
 benthos <- readRDS(paste0("data/", park, "/raw/", name, "_benthos.RDS")) %>%
-  dplyr::select(campaignid, sample, year, status, macroalgae, seagrasses,
+  dplyr::select(campaignid, sample, year, status, macroalgae, #seagrasses,
                 sand = unconsolidated, rock = consolidated,
                 sessile_invertebrates, total_pts = total_points_annotated) %>%
   dplyr::mutate(reef = macroalgae + rock + sessile_invertebrates) %>%

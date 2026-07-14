@@ -22,11 +22,13 @@ park <- config$park
 years <- config$years
 
 ## TODO Run below to install FSSgam package
-# if (!requireNamespace("remotes", quietly = TRUE)) {
-#   install.packages("remotes")
-# }
-# remotes::install_github("beckyfisher/FSSgam_package")
-
+ #if (!requireNamespace("remotes", quietly = TRUE)) {
+ #  install.packages("remotes")
+ #}
+ #remotes::install_github("beckyfisher/FSSgam_package")
+remotes::install_github("GlobalArchiveManual/CheckEM")
+remotes::install_version("patchwork", version = "1.2.0")
+remotes::install_version("ggplot2", version = "3.5.1")
 library(CheckEM)
 library(tidyverse)
 library(mgcv)
@@ -47,7 +49,8 @@ habi <- readRDS(paste0("data/", park, "/tidy/", name, "_benthos-count.RDS")) %>%
   glimpse()
 
 model_dat <- habi %>%
-  pivot_longer(cols = c(macroalgae, sand, rock, sessile_invertebrates, reef, seagrasses),
+  pivot_longer(cols = c(macroalgae, sand, rock, sessile_invertebrates, reef, #seagrasses
+                        ),
                names_to = "response", values_to = "number") %>%
   glimpse()
 
@@ -85,7 +88,7 @@ outdir    <- paste0("output/model-output/", park, "/habitat/")
 out.all   <- list()
 var.imp   <- list()
 resp.vars <- unique.vars.use
-factor.vars <- c("year") # TODO set factors
+factor.vars <- c("sample") # TODO set factors
 
 # Loop through the FSS function for each Abiotic taxa----
 for(i in 1:length(resp.vars)){
@@ -96,7 +99,7 @@ for(i in 1:length(resp.vars)){
                    s(geoscience_depth, bs = 'cr'),
                  family = binomial("logit"),  data = use.dat) # TODO check family
 
-  model.set <- generate.model.set(use.dat = use.dat,
+  model.set <- generate_model_set(use.dat = use.dat,
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
                                   pred.vars.fact = factor.vars,
@@ -105,7 +108,7 @@ for(i in 1:length(resp.vars)){
                                   cov.cutoff = 0.7, # TODO need to check - Fisher recommends 0.28
                                   max.predictors = 4 # TODO check this
   )
-  out.list <- fit.model.set(model.set,
+  out.list <- fit_model_set(model.set,
                             max.models = 600,
                             parallel = T,
                             r2.type = "dev")

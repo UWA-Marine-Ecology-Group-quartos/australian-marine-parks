@@ -32,19 +32,21 @@ options(timeout=600) # increase if more time needed for large data downloads
 token <- readRDS("secrets/api_token.RDS")
 
 # Load the metadata, count and length ----
-CheckEM::ga_api_all_data(synthesis_id = "47", # TODO change synthesis ID for different project
+CheckEM::ga_api_all_data(synthesis_id = "81", # TODO change synthesis ID for different project
                          token = token,
                          dir = paste0("data/", park, "/raw/"), # Check the directory
                          include_zeros = TRUE)
 
 metadata <- readRDS(paste0("data/", park, "/raw/metadata.RDS")) %>%
   mutate(year = as.factor(year(date_time)),
-         status = as.factor(status)) %>%
+         status = as.factor(status),
+         ) %>%
   glimpse()
 
 saveRDS(metadata, paste0("data/", park, "/raw/metadata.RDS"))
 
 # Tidy and join habitat with metadata
+benthos_summarised <- readRDS(paste0("data/", park, "/raw/", "benthos_summarised.RDS")) ##added this line
 tidy_habitat <- benthos_summarised %>%
   left_join(metadata) %>%
   glimpse()

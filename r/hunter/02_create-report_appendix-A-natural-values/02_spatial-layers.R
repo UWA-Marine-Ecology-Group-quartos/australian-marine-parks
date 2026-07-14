@@ -31,7 +31,7 @@ library(RNetCDF)
 library(rerddap)
 
 # TODO Set the extent of the study
-e <- ext(115.04, 115.60, -33.67, -33.346)
+e <- ext(152.3029, 152.9465, -32.9069, -32.2026)
 
 # TODO Download AusBathyTopo 2024 from https://pid.geoscience.gov.au/dataset/ga/150050
 # and save in below folder
