@@ -270,7 +270,8 @@ benthos_dom_tag <- function(r) {
 
   fit_lyrs <- names(r)[
     grepl("\\.fit$", names(r)) &
-      !grepl("\\.se\\.fit$", names(r))
+      !grepl("\\.se\\.fit$", names(r)) &
+      !grepl("^p_reef\\.fit$", names(r))
   ]
 
   r_fit <- terra::subset(r, fit_lyrs)

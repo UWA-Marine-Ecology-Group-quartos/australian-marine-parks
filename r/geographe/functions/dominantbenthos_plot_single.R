@@ -48,7 +48,7 @@ dominantbenthos_plot_single <- function(pred_plot, prediction_limits, habitat_lo
       )
   }
 
-  p +
+  p_out <- p +
     geom_contour(
       data = bathy,
       aes(x = x, y = y, z = Depth),
@@ -58,6 +58,15 @@ dominantbenthos_plot_single <- function(pred_plot, prediction_limits, habitat_lo
     ) +
     geom_sf(data = ausc, fill = "seashell2", colour = "black", linewidth = 0.2) +
     geom_sf(
+      data = wasanc,
+      aes(colour = zone),
+      fill        = NA,
+      show.legend = FALSE,
+      linewidth   = 0.6
+    ) +
+    scale_colour_manual(values = with(wasanc, setNames(colour, zone))) +
+    ggnewscale::new_scale_color() +
+    geom_sf(
       data = marine_parks_amp,
       aes(colour = zone),
       fill         = NA,
@@ -65,10 +74,7 @@ dominantbenthos_plot_single <- function(pred_plot, prediction_limits, habitat_lo
       linewidth    = 0.6
     ) +
     geom_sf(data = cwatr, colour = "firebrick", linewidth = 0.6) +
-    scale_colour_manual(
-      name   = "Australian Marine Parks",
-      values = with(marine_parks_amp, setNames(colour, zone))
-    ) +
+    scale_colour_manual(values = with(marine_parks_amp, setNames(colour, zone))) +
     coord_sf(
       xlim   = c(prediction_limits[1], prediction_limits[2]),
       ylim   = c(prediction_limits[3], prediction_limits[4]),
@@ -89,4 +95,6 @@ dominantbenthos_plot_single <- function(pred_plot, prediction_limits, habitat_lo
       legend.key.width  = unit(0.45, "cm"),
       plot.margin       = margin(2, 2, 2, 2, unit = "mm")
     )
+
+  cowplot::plot_grid(p_out, marine_park_legend(), ncol = 1, rel_heights = c(1, 0.175))
 }

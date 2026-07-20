@@ -19,7 +19,12 @@ config <- yaml::read_yaml(
 
 name <- config$name
 park <- config$park
-years <- config$years #TODO hash out if only using ONE year
+years <- config$years
+combine_benthos <- config$combine_benthos
+
+# Label used to save/read pooled benthos outputs (single combined file)
+# instead of one file per year. Ignored when combine_benthos is FALSE.
+benthos_label <- if (combine_benthos) paste(years, collapse = "_") else NA
 
 ## TODO Run below to install FSSgam package
 # if (!requireNamespace("remotes", quietly = TRUE)) {
@@ -85,7 +90,7 @@ outdir    <- paste0("output/model-output/", park, "/habitat/")
 out.all   <- list()
 var.imp   <- list()
 resp.vars <- unique.vars.use
-factor.vars <- c("year") # TODO set factors - leave out if only one year
+factor.vars <- c("year") # TODO set factors - if one year of data or combining years set as null
 
 # Loop through the FSS function for each Abiotic taxa----
 for(i in 1:length(resp.vars)){
@@ -99,7 +104,7 @@ for(i in 1:length(resp.vars)){
   model.set <- generate.model.set(use.dat = use.dat,
                                   test.fit = Model1,
                                   pred.vars.cont = pred.vars,
-                                  pred.vars.fact = factor.vars, # TODO drop this line if only one year of data
+                                  pred.vars.fact = factor.vars,
                                   cyclic.vars = c("geoscience_aspect"),
                                   k = 3, # TODO check this
                                   cov.cutoff = 0.7, # TODO need to check - Fisher recommends 0.28
@@ -222,13 +227,12 @@ preddf_s <- cbind(preddf, terra::extract(marine_parks, predv)) %>%
   dplyr::mutate(status = as.factor(ifelse(is.na(status), "Fished", "No-Take"))) %>%
   glimpse()
 
-# TODO If data is only a single year replace the following block with line below
-# preddf_sy <- preddf_s
-preddf_sy1 <- preddf_s %>% dplyr::mutate(year = years[1])
-preddf_sy2 <- preddf_s %>% dplyr::mutate(year = years[2])
-preddf_sy <- dplyr::bind_rows(preddf_sy1, preddf_sy2) %>%
-  dplyr::mutate(year = factor(year, levels = levels(habi$year))) %>%
-  glimpse()
+if (combine_benthos) {
+  preddf_sy <- preddf_s
+} else {
+  preddf_sy <- purrr::map_dfr(years, \(y) preddf_s %>% dplyr::mutate(year = y)) %>%
+    dplyr::mutate(year = factor(year, levels = levels(habi$year)))
+}
 
 # predict, rasterise and plot
 # TODO comment-out any habitats not modeled above
@@ -242,29 +246,25 @@ predhab <- cbind(preddf_sy,
                  ) %>%
   glimpse()
 
-prasts_y1 <- rast(predhab %>%
-                    dplyr::filter(as.character(year) %in% years[1]) %>%
-                    dplyr::select(x, y, starts_with("p_")),
-                  crs = "epsg:4326")
-
-# TODO if only modelling data from a single year - delete this block
-prasts_y2 <- rast(predhab %>%
-                    dplyr::filter(as.character(year) %in% years[2]) %>%
-                    dplyr::select(x, y, starts_with("p_")),
-                  crs = "epsg:4326")
-# TODO if modelling more than two years, keep adding above code for as many years as there is in data
-
-plot(prasts_y1)
-summary(prasts_y1)
-
-# TODO Delete/hash out the below two lines if data from a single year
-plot(prasts_y2)
-summary(prasts_y2)
-
 # Calculate MESS and mask predictions ----
 # TODO remove habitats not predicted
 resp.vars <- c("p_sand", "p_macro", "p_seagrass", "p_inverts", "p_rock", "p_reef")
-pred.years <- years
+
+# One output per label: each survey year, or a single combined label when pooling.
+pred.labels <- if (combine_benthos) benthos_label else years
+
+# Helper: return the habi + predhab rows that belong to a given output label.
+# When pooling there is no year split, so we use every row.
+rows_for <- function(label) {
+  if (combine_benthos) {
+    list(habi = habi, predhab = predhab)
+  } else {
+    list(
+      habi    = dplyr::filter(habi,    as.character(year) == label),
+      predhab = dplyr::filter(predhab, as.character(year) == label)
+    )
+  }
+}
 
 # Labels and colours for dominant habitat outputs
 dom_labels <- c(
@@ -281,7 +281,8 @@ benthos_dom_tag <- function(r) {
 
   fit_lyrs <- names(r)[
     grepl("\\.fit$", names(r)) &
-      !grepl("\\.se\\.fit$", names(r))
+      !grepl("\\.se\\.fit$", names(r)) &
+      !grepl("^p_reef\\.fit$", names(r))
   ]
 
   r_fit <- terra::subset(r, fit_lyrs)
@@ -308,12 +309,14 @@ normalise <- function(x) {
   (x - xmin) / (xmax - xmin)
 }
 
-for (this_year in pred.years) {
+# Create and save prediction layers
+for (this_label in pred.labels) {
 
-  print(this_year)
+  print(this_label)
 
-  xy <- habi %>%
-    dplyr::filter(as.character(year) == this_year) %>%
+  rr <- rows_for(this_label)
+
+  xy <- rr$habi %>%
     dplyr::transmute(x = longitude_dd, y = latitude_dd)
 
   preddf_m <- NULL
@@ -324,8 +327,7 @@ for (this_year in pred.years) {
 
     mod <- get(stringr::str_replace(resp_var, "^p_", "m_"))
 
-    temppred <- predhab %>%
-      dplyr::filter(as.character(year) == this_year) %>%
+    temppred <- rr$predhab %>%
       dplyr::select(
         x, y,
         dplyr::all_of(paste0(resp_var, ".fit")),
@@ -396,7 +398,7 @@ for (this_year in pred.years) {
     preddf_m,
     paste0(
       "output/model-output/", park, "/habitat/",
-      names(preddf_m), "_predicted_", this_year, ".tif"
+      names(preddf_m), "_predicted_", this_label, ".tif"
     ),
     overwrite = TRUE
   )
@@ -406,7 +408,7 @@ for (this_year in pred.years) {
     se_rasts_norm,
     paste0(
       "output/model-output/", park, "/habitat/",
-      name, "_predicted-se-normalised_", this_year, ".rds"
+      name, "_predicted-se-normalised_", this_label, ".rds"
     )
   )
 
@@ -414,7 +416,7 @@ for (this_year in pred.years) {
     se_rasts_norm,
     paste0(
       "output/model-output/", park, "/habitat/",
-      name, "_predicted-se-normalised_", this_year, ".tif"
+      name, "_predicted-se-normalised_", this_label, ".tif"
     ),
     overwrite = TRUE
   )
@@ -424,7 +426,7 @@ for (this_year in pred.years) {
     mean_se,
     paste0(
       "output/model-output/", park, "/habitat/",
-      name, "_predicted-mean-se_", this_year, ".rds"
+      name, "_predicted-mean-se_", this_label, ".rds"
     )
   )
 
@@ -432,7 +434,7 @@ for (this_year in pred.years) {
     mean_se,
     paste0(
       "output/model-output/", park, "/habitat/",
-      name, "_predicted-mean-se_", this_year, ".tif"
+      name, "_predicted-mean-se_", this_label, ".tif"
     ),
     overwrite = TRUE
   )
@@ -442,7 +444,7 @@ for (this_year in pred.years) {
     preddf_m2,
     paste0(
       "output/model-output/", park, "/habitat/",
-      name, "_predicted-habitat_", this_year, ".rds"
+      name, "_predicted-habitat_", this_label, ".rds"
     )
   )
 
@@ -451,7 +453,7 @@ for (this_year in pred.years) {
     pred_dom_df,
     paste0(
       "output/model-output/", park, "/habitat/",
-      name, "_predicted-dominant-habitat_", this_year, ".rds"
+      name, "_predicted-dominant-habitat_", this_label, ".rds"
     )
   )
 
@@ -460,7 +462,7 @@ for (this_year in pred.years) {
     preddf_m2,
     paste0(
       "output/model-output/", park, "/habitat/",
-      name, "_predicted-habitat-with-dominant_", this_year, ".tif"
+      name, "_predicted-habitat-with-dominant_", this_label, ".tif"
     ),
     overwrite = TRUE
   )
@@ -470,7 +472,7 @@ for (this_year in pred.years) {
     dom_rast,
     paste0(
       "output/model-output/", park, "/habitat/",
-      name, "_predicted-dominant-habitat_", this_year, ".tif"
+      name, "_predicted-dominant-habitat_", this_label, ".tif"
     ),
     overwrite = TRUE
   )

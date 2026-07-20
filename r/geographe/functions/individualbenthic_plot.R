@@ -31,14 +31,14 @@ individualbenthic_plot <- function(habitat_name,
   # ---- Theme variants ----
   theme_left <- theme(
     axis.title = element_blank(),
-    axis.text = element_text(size = 8),
+    axis.text = element_text(size = 10),
     axis.ticks = element_line(linewidth = 0.2),
     panel.grid.major = element_line(linewidth = 0.2, colour = "grey85"),
     panel.grid.minor = element_blank(),
-    legend.title = element_text(size = 8),
-    legend.text = element_text(size = 7),
-    legend.key.height = unit(0.45, "cm"),
-    legend.key.width = unit(0.45, "cm"),
+    legend.title = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    legend.key.height = unit(1.2, "lines"),
+    legend.key.width = unit(1.2, "lines"),
     plot.margin = margin(2, 2, 2, 2, unit = "mm")
   )
 
@@ -70,6 +70,15 @@ individualbenthic_plot <- function(habitat_name,
       ),
       geom_sf(data = ausc, fill = "seashell2", colour = "black", linewidth = 0.2),
       geom_sf(
+        data = wasanc,
+        aes(colour = zone),
+        fill = NA,
+        show.legend = FALSE,
+        linewidth = 0.6
+      ),
+      scale_colour_manual(values = with(wasanc, setNames(colour, zone))),
+      ggnewscale::new_scale_color(),
+      geom_sf(
         data = marine_parks_amp,
         aes(colour = zone),
         fill = NA,
@@ -77,10 +86,7 @@ individualbenthic_plot <- function(habitat_name,
         linewidth = 0.6
       ),
       geom_sf(data = cwatr, colour = "firebrick", linewidth = 0.6),
-      scale_colour_manual(
-        name = "Australian Marine Parks",
-        values = with(marine_parks_amp, setNames(colour, zone))
-      ),
+      scale_colour_manual(values = with(marine_parks_amp, setNames(colour, zone))),
       coord_sf(
         xlim = c(prediction_limits[1], prediction_limits[2]),
         ylim = c(prediction_limits[3], prediction_limits[4]),
@@ -92,7 +98,7 @@ individualbenthic_plot <- function(habitat_name,
       y_theme,
       x_theme,
       theme(
-        plot.title = element_text(hjust = 0.5, face = "bold", size = 10)
+        plot.title = element_text(hjust = 0.5, face = "bold", size = 12)
       )
     )
   }
@@ -103,7 +109,7 @@ individualbenthic_plot <- function(habitat_name,
       geom_spatraster(data = pred_list[[i]]) +
       scale_fill_viridis_c(
         name = "Probability",
-        direction = -1,
+        direction = 1,
         na.value = "transparent",
         limits = pred_limits,
         oob = scales::squish
@@ -131,7 +137,7 @@ individualbenthic_plot <- function(habitat_name,
     ggplot() +
       theme_void() +
       annotate("text", x = 0.5, y = 0.5, label = label,
-               angle = 90, fontface = "bold", size = 4)
+               angle = 90, fontface = "bold", size = 4.5)
   }
 
   pred_label <- row_label_plot("Prediction")
@@ -152,5 +158,8 @@ individualbenthic_plot <- function(habitat_name,
       plot.margin = margin(2, 2, 2, 2, unit = "mm")
     )
 
+  p_out <- cowplot::plot_grid(p_out, marine_park_legend(), ncol = 1, rel_heights = c(1, 0.145))
+
   return(p_out)
 }
+

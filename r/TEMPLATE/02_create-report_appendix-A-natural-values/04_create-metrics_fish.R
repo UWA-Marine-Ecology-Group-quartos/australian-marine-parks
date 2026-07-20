@@ -84,7 +84,7 @@ count.wide <- count %>%
   ) %>%
   mutate(
     Year = case_when(
-      grepl("^2014", campaignid) ~ "2014",
+      grepl("^2014", campaignid) ~ "2014", # TODO adjust to years in data
       grepl("^2024", campaignid) ~ "2024",
       TRUE ~ campaignid
     )

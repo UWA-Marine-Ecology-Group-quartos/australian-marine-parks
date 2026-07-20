@@ -58,6 +58,8 @@ marine_parks_state <- marine_parks %>%
   dplyr::filter(epbc %in% "State") %>%
   st_transform(4326)
 
+wasanc <- marine_parks[marine_parks$zone %in% "Sanctuary Zone", ]
+
 # Australian outline
 aus <- st_read("data/south-west network/spatial/shapefiles/aus-shapefile-w-investigator-stokes.shp")
 ausc <- aus %>%
@@ -153,7 +155,7 @@ for (metric_name in names(fish_metric_lookup)) {
       paste(years, collapse = "-"), ".png"
     ),
     plot = p_metric,
-    height = 5,
+    height = 7,
     width = 8,
     dpi = 300,
     units = "in",

@@ -21,6 +21,10 @@ name <- config$name
 park <- config$park
 years <- config$years
 
+combine_benthos <- config$combine_benthos
+benthos_label <- if (combine_benthos) paste(years, collapse = "_") else NA
+
+
 library(mgcv)
 library(tidyverse)
 library(terra)
@@ -57,7 +61,7 @@ resp.vars
 
 # Run the full subset model selection----
 savedir <- paste0("output/model-output/", park, "/fish/maxn/")
-factor.vars <- c("status", "year") # TODO set factors
+factor.vars <- c("status", "year") # TODO set factors, drop year if only one year of data
 out.all     <- list()
 var.imp     <- list()
 
@@ -144,7 +148,7 @@ savedir <- paste0("output/model-output/", park, "/fish/length/")
 name_b20 <- paste(name,"b20", sep = "_")
 out.all <- list()
 var.imp <- list()
-factor.vars <- c("status", "year") # TODO check
+factor.vars <- c("status", "year") # TODO check, drop year if only one year of data
 
 # Loop through the FSS function for each Taxa----
 for(i in 1:length(resp.vars)){
@@ -271,41 +275,30 @@ preddf_s <- cbind(preddf, terra::extract(marine_parks, predv)) %>%
 ## ------------------------------------------------------------
 ## ADD YEAR-SPECIFIC REEF FOR FISH MODELLING
 ## ------------------------------------------------------------
+# One reef surface per fish year. If benthos was pooled there is a single
+# combined-years habitat file, so every fish year reuses that same reef surface.
+if (combine_benthos) {
+  reef_r <- readRDS(paste0("output/model-output/", park, "/habitat/",
+                           name, "_predicted-habitat_", benthos_label, ".rds")) %>%
+    terra::subset("p_reef.fit")
+  names(reef_r) <- "reef"
+  reef_by_year <- setNames(rep(list(reef_r), length(years)), years)
+} else {
+  reef_by_year <- setNames(lapply(years, function(y) {
+    r <- readRDS(paste0("output/model-output/", park, "/habitat/",
+                        name, "_predicted-habitat_", y, ".rds")) %>%
+      terra::subset("p_reef.fit")
+    names(r) <- "reef"; r
+  }), years)
+}
 
-# Predicted reef year 1
-pred_reef_y1 <- readRDS(paste0("output/model-output/", park, "/habitat/",
-                               name, "_predicted-habitat_", years[1], ".rds")) %>%
-  terra::subset("p_reef.fit")
-names(pred_reef_y1) <- "reef"
-plot(pred_reef_y1)
-
-# Predicted reef year 2
-pred_reef_y2 <- readRDS(paste0("output/model-output/", park, "/habitat/",
-                               name, "_predicted-habitat_", years[2], ".rds")) %>%
-  terra::subset("p_reef.fit")
-names(pred_reef_y2) <- "reef"
-plot(pred_reef_y2)
-
-# Add reef for year 1
-preddf_sy1 <- cbind(
-  preddf_s,
-  terra::extract(pred_reef_y1, predv)[, "reef", drop = FALSE]
-) %>%
-  dplyr::mutate(year = years[1])
-
-# Add reef for year 2
-preddf_sy2 <- cbind(
-  preddf_s,
-  terra::extract(pred_reef_y2, predv)[, "reef", drop = FALSE]
-) %>%
-  dplyr::mutate(year = years[2])
-
-# Stack years and align year factor levels
-preddf_sy <- dplyr::bind_rows(preddf_sy1, preddf_sy2) %>%
-  dplyr::mutate(
-    year = factor(year, levels = levels(fabund$year))
-  ) %>%
-  glimpse()
+# Build one prediction frame per fish year, each with its reef surface
+preddf_sy <- purrr::map_dfr(years, function(y) {
+  cbind(preddf_s,
+        terra::extract(reef_by_year[[as.character(y)]], predv)[, "reef", drop = FALSE]) %>%
+    dplyr::mutate(year = y)
+}) %>%
+  dplyr::mutate(year = factor(year, levels = levels(fabund$year)))
 
 ## ------------------------------------------------------------
 ## PREDICT FISH METRICS FOR BOTH YEARS
@@ -323,7 +316,7 @@ predicted_fish <- cbind(
 ## ------------------------------------------------------------
 ## RASTERISE FISH PREDICTIONS BY YEAR (same format as habitat)
 ## ------------------------------------------------------------
-
+# TODO edit the years below to match data
 # 2014 rasters
 prasts_2014 <- rast(
   predicted_fish %>%

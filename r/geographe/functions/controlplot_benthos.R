@@ -99,7 +99,7 @@ controlplot_benthos <- function(data, taxa, amp_abbrv, state_abbrv,
     coord_cartesian(xlim = c(2013, 2025), ylim = c(0, NA)) +
     scale_fill_manual(values = fill_vals, name = "Marine Parks", drop = FALSE) +
     scale_shape_manual(values = shape_vals, name = "Marine Parks", drop = FALSE) +
-    labs(x = "Year", y = "Mean predicted probability", title = taxa_label) +
+    labs(x = "Year", y = "Mean predicted probability") +
     theme(
       legend.position = "right",
       strip.background = element_blank(),

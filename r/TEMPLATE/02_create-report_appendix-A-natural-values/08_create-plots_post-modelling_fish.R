@@ -111,6 +111,102 @@ for (yr in years) {
 # -------------------------------------------------------------------
 # Fish metric plots
 # -------------------------------------------------------------------
+# =============================================================================
+# SST PROCESSING - run once to create the SST time series used by the Reef
+# Fish Thermal Index (CTI) control plot.
+#
+# TODO Download the IMOS 6-day SST product (more recent coverage than the
+# 1-month product used in Appendix B - 03_create-report_appendix-B-pressures/
+# 01_spatial-layers.R): "IMOS - SRS - SST - L3S - Single Sensor - 6 day - day
+# and night time - Australia" from the AODN portal, and save it as:
+#   data/<park>/spatial/oceanography/SST_recent.nc
+# This file is large and can take a while to download, but gives more
+# up-to-date SST coverage than the monthly product (useful if your most
+# recent survey year is close to the current date).
+#
+# TODO point controlplot_fish() at "<name>_SST_time-series-recent.rds" (built
+# below) instead of the monthly "<name>_SST_time-series.rds" from Appendix B -
+# see the inline controlplot_fish() override in
+# r/eastern-recherche/02_create-report_appendix-A-natural-values/08_create-plots_post-modelling_fish.R
+# (defined after the source() loop above, so it overrides the default in
+# functions/controlplot_fish.R).
+# =============================================================================
+
+library(RNetCDF)
+library(lubridate)
+
+nc_sst <- open.nc(paste0("data/", park, "/spatial/oceanography/SST_recent.nc"))
+print.nc(nc_sst)
+
+# Extract raw arrays
+sst_var <- var.get.nc(nc_sst, "sea_surface_temperature")
+lat     <- var.get.nc(nc_sst, "lat")
+lon     <- var.get.nc(nc_sst, "lon")
+time_nc <- var.get.nc(nc_sst, "time")
+
+# Convert time to dates
+dates_sst <- as.Date(utcal.nc("seconds since 1981-01-01 00:00:00", time_nc, type = "c"))
+
+close.nc(nc_sst) # close before raster operations to avoid GDAL errors
+
+# Convert Kelvin to Celsius and fix dimension order [lon, lat, time] -> [lat, lon, time]
+sst_var       <- sst_var - 273.15
+sst_corrected <- aperm(sst_var, c(2, 1, 3))
+
+# Create raster stack
+rast_sst <- terra::rast(sst_corrected,
+                        extent = terra::ext(min(lon), max(lon), min(lat), max(lat)),
+                        crs    = "EPSG:4326")
+
+# Assign dates, crop and trim to study extent
+names(rast_sst) <- as.character(dates_sst)
+time(rast_sst)  <- dates_sst
+rast_sst        <- terra::crop(rast_sst, e) %>% terra::trim()
+
+plot(rast_sst)
+# Check orientation - if upside down run: rast_sst <- terra::flip(rast_sst, "vertical")
+plot(rast_sst[[1]])
+
+# Build monthly climatology
+sst_list <- list()
+for (month in sort(unique(month(time(rast_sst))))) {
+  monthly_rast <- subset(rast_sst, month(time(rast_sst)) == month) %>%
+    mean(na.rm = TRUE) %>%
+    app(fun = function(i) { i - 273.15 })
+  names(monthly_rast) <- month.abb[month]
+  sst_list[[month.abb[month]]] <- monthly_rast
+}
+sst <- rast(sst_list)
+
+saveRDS(sst, paste0("data/", park, "/spatial/oceanography/", name, "_SST_raster-recent.rds"))
+
+# Build monthly time-series summary
+sst_tsdf <- terra::global(rast_sst, fun = "mean", na.rm = TRUE) %>%
+  tibble::rownames_to_column() %>%
+  cbind(terra::global(rast_sst, fun = "sd", na.rm = TRUE)) %>%
+  tidyr::separate(rowname, into = c("year", "month", "day"), sep = "-") %>%
+  dplyr::group_by(year, month) %>%
+  summarise(
+    sst = mean(mean, na.rm = TRUE) - 273.15, # Apply -273.15 offset (controlplot_fish adds it back)
+    sd  = mean(sd,   na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  ungroup() %>%
+  dplyr::mutate(season = case_when(
+    month %in% c("04", "05", "06") ~ "Autumn",
+    month %in% c("07", "08", "09") ~ "Winter",
+    month %in% c("10", "11", "12") ~ "Spring",
+    month %in% c("01", "02", "03") ~ "Summer"
+  )) %>%
+  glimpse()
+
+saveRDS(sst_tsdf, paste0("data/", park, "/spatial/oceanography/", name, "_SST_time-series-recent.rds"))
+
+boxplot(sst_tsdf$sst ~ sst_tsdf$month)
+
+# -------------------------------------------------------------------
+# Fish metric plots
+# -------------------------------------------------------------------
 for (metric_name in names(fish_metric_lookup)) {
 
   message("Building fish metric plot for: ", metric_name)
@@ -463,12 +559,13 @@ maxn.10 <- maxn %>%
   left_join(sti) %>%
   glimpse()
 
-spy1 <- maxn.10 %>% filter(year == years[1]) %>% pull(scientific)
-spy2 <- maxn.10 %>% filter(year == years[2]) %>% pull(scientific)
-
-unique_species <- union(
-  setdiff(spy1, spy2),
-  setdiff(spy2, spy1))
+if (length(years) > 1) {
+  species_by_year <- split(maxn.10$scientific, maxn.10$year)
+  species_year_count <- table(unlist(lapply(species_by_year, unique)))
+  unique_species <- names(species_year_count[species_year_count == 1])
+} else {
+  unique_species <- character(0)
+}
 
 bar_maxn <- ggplot(
   maxn.10 %>%
@@ -515,12 +612,13 @@ cti.10 <- maxn %>%
   ungroup() %>%
   glimpse()
 
-sp.cti.y1 <- cti.10 %>% filter(year == years[1]) %>% pull(scientific)
-sp.cti.y2 <- cti.10 %>% filter(year == years[2]) %>% pull(scientific)
-
-unique_species_cti <- union(
-  setdiff(sp.cti.y1, sp.cti.y2),
-  setdiff(sp.cti.y2, sp.cti.y1))
+if (length(years) > 1) {
+  species_by_year_cti <- split(cti.10$scientific, cti.10$year)
+  species_year_count_cti <- table(unlist(lapply(species_by_year_cti, unique)))
+  unique_species_cti <- names(species_year_count_cti[species_year_count_cti == 1])
+} else {
+  unique_species_cti <- character(0)
+}
 
 log1p10_trans <- trans_new(
   name = "log10p1",
@@ -607,18 +705,13 @@ b20.10 <- b20 %>%
   ungroup()
 
 # species unique to either year's top 10 (for bold labels)
-spy1_b20 <- b20.10 %>%
-  filter(year == years[1]) %>%
-  pull(scientific_name)
-
-spy2_b20 <- b20.10 %>%
-  filter(year == years[2]) %>%
-  pull(scientific_name)
-
-unique_species_b20 <- union(
-  setdiff(spy1_b20, spy2_b20),
-  setdiff(spy2_b20, spy1_b20)
-)
+if (length(years) > 1) {
+  species_by_year_b20 <- split(b20.10$scientific_name, b20.10$year)
+  species_year_count_b20 <- table(unlist(lapply(species_by_year_b20, unique)))
+  unique_species_b20 <- names(species_year_count_b20[species_year_count_b20 == 1])
+} else {
+  unique_species_b20 <- character(0)
+}
 
 # common plot function
 plot_b20_bars <- function(plot_data, fill_values, fill_breaks) {
@@ -705,6 +798,7 @@ ggsave(
 
 # -------------------------------------------------------------------------
 # Plot 2: 2014 Combined, 2024 split into Fished / No-Take
+# TODO check and edit status
 # -------------------------------------------------------------------------
 
 b20_plot_mixed <- b20 %>%
