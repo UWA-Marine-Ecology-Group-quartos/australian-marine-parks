@@ -20,16 +20,16 @@ categoricalhabitat_plot_single <- function(pred_plot, prediction_limits, habitat
       dom_tag = as.character(dom_tag),
       dom_tag = dplyr::case_when(
         dom_tag %in% c("sand", "Sand")                                                        ~ "Sand",
-        dom_tag %in% c("macro", "macroalgae", "Macroalgae")                                   ~ "Macroalgae",
-        dom_tag %in% c("seagrass", "seagrasses", "Seagrass", "Seagrasses")                    ~ "Seagrass",
-        dom_tag %in% c("rock", "Rock")                                                        ~ "Rock",
-        dom_tag %in% c("sessile invertebrates", "Sessile Invertebrates", "inverts", "Inverts") ~ "Sessile invertebrates",
+        #dom_tag %in% c("macro", "macroalgae", "Macroalgae")                                   ~ "Macroalgae",
+       #dom_tag %in% c("seagrass", "seagrasses", "Seagrass", "Seagrasses")                    ~ "Seagrass",
+       #dom_tag %in% c("rock", "Rock")                                                        ~ "Rock",
+        #dom_tag %in% c("sessile invertebrates", "Sessile Invertebrates", "inverts", "Inverts") ~ "Sessile invertebrates",
         TRUE ~ dom_tag
       ),
       dom_tag = factor(dom_tag, levels = hab_levels)
     )
 
-  ggplot() +
+  p_out <- ggplot() +
     geom_tile(data = pred_cat, aes(x = x, y = y, fill = dom_tag)) +
     scale_fill_manual(
       name     = "Habitat",
@@ -59,11 +59,12 @@ categoricalhabitat_plot_single <- function(pred_plot, prediction_limits, habitat
     new_scale_color() +
     geom_sf(
       data        = wasanc,
-      colour      = "#bfd054",
+      aes(colour  = zone),
       fill        = NA,
       linewidth   = 0.7,
       show.legend = FALSE
     ) +
+    scale_colour_manual(values = with(wasanc, setNames(colour, zone))) +
     new_scale_color() +
     geom_sf(data = cwatr, colour = "red", linewidth = 0.9) +
     coord_sf(
@@ -82,4 +83,6 @@ categoricalhabitat_plot_single <- function(pred_plot, prediction_limits, habitat
       legend.text       = element_text(size = 6),
       legend.title      = element_blank()
     )
+
+  cowplot::plot_grid(p_out, marine_park_legend(), ncol = 1, rel_heights = c(1, 0.175))
 }

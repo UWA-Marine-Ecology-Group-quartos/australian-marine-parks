@@ -19,7 +19,7 @@ config <- yaml::read_yaml(
 
 name <- config$name
 park <- config$park
-years <- config$years
+#years <- config$years
 
 ## TODO Run below to install FSSgam package
  #if (!requireNamespace("remotes", quietly = TRUE)) {
@@ -61,7 +61,7 @@ pred.vars <- c("geoscience_depth", "geoscience_aspect", "geoscience_roughness", 
 round(cor(model_dat[ , pred.vars]), 2)
 
 # TODO Review of individual predictors for even distribution---
-CheckEM::plot_transformations(pred.vars = pred.vars, dat = model_dat)
+CheckEM::plot_transformations(pred.vars = pred.vars, dat = model_dat) ##THE LOG DISTRIBUTION DOESNT LOOK EVEN IS THAT AN ISSUE?
 
 # TODO Check to make sure Response vector has not more than 80% zeros---
 (unique.vars = unique(as.character(model_dat$response)))
@@ -73,7 +73,7 @@ for(i in 1:length(unique.vars)){
     unique.vars.use = c(unique.vars.use, unique.vars[i])}
 }
 
-unique.vars.use
+unique.vars.use ##force reef.
 
 # # Or you can force in your own variables, you might need reef for fish predictions
 # unique.vars.use <- c("macroalgae",
@@ -88,7 +88,7 @@ outdir    <- paste0("output/model-output/", park, "/habitat/")
 out.all   <- list()
 var.imp   <- list()
 resp.vars <- unique.vars.use
-factor.vars <- c("sample") # TODO set factors
+factor.vars <- c("sample") # TODO set factors ##have nothing here
 
 # Loop through the FSS function for each Abiotic taxa----
 for(i in 1:length(resp.vars)){
@@ -150,6 +150,7 @@ write.csv(all.var.imp,         file = paste0(outdir, name, "_abiotic_all.var.imp
 # For each response, carefully write the selected model choosing model type (family),
 # predictor variables, factor variables, k and bs
 
+##DO I NEED TO REMOVE SEAGRASS/MACROALGAE ETC FROM THIS POINT ON IF I DONT HAVE CORRECT MODELS/SUFFICENT DATA?
 # Sand
 m_sand <- gam(cbind(sand, total_pts - sand) ~
                 year +
@@ -224,7 +225,7 @@ preddf_s <- cbind(preddf, terra::extract(marine_parks, predv)) %>%
   dplyr::mutate(status = as.factor(ifelse(is.na(status), "Fished", "No-Take"))) %>%
   glimpse()
 
-preddf_sy1 <- preddf_s %>% dplyr::mutate(year = years[1])
+preddf_sy1 <- preddf_s %>% dplyr::mutate(year = years[1])        ##IS THIS FOR DATA WITH MULTIPLE YEARS?? IF YOU HAVE CONFIG YEARS HASHED OUT ABOVE ARE YOU MEANT TO BE DOING THIS?
 preddf_sy2 <- preddf_s %>% dplyr::mutate(year = years[2])
 
 preddf_sy <- dplyr::bind_rows(preddf_sy1, preddf_sy2) %>%

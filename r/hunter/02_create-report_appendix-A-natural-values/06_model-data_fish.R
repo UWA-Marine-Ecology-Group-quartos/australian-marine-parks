@@ -57,7 +57,7 @@ resp.vars
 
 # Run the full subset model selection----
 savedir <- paste0("output/model-output/", park, "/fish/")
-factor.vars <- c("status", "year") # TODO set factors
+factor.vars <- c("status", "year") # TODO set factors       ##DO I NEED TO CHANGE THESE FACTORS
 out.all     <- list()
 var.imp     <- list()
 
@@ -84,7 +84,7 @@ for(i in 1:length(resp.vars)){
   names(out.list)
 
   out.list$failed.models # examine the list of failed models
-  mod.table <- out.list$mod.data.out  # look at the model selection table
+  mod.table <- out.list$mod.data.out  # look at the model selection table  ##AGAIN WHAT AM I LOOKING FOR
   mod.table <- mod.table[order(mod.table$AICc), ]
   mod.table$cumsum.wi <- cumsum(mod.table$wi.AICc)
   out.i   <- mod.table[which(mod.table$delta.AICc <= 2), ]
@@ -205,6 +205,7 @@ fabund <- bind_rows(tidy_maxn, tidy_b20) %>%
 # For each response, carefully write the selected model choosing model type (family),
 # predictor variables, factor variables, k and bs
 
+
 #Total abundance
 m_abundance <- gam(count ~ year + status +
                     s(reef, by = year, k = 3, bs = "cr"),
@@ -320,7 +321,7 @@ predicted_fish <- cbind(
   glimpse()
 
 ## ------------------------------------------------------------
-## RASTERISE FISH PREDICTIONS BY YEAR (same format as habitat)
+## RASTERISE FISH PREDICTIONS BY YEAR (same format as habitat)     ##WHERE DID 2014 COME FROM??
 ## ------------------------------------------------------------
 
 # 2014 rasters

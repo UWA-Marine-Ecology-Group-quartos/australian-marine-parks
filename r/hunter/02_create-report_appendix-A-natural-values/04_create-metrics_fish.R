@@ -152,7 +152,7 @@ sac_df <- count.wide %>%
     )
   })
 
-saveRDS(sac_df, file = paste0("data/", park, "/tidy/", name, "_species-accumulation.rds"))
+saveRDS(sac_df, file = paste0("data/", park, "/tidy/", name, "_species-accumulation.rds")) ## DOES THIS LOOK RIGHT??
 
 cti <- CheckEM::create_cti(data = count) %>%
   dplyr::rename(count = cti) %>%
@@ -274,7 +274,7 @@ saveRDS(b20_species, file = paste0("data/", park, "/tidy/", name, "_b20-species.
 
 
 # -------------------------------------------------------------------------
-# Commonwealth-only copy of metadata
+# Commonwealth-only copy of metadata                                              ##DO I HAVE TO DO THIS SECTION AS IT IS ALREADY COMMONWEALTH ONLY DATA?
 # -------------------------------------------------------------------------
 
 marine_parks_amp <- st_read("data/amp_shapefile/Australian_Marine_Parks.shp") %>%

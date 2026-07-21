@@ -1,9 +1,9 @@
 ###
-# Project: NESP 4.20 - Marine Park Dashboard reporting
+# Project: NESP 4.21 - Australian Marine Parks Natural Values Reporting
 # Data:    Marine Park monitoring data syntheses
 # Task:    Call GlobalArchive API to download data syntheses
-# Author:  Claude Spencer
-# Date:    June 2024
+# Author:  Claude Spencer & Henry Evans
+# Date:    July 2026
 ###
 rm(list = ls())
 
@@ -39,14 +39,13 @@ CheckEM::ga_api_all_data(synthesis_id = "81", # TODO change synthesis ID for dif
 
 metadata <- readRDS(paste0("data/", park, "/raw/metadata.RDS")) %>%
   mutate(year = as.factor(year(date_time)),
-         status = as.factor(status),
-         ) %>%
+         status = as.factor(status)) %>%
   glimpse()
 
 saveRDS(metadata, paste0("data/", park, "/raw/metadata.RDS"))
 
 # Tidy and join habitat with metadata
-benthos_summarised <- readRDS(paste0("data/", park, "/raw/", "benthos_summarised.RDS")) ##added this line
+benthos_summarised <- readRDS(paste0("data/", park, "/raw/", "benthos_summarised.RDS"))
 tidy_habitat <- benthos_summarised %>%
   left_join(metadata) %>%
   glimpse()
