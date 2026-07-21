@@ -20,6 +20,7 @@ output/model-output/*
 !output/model-output/TEMPLATE/**
 data/geographe/uploads
 data/**/*
+!data/*/
 !data/*/spatial
 !data/*/spatial/**
 !data/TEMPLATE
