@@ -51,7 +51,19 @@ sf_use_s2(TRUE)
 aus <- st_read("data/south-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
   st_make_valid()
 
-capad <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp")
+# CAPAD Marine 2024 — used for the inset overview maps AND as the source of
+# Commonwealth zone RES_NUMBER labels (see below)
+capad <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Marine.shp")
+
+# Commonwealth AMP zone labels: last 5 characters of RES_NUMBER (e.g. "npz03"),
+# plotted at each zone's CAPAD-supplied LONGITUDE/LATITUDE point
+capad_amp_labels <- capad %>%
+  st_drop_geometry() %>%
+  dplyr::filter(EPBC == "Commonwealth",
+                TYPE == "Australian Marine Park",
+                RES_NUMBER != "") %>%
+  dplyr::mutate(label = stringr::str_sub(RES_NUMBER, -5, -1)) %>%
+  sf::st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = 4326, remove = FALSE)
 
 terrnp <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
   dplyr::filter(TYPE %in% c("Nature Reserve", "National Park"))
@@ -121,13 +133,17 @@ thin_breaks <- function(limits, step = 0.2) {
 # 3. PANEL FUNCTION
 # ==============================================================================
 
-make_zone_panel <- function(plot_limits, mp_amp, mp_state, break_step = 0.1) {
+make_zone_panel <- function(plot_limits, mp_amp, mp_state, label_data = NULL, break_step = 0.1) {
 
   x_breaks <- thin_breaks(plot_limits[1:2], step = break_step)
   y_breaks <- thin_breaks(abs(plot_limits[3:4]), step = break_step) * -1
 
   # Coastal waters limit dummy data for legend
   cwatr_legend <- data.frame(x = 1, y = 1, label = "Coastal Waters Limit")
+
+  if (is.null(label_data)) {
+    label_data <- capad_amp_labels[0, ]
+  }
 
   ggplot() +
 
@@ -157,6 +173,15 @@ make_zone_panel <- function(plot_limits, mp_amp, mp_state, break_step = 0.1) {
                       breaks = c("National Park Zone", "Habitat Protection Zone",
                                  "Multiple Use Zone", "Special Purpose Zone")) +
     new_scale_fill() +
+
+    # Commonwealth AMP zone labels (last 5 characters of CAPAD RES_NUMBER,
+    # e.g. "npz03"), placed at each zone's CAPAD reference point
+    geom_sf_text(data          = label_data,
+                 aes(label     = label),
+                 size          = 2.2,
+                 colour        = "grey15",
+                 fontface      = "bold",
+                 check_overlap = TRUE) +
 
     # Terrestrial parks
     geom_sf(data = terrnp, aes(fill = TYPE), colour = NA, alpha = 0.8) +
@@ -214,12 +239,14 @@ make_zone_panel <- function(plot_limits, mp_amp, mp_state, break_step = 0.1) {
 # Call functions
 tr_amp   <- filter_to_extent(marine_parks_amp,   tworocks_limits)
 tr_state <- filter_to_extent(marine_parks_state, tworocks_limits)
+tr_labels <- filter_to_extent(capad_amp_labels,  tworocks_limits)
 
 geo_amp   <- filter_to_extent(marine_parks_amp,   geographe_limits)
 geo_state <- filter_to_extent(marine_parks_state, geographe_limits)
+geo_labels <- filter_to_extent(capad_amp_labels,  geographe_limits)
 
-p_tr  <- make_zone_panel(tworocks_limits,  tr_amp,  tr_state,  break_step = 0.1)
-p_geo <- make_zone_panel(geographe_limits, geo_amp, geo_state, break_step = 0.1)
+p_tr  <- make_zone_panel(tworocks_limits,  tr_amp,  tr_state,  label_data = tr_labels,  break_step = 0.1)
+p_geo <- make_zone_panel(geographe_limits, geo_amp, geo_state, label_data = geo_labels, break_step = 0.1)
 
 # Build the legend
 legend <- cowplot::get_legend(p_tr + theme(
@@ -328,10 +355,11 @@ make_zone_plot_left_legend <- function(plot_limits,
                                        width        = 10,
                                        height       = 6) {
 
-  mp_amp   <- filter_to_extent(marine_parks_amp,   plot_limits)
-  mp_state <- filter_to_extent(marine_parks_state, plot_limits)
+  mp_amp    <- filter_to_extent(marine_parks_amp,   plot_limits)
+  mp_state  <- filter_to_extent(marine_parks_state, plot_limits)
+  mp_labels <- filter_to_extent(capad_amp_labels,   plot_limits)
 
-  p_map <- make_zone_panel(plot_limits, mp_amp, mp_state, break_step = break_step)
+  p_map <- make_zone_panel(plot_limits, mp_amp, mp_state, label_data = mp_labels, break_step = break_step)
 
   # Legend
   legend_single <- cowplot::get_legend(p_map + theme(

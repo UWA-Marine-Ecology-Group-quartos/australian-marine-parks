@@ -45,11 +45,11 @@ options(timeout = 6000)
 aus_crs <- 7844
 
 # Set cropping / download extents (matches north network KEF map script)
-e     <- ext(120, 148, -21, -8)
-e_vec <- c(120, 148, -21, -8)
+e     <- ext(120, 148, -21, -7)
+e_vec <- c(120, 148, -21, -7)
 
 # Final map panel extent (tighter than the crop/download extent)
-plot_limits <- c(126, 143, -18, -9)
+plot_limits <- c(126, 143, -18, -8.5)
 
 # ── Load spatial files ────────────────────────────────────────────────────────
 # Terrestrial parks
