@@ -28,7 +28,7 @@
 rm(list = ls())
 
 # Set study name
-name <- "south-west"
+name <- "north"
 park <- "network"
 
 # Load libraries
@@ -212,14 +212,14 @@ make_zone_panel <- function(plot_limits, mp_amp, mp_state, break_step = 0.1) {
 # 4. BUILD TWO ROCKS & GEOGRAPHE PANELS
 # ==============================================================================
 # Call functions
-tr_amp   <- filter_to_extent(marine_parks_amp,   tworocks_limits)
-tr_state <- filter_to_extent(marine_parks_state, tworocks_limits)
-
-geo_amp   <- filter_to_extent(marine_parks_amp,   geographe_limits)
-geo_state <- filter_to_extent(marine_parks_state, geographe_limits)
-
-p_tr  <- make_zone_panel(tworocks_limits,  tr_amp,  tr_state,  break_step = 0.1)
-p_geo <- make_zone_panel(geographe_limits, geo_amp, geo_state, break_step = 0.1)
+# tr_amp   <- filter_to_extent(marine_parks_amp,   tworocks_limits)
+# tr_state <- filter_to_extent(marine_parks_state, tworocks_limits)
+#
+# geo_amp   <- filter_to_extent(marine_parks_amp,   geographe_limits)
+# geo_state <- filter_to_extent(marine_parks_state, geographe_limits)
+#
+# p_tr  <- make_zone_panel(tworocks_limits,  tr_amp,  tr_state,  break_step = 0.1)
+# p_geo <- make_zone_panel(geographe_limits, geo_amp, geo_state, break_step = 0.1)
 
 # Build the legend
 legend <- cowplot::get_legend(p_tr + theme(
@@ -265,54 +265,54 @@ p_inset <- ggplot(data = aus) +
 # 5. FIGURE 1: TWO ROCKS & GEOGRAPHE FACETED MAP (assemble and save)
 # ==============================================================================
 # ── Assemble ──────────────────────────────────────────────────────────────────
-label_tr  <- ggdraw() + draw_label("Two Rocks",  size = 14, angle = 90)
-label_geo <- ggdraw() + draw_label("Geographe",  size = 14, angle = 90)
-
-p_tr_nl  <- p_tr  + theme(legend.position = "none", plot.margin = margin(0, 0, 0, 0))
-p_geo_nl <- p_geo + theme(legend.position = "none", plot.margin = margin(0, 0, 0, 0))
-
-row_tr <- cowplot::plot_grid(
-  label_tr, p_tr_nl,
-  nrow = 1, rel_widths = c(0.06, 1)
-)
-
-row_geo <- cowplot::plot_grid(
-  label_geo, p_geo_nl,
-  nrow = 1, rel_widths = c(0.06, 1)
-)
-
-maps_grid <- cowplot::plot_grid(
-  row_tr,
-  row_geo,
-  ncol        = 1,
-  rel_heights = c(1, 1)
-)
-
-left_col <- cowplot::plot_grid(
-  legend,
-  NULL,
-  p_inset,
-  ncol        = 1,
-  rel_heights = c(0.45, 0.15, 0.45)
-)
-
-figure <- cowplot::plot_grid(
-  left_col,
-  maps_grid,
-  nrow       = 1,
-  rel_widths = c(0.32, 1)
-) +
-  theme(plot.background = element_rect(fill = "white", colour = NA),
-        plot.margin     = margin(5, 5, 5, 5))
+# label_tr  <- ggdraw() + draw_label("Two Rocks",  size = 14, angle = 90)
+# label_geo <- ggdraw() + draw_label("Geographe",  size = 14, angle = 90)
+#
+# p_tr_nl  <- p_tr  + theme(legend.position = "none", plot.margin = margin(0, 0, 0, 0))
+# p_geo_nl <- p_geo + theme(legend.position = "none", plot.margin = margin(0, 0, 0, 0))
+#
+# row_tr <- cowplot::plot_grid(
+#   label_tr, p_tr_nl,
+#   nrow = 1, rel_widths = c(0.06, 1)
+# )
+#
+# row_geo <- cowplot::plot_grid(
+#   label_geo, p_geo_nl,
+#   nrow = 1, rel_widths = c(0.06, 1)
+# )
+#
+# maps_grid <- cowplot::plot_grid(
+#   row_tr,
+#   row_geo,
+#   ncol        = 1,
+#   rel_heights = c(1, 1)
+# )
+#
+# left_col <- cowplot::plot_grid(
+#   legend,
+#   NULL,
+#   p_inset,
+#   ncol        = 1,
+#   rel_heights = c(0.45, 0.15, 0.45)
+# )
+#
+# figure <- cowplot::plot_grid(
+#   left_col,
+#   maps_grid,
+#   nrow       = 1,
+#   rel_widths = c(0.32, 1)
+# ) +
+#   theme(plot.background = element_rect(fill = "white", colour = NA),
+#         plot.margin     = margin(5, 5, 5, 5))
 
 # ── Save ──────────────────────────────────────────────────────────────────────
-ggsave(paste(paste0("plots/", park, "/spatial/", name),
-             "tworocks-geographe-MPs.png", sep = "-"),
-       plot   = figure,
-       dpi    = 600,
-       width  = 9,
-       height = 9,
-       bg     = "white")
+# ggsave(paste(paste0("plots/", park, "/spatial/", name),
+#              "tworocks-geographe-MPs.png", sep = "-"),
+#        plot   = figure,
+#        dpi    = 600,
+#        width  = 9,
+#        height = 9,
+#        bg     = "white")
 
 
 # ==============================================================================
