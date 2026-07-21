@@ -194,7 +194,7 @@ tidy_maxn <- bind_rows(ta.sr, cti) %>% # TODO check which samples are removed in
 
 saveRDS(tidy_maxn, file = paste0("data/", park, "/tidy/", name, "_tidy-count.rds"))
 
-# # the below is excluded from the TEMPLATE
+
 # length <- readRDS(paste0("data/", park, "/raw/_length-with-zeros.RDS")) %>%
 #   dplyr::select(campaignid, sample, family, genus, species, length_mm, count) %>%
 #   left_join(large_bodied_carnivores) %>%
