@@ -530,7 +530,7 @@ make_zone_plot_left_legend(
 
 # ── Wessel ────────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(136.2, 138, -12.5, -10.5),
+  plot_limits = c(136.0, 137.8, -12.5, -10.5),
   inset_xlim  = c(126.0, 142.5),
   inset_ylim  = c(-18, -8.5),
   break_step  = 0.2,
@@ -540,7 +540,6 @@ make_zone_plot_left_legend(
   height      = 5
 )
 
-# 120.0, 145.0, -20.0, -8.0 - extents defined at start - here just incase i need them - delete if not
 # ==============================================================================
 # End of script
 # ==============================================================================
