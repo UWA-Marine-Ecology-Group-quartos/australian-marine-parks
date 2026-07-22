@@ -28,7 +28,7 @@
 rm(list = ls())
 
 # Set study name
-name <- "south-west"
+name <- "north"
 park <- "network"
 
 # Load libraries
@@ -41,19 +41,19 @@ library(cowplot)
 library(metR)
 
 # Set cropping and plot extents
-e                <- ext(106.0, 145.0, -45.0, -22.0)
+e                <- ext(120.0, 145.0, -20.0, -8.0)
 # tworocks_limits  <- c(114.7, 116.0, -32.0, -31.3)
 # geographe_limits <- c(114.4, 115.9, -33.9, -33.1)
 
 # ── Load spatial files  ───────────────────────────────────────────────────────
 sf_use_s2(TRUE)
 # Aus outline, terrestrial parks and coastal waters outline
-aus <- st_read("data/south-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
+aus <- st_read("data/north network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
   st_make_valid()
 
 # CAPAD Marine 2024 — used for the inset overview maps AND as the source of
 # Commonwealth zone RES_NUMBER labels (see below)
-capad <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Marine.shp")
+capad <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Marine.shp")
 
 # Commonwealth AMP zone labels: last 5 characters of RES_NUMBER (e.g. "npz03"),
 # plotted at each zone's CAPAD-supplied LONGITUDE/LATITUDE point
@@ -65,24 +65,16 @@ capad_amp_labels <- capad %>%
   dplyr::mutate(label = stringr::str_sub(RES_NUMBER, -5, -1)) %>%
   sf::st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = 4326, remove = FALSE)
 
-terrnp <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
+terrnp <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
   dplyr::filter(TYPE %in% c("Nature Reserve", "National Park"))
 
-cwatr <- st_read("data/south-west network/spatial/shapefiles/amb_coastal_waters_limit.shp") %>%
+cwatr <- st_read("data/north network/spatial/shapefiles/amb_coastal_waters_limit.shp") %>%
   st_make_valid() %>%
   st_crop(e)
 
 # Marine parks
-marine_parks <- st_read("data/south-west network/spatial/shapefiles/south-and-western-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Abrolhos", "Abrolhos Islands", "Bremer", "Eastern Recherche",
-                            "Ngari Capes", "Geographe", "South-west Corner",
-                            "Great Australian Bight", "Jurien", "Murat", "Jurien Bay",
-                            "Perth Canyon", "Southern Kangaroo Island", "Twilight",
-                            "Two Rocks", "Western Eyre", "Western Kangaroo Island",
-                            "Nuyts Archipelgo", "Thorny Passage", "Sir Joseph Banks Group",
-                            "Investigator", "West coast Bays", "Southern Spencer Gulf",
-                            "Upper Spencer Gulf", "Cottesloe Reef", "Rottnest",
-                            "Shoalwater Islands", "Shark Bay"))
+marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpenteria", "Joseph Bonaparte Gulf", "Limmen", "Oceanic Shoals", "Wessel", "West Cape York"))
 
 marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth")
@@ -105,7 +97,7 @@ marine_parks_state <- marine_parks %>%
   )
 
 # Bathymetry data
-bathy <- rast("data/south-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
+bathy <- rast("data/north network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
   crop(e) %>%
   clamp(upper = 0, values = FALSE)
 names(bathy) <- "Depth"
@@ -437,208 +429,116 @@ make_zone_plot_left_legend <- function(plot_limits,
 # ==============================================================================
 # 7. FIGURES 2-12: INDIVIDUAL PARK ZOOM-INS (assemble and save)
 # ==============================================================================
-# ── Abrolhos ──────────────────────────────────────────────────────────────────
+# ── Arafura ───────────────────────────────────────────────────────────────────
 
 make_zone_plot_left_legend(
-  plot_limits = c(108.5, 116.1, -30, -24.2),
-  inset_xlim  = c(108.0, 138.0),
-  inset_ylim  = c(-40.0, -24.0),
+  plot_limits = c(130.0, 136.5, -11.5, -8.5),,
+  inset_xlim  = c(130.0, 136.5),
+  inset_ylim  = c(-11.5, -8.5),
   break_step  = 0.5,
   show_inset = TRUE,
-  save_name   = "abrolhos-MPs",
-  width       = 10,
-  height      = 6
+  save_name   = "arafura-MPs",
+  width       = 9,
+  height      = 3.5
 )
 
-# ── Jurien Bay ────────────────────────────────────────────────────────────────
+# ── Arnhem ────────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(114.2, 115.5, -31.0, -30),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
+  plot_limits = c(133.0, 137.5, -12.5, -10.0),
+  inset_xlim  = c(133.0, 137.5),
+  inset_ylim  = c(-12.5, -10.0),
   break_step  = 0.2,
   show_inset = TRUE,
-  save_name   = "jurien-MPs",
+  save_name   = "arnhem-MPs",
+  width       = 8,
+  height      = 3.5
+)
+
+# ── Gulf of Carpentaria ───────────────────────────────────────────────────────
+make_zone_plot_left_legend(
+  plot_limits = c(139.0, 142.6, -17.5, -13.5),
+  inset_xlim  = c(139.0, 142.6),
+  inset_ylim  = c(-17.5, -13.5),
+  break_step  = 0.2,
+  show_inset = TRUE,
+  save_name   = "gulf-of-carpentaria-MPs",
+  width       = 8,
+  height      = 7
+)
+
+# ── Joseph Bonaparte Gulf ─────────────────────────────────────────────────────
+make_zone_plot_left_legend(
+  plot_limits = c(126.5, 130.5, -15.5, -12.5),
+  inset_xlim  = c(126.5, 130.5),
+  inset_ylim  = c(-15.5, -12.5),
+  break_step  = 0.2,
+  show_inset = TRUE,
+  save_name   = "joseph-bonaparte-gulf-MPs",
   width       = 8,
   height      = 5
 )
 
-# ── Two Rocks ─────────────────────────────────────────────────────────────────
+# ── Limmen ────────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(114.7, 116.0, -32.0, -31.3),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "tworocks-MPs",
-  width       = 9,
-  height      = 5
-)
-
-# ── Rottnest Island Canyon ────────────────────────────────────────────────────
-make_zone_plot_left_legend(
-  plot_limits = c(113.8, 115.8, -32.8, -31.3),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "rottnest-canyon-MPs",
-  width       = 10,
-  height      = 6
-)
-
-# ── Geographe ─────────────────────────────────────────────────────────────────
-make_zone_plot_left_legend(
-  plot_limits = c(114.8, 115.7, -33.7, -33.2),
-  inset_xlim  = c(108.0, 138.0),
-  inset_ylim  = c(-40.0, -24.0),
+  plot_limits = c(135.0, 137.6, -16.0, -13.5),
+  inset_xlim  = c(135.0, 137.6),
+  inset_ylim  = c(-16.0, -13.5),
   break_step  = 0.1,
   show_inset = TRUE,
-  save_name   = "Geographe-MPs",
-  width       = 10,
-  height      = 6
+  save_name   = "limmen-MPs",
+  width       = 7.5,
+  height      = 5.5
 )
 
-# ── Bremer Bay ────────────────────────────────────────────────────────────────
+# ── North Kimberley ───────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(119.3, 120.3, -35.3, -33.9),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
+  plot_limits = c(122.5, 127.1, -15.5, -12.5),
+  inset_xlim  = c(122.5, 127.1),
+  inset_ylim  = c(-15.5, -12.5),
   break_step  = 0.2,
   show_inset  = TRUE,
-  save_name   = "bremer-MPs",
-  width       = 8,
-  height      = 8
+  save_name   = "north-kimberley-MPs",
+  width       = 8.5,
+  height      = 5.5
 )
 
-# ── SWC Eastern arm ───────────────────────────────────────────────────────────
+# ── Oceanic Shoals ────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(120.35, 122.2, -35.5, -33.7),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
+  plot_limits = c(122.5, 130.5, -13.5, -8.5),
+  inset_xlim  = c(122.5, 130.5),
+  inset_ylim  = c(-13.5, -8.5),
   break_step  = 0.2,
   show_inset = TRUE,
-  save_name   = "swc-east-MPs",
-  width       = 8,
-  height      = 6
-)
-
-# ── Eastern Recherche ─────────────────────────────────────────────────────────
-make_zone_plot_left_legend(
-  plot_limits = c(123.2, 124.4, -34.9, -33.5),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "eastern-recherche-MPs",
-  width       = 8,
-  height      = 8
-)
-
-make_zone_plot_left_legend(
-  plot_limits = c(123.2, 124.4, -37.8, -33.5),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "eastern-recherche_full-extent-MPs",
-  width       = 8,
-  height      = 10
-)
-
-
-# ── Great Aus Bight ───────────────────────────────────────────────────────────
-make_zone_plot_left_legend(
-  plot_limits = c(128.7, 132.5, -33.6, -31.3),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "great-aus-bight-MPs",
+  save_name   = "oceanic-shoals-MPs",
   width       = 9,
-  height      = 5
+  height      = 4.5
 )
 
+# ── West Cape York ────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(128.7, 132.5, -37.8, -31.3),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
+  plot_limits = c(140.0, 142.6, -15.0, -10.5),
+  inset_xlim  = c(140.0, 142.6),
+  inset_ylim  = c(-15.0, -10.5),
   break_step  = 0.2,
   show_inset = TRUE,
-  save_name   = "great-aus-bight_full-extent-MPs",
-  width       = 8,
-  height      = 9
-)
-# ── Murat and Western Eyre ────────────────────────────────────────────────────
-make_zone_plot_left_legend(
-  plot_limits = c(132.45, 135.5, -35.4, -31.9),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "murat-western-eyre-MPs",
-  width       = 8,
-  height      = 7
-)
-
-make_zone_plot_left_legend(
-  plot_limits = c(132.45, 135.5, -39.4, -31.9),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
-  break_step  = 0.4,
-  show_inset = TRUE,
-  save_name   = "murat-western-eyre_full-extent_MPs",
-  width       = 8,
+  save_name   = "west-cape-york-MPs",
+  width       = 7,
   height      = 9
 )
 
+# ── Wessel ────────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(132.3, 133, -33.2, -32.2),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
+  plot_limits = c(135.5, 137.6, -12.5, -10.5),
+  inset_xlim  = c(135.5, 137.6),
+  inset_ylim  = c(-12.5, -10.5),
   break_step  = 0.2,
   show_inset = TRUE,
-  save_name   = "murat-MPs",
-  width       = 8,
-  height      = 7
-)
-
-# ── Kangaroo Island ───────────────────────────────────────────────────────────
-make_zone_plot_left_legend(
-  plot_limits = c(136, 137.85, -36.5, -35.5),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "kangaroo-island-MPs",
-  width       = 9,
-  height      = 6
-)
-
-# ── Twilight Marine Park ──────────────────────────────────────────────────────
-make_zone_plot_left_legend(
-  plot_limits = c(125.2, 127.15, -33.3, -32.1),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "twilight-MPs",
-  width       = 9,
+  save_name   = "wessel-MPs",
+  width       = 7,
   height      = 5
 )
 
-# ── SWC Full Extent ───────────────────────────────────────────────────────────
-make_zone_plot_left_legend(
-  plot_limits = c(110, 123, -39, -33),
-  inset_xlim  = c(108, 138),
-  inset_ylim  = c(-40, -24),
-  break_step  = 1,
-  show_inset = TRUE,
-  save_name   = "swc-full-extent-MPs",
-  width       = 14,
-  height      = 6
-)
-
-
+# 120.0, 145.0, -20.0, -8.0 - extents defined at start - here just incase i need them - delete if not
 # ==============================================================================
 # End of script
 # ==============================================================================
