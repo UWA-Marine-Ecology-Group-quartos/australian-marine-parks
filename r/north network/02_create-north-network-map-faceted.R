@@ -74,7 +74,9 @@ cwatr <- st_read("data/north network/spatial/shapefiles/amb_coastal_waters_limit
 
 # Marine parks
 marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpenteria", "Joseph Bonaparte Gulf", "Limmen", "Oceanic Shoals", "Wessel", "West Cape York"))
+  dplyr::filter(name %in% c("Arafura", "Arnhem", "Garig Gunak Barlu", "Gulf of Carpentaria", "Joseph Bonaparte Gulf", "Limmen", "Oceanic Shoals", "Wessel", "West Cape York"))
+
+plot(marine_parks)
 
 marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth")
@@ -97,7 +99,7 @@ marine_parks_state <- marine_parks %>%
   )
 
 # Bathymetry data
-bathy <- rast("data/north network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
+bathy <- rast("data/north network/spatial/rasters/Australian_Bathymetry_and_Topography_2023_250m_MSL_cog.tif") %>%
   crop(e) %>%
   clamp(upper = 0, values = FALSE)
 names(bathy) <- "Depth"
@@ -229,56 +231,56 @@ make_zone_panel <- function(plot_limits, mp_amp, mp_state, label_data = NULL, br
 # 4. BUILD TWO ROCKS & GEOGRAPHE PANELS
 # ==============================================================================
 # Call functions
-tr_amp   <- filter_to_extent(marine_parks_amp,   tworocks_limits)
-tr_state <- filter_to_extent(marine_parks_state, tworocks_limits)
-tr_labels <- filter_to_extent(capad_amp_labels,  tworocks_limits)
-
-geo_amp   <- filter_to_extent(marine_parks_amp,   geographe_limits)
-geo_state <- filter_to_extent(marine_parks_state, geographe_limits)
-geo_labels <- filter_to_extent(capad_amp_labels,  geographe_limits)
-
-p_tr  <- make_zone_panel(tworocks_limits,  tr_amp,  tr_state,  label_data = tr_labels,  break_step = 0.1)
-p_geo <- make_zone_panel(geographe_limits, geo_amp, geo_state, label_data = geo_labels, break_step = 0.1)
+# tr_amp   <- filter_to_extent(marine_parks_amp,   tworocks_limits)
+# tr_state <- filter_to_extent(marine_parks_state, tworocks_limits)
+# tr_labels <- filter_to_extent(capad_amp_labels,  tworocks_limits)
+#
+# geo_amp   <- filter_to_extent(marine_parks_amp,   geographe_limits)
+# geo_state <- filter_to_extent(marine_parks_state, geographe_limits)
+# geo_labels <- filter_to_extent(capad_amp_labels,  geographe_limits)
+#
+# p_tr  <- make_zone_panel(tworocks_limits,  tr_amp,  tr_state,  label_data = tr_labels,  break_step = 0.1)
+# p_geo <- make_zone_panel(geographe_limits, geo_amp, geo_state, label_data = geo_labels, break_step = 0.1)
 
 # Build the legend
-legend <- cowplot::get_legend(p_tr + theme(
-  legend.position  = "left",
-  legend.box       = "vertical",
-  legend.direction = "vertical",
-  legend.text      = element_text(size = 9),
-  legend.title     = element_text(size = 11),
-  legend.key.size  = unit(0.5, "cm"),
-  legend.spacing.y = unit(0.2, "cm")
-))
-
-# Build the inset map
-p_inset <- ggplot(data = aus) +
-  geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
-  geom_sf(data = capad, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
-  annotate("rect",
-           xmin = tworocks_limits[1],  xmax = tworocks_limits[2],
-           ymin = tworocks_limits[3],  ymax = tworocks_limits[4],
-           colour = "grey25", fill = "white", alpha = 1/5, linewidth = 0.3) +
-  annotate("rect",
-           xmin = geographe_limits[1], xmax = geographe_limits[2],
-           ymin = geographe_limits[3], ymax = geographe_limits[4],
-           colour = "grey25", fill = "white", alpha = 1/5, linewidth = 0.3) +
-  annotate("text",
-           x     = mean(tworocks_limits[1:2]),
-           y     = tworocks_limits[4],
-           label = "Two Rocks",
-           size  = 2.5, colour = "grey20", hjust = 0.5, vjust = -0.5) +
-  annotate("text",
-           x     = mean(geographe_limits[1:2]),
-           y     = geographe_limits[3],
-           label = "Geographe",
-           size  = 2.5, colour = "grey20", hjust = 0.5, vjust = 1.5) +
-  coord_sf(xlim = c(112, 122), ylim = c(-36, -28)) +
-  theme_bw() +
-  theme(axis.text        = element_blank(),
-        axis.ticks       = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.border     = element_rect(colour = "grey70"))
+# legend <- cowplot::get_legend(p_tr + theme(
+#   legend.position  = "left",
+#   legend.box       = "vertical",
+#   legend.direction = "vertical",
+#   legend.text      = element_text(size = 9),
+#   legend.title     = element_text(size = 11),
+#   legend.key.size  = unit(0.5, "cm"),
+#   legend.spacing.y = unit(0.2, "cm")
+# ))
+#
+# # Build the inset map
+# p_inset <- ggplot(data = aus) +
+#   geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
+#   geom_sf(data = capad, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
+#   annotate("rect",
+#            xmin = tworocks_limits[1],  xmax = tworocks_limits[2],
+#            ymin = tworocks_limits[3],  ymax = tworocks_limits[4],
+#            colour = "grey25", fill = "white", alpha = 1/5, linewidth = 0.3) +
+#   annotate("rect",
+#            xmin = geographe_limits[1], xmax = geographe_limits[2],
+#            ymin = geographe_limits[3], ymax = geographe_limits[4],
+#            colour = "grey25", fill = "white", alpha = 1/5, linewidth = 0.3) +
+#   annotate("text",
+#            x     = mean(tworocks_limits[1:2]),
+#            y     = tworocks_limits[4],
+#            label = "Two Rocks",
+#            size  = 2.5, colour = "grey20", hjust = 0.5, vjust = -0.5) +
+#   annotate("text",
+#            x     = mean(geographe_limits[1:2]),
+#            y     = geographe_limits[3],
+#            label = "Geographe",
+#            size  = 2.5, colour = "grey20", hjust = 0.5, vjust = 1.5) +
+#   coord_sf(xlim = c(112, 122), ylim = c(-36, -28)) +
+#   theme_bw() +
+#   theme(axis.text        = element_blank(),
+#         axis.ticks       = element_blank(),
+#         panel.grid.major = element_blank(),
+#         panel.border     = element_rect(colour = "grey70"))
 
 # # ==============================================================================
 # # 5. FIGURE 1: TWO ROCKS & GEOGRAPHE FACETED MAP (assemble and save)
@@ -432,69 +434,69 @@ make_zone_plot_left_legend <- function(plot_limits,
 # ── Arafura ───────────────────────────────────────────────────────────────────
 
 make_zone_plot_left_legend(
-  plot_limits = c(130.0, 136.5, -11.5, -8.5),,
-  inset_xlim  = c(130.0, 136.5),
-  inset_ylim  = c(-11.5, -8.5),
+  plot_limits = c(131.5, 135.5, -12.5, -8.5),
+  inset_xlim  = c(126.0, 142.5),
+  inset_ylim  = c(-18, -8.5),
   break_step  = 0.5,
   show_inset = TRUE,
   save_name   = "arafura-MPs",
-  width       = 9,
-  height      = 3.5
+  width       = 7.75,
+  height      = 4.75
 )
 
 # ── Arnhem ────────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(133.0, 137.5, -12.5, -10.0),
-  inset_xlim  = c(133.0, 137.5),
-  inset_ylim  = c(-12.5, -10.0),
+  plot_limits = c(133.0, 134.8, -12.5, -10.5),
+  inset_xlim  = c(126.0, 142.5),
+  inset_ylim  = c(-18, -8.5),
   break_step  = 0.2,
   show_inset = TRUE,
   save_name   = "arnhem-MPs",
-  width       = 8,
+  width       = 6.25,
   height      = 3.5
 )
 
 # ── Gulf of Carpentaria ───────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(139.0, 142.6, -17.5, -13.5),
-  inset_xlim  = c(139.0, 142.6),
-  inset_ylim  = c(-17.5, -13.5),
+  plot_limits = c(138.0, 142.6, -17.5, -13.8),
+  inset_xlim  = c(126.0, 142.5),
+  inset_ylim  = c(-18, -8.5),
   break_step  = 0.2,
   show_inset = TRUE,
   save_name   = "gulf-of-carpentaria-MPs",
-  width       = 8,
-  height      = 7
+  width       = 8.5,
+  height      = 5.5
 )
 
 # ── Joseph Bonaparte Gulf ─────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(126.5, 130.5, -15.5, -12.5),
-  inset_xlim  = c(126.5, 130.5),
-  inset_ylim  = c(-15.5, -12.5),
+  plot_limits = c(126.5, 130.5, -15.5, -13),
+  inset_xlim  = c(126.0, 142.5),
+  inset_ylim  = c(-18, -8.5),
   break_step  = 0.2,
   show_inset = TRUE,
   save_name   = "joseph-bonaparte-gulf-MPs",
   width       = 8,
-  height      = 5
+  height      = 4.5
 )
 
 # ── Limmen ────────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(135.0, 137.6, -16.0, -13.5),
-  inset_xlim  = c(135.0, 137.6),
-  inset_ylim  = c(-16.0, -13.5),
+  plot_limits = c(135.0, 137.1, -16.0, -14),
+  inset_xlim  = c(126.0, 142.5),
+  inset_ylim  = c(-18, -8.5),
   break_step  = 0.1,
   show_inset = TRUE,
   save_name   = "limmen-MPs",
-  width       = 7.5,
+  width       = 7.4,
   height      = 5.5
 )
 
 # ── North Kimberley ───────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
   plot_limits = c(122.5, 127.1, -15.5, -12.5),
-  inset_xlim  = c(122.5, 127.1),
-  inset_ylim  = c(-15.5, -12.5),
+  inset_xlim  = c(126.0, 142.5),
+  inset_ylim  = c(-18, -8.5),
   break_step  = 0.2,
   show_inset  = TRUE,
   save_name   = "north-kimberley-MPs",
@@ -504,33 +506,33 @@ make_zone_plot_left_legend(
 
 # ── Oceanic Shoals ────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(122.5, 130.5, -13.5, -8.5),
-  inset_xlim  = c(122.5, 130.5),
-  inset_ylim  = c(-13.5, -8.5),
+  plot_limits = c(125.5, 132, -13.6, -9),
+  inset_xlim  = c(126.0, 142.5),
+  inset_ylim  = c(-18, -8.5),
   break_step  = 0.2,
   show_inset = TRUE,
   save_name   = "oceanic-shoals-MPs",
   width       = 9,
-  height      = 4.5
+  height      = 4.0
 )
 
 # ── West Cape York ────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(140.0, 142.6, -15.0, -10.5),
-  inset_xlim  = c(140.0, 142.6),
-  inset_ylim  = c(-15.0, -10.5),
+  plot_limits = c(139.5, 142.7, -12.5, -9.5),
+  inset_xlim  = c(126.0, 142.5),
+  inset_ylim  = c(-18, -8.5),
   break_step  = 0.2,
   show_inset = TRUE,
   save_name   = "west-cape-york-MPs",
   width       = 7,
-  height      = 9
+  height      = 6
 )
 
 # ── Wessel ────────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(135.5, 137.6, -12.5, -10.5),
-  inset_xlim  = c(135.5, 137.6),
-  inset_ylim  = c(-12.5, -10.5),
+  plot_limits = c(136.2, 138, -12.5, -10.5),
+  inset_xlim  = c(126.0, 142.5),
+  inset_ylim  = c(-18, -8.5),
   break_step  = 0.2,
   show_inset = TRUE,
   save_name   = "wessel-MPs",
