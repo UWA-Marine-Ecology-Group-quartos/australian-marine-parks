@@ -584,9 +584,9 @@ network_map_wms_zoomed <- function(
 
 # ── Arafura ───────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(130.0, 136.5, -11.5, -8.5),  # TODO: verify extent
+  plot_limits = c(131.5, 135.5, -12.5, -8.5),  # TODO: verify extent
   save_name   = "arafura_AMP-bathy-plot",
-  width       = 9,
+  width       = 5,
   height      = 3.5,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
@@ -594,9 +594,9 @@ network_map_wms_zoomed(
 
 # ── Arnhem ────────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(133.0, 137.5, -12.5, -10.0),  # TODO: verify extent
+  plot_limits = c(133.0, 134.8, -12.5, -10.5),  # TODO: verify extent
   save_name   = "arnhem_AMP-bathy-plot",
-  width       = 8,
+  width       = 5,
   height      = 3.5,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
@@ -604,27 +604,27 @@ network_map_wms_zoomed(
 
 # ── Gulf of Carpentaria ───────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(139.0, 142.6, -17.5, -13.5),  # TODO: verify extent
+  plot_limits = c(138.0, 142.6, -18, -13.8),  # TODO: verify extent
   save_name   = "gulf-of-carpentaria_AMP-bathy-plot",
   width       = 8,
-  height      = 7,
+  height      = 5.5,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
 # ── Joseph Bonaparte Gulf ─────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(126.5, 130.5, -15.5, -12.5),  # TODO: verify extent
+  plot_limits = c(126.5, 130.5, -15.5, -13),  # TODO: verify extent
   save_name   = "joseph-bonaparte-gulf_AMP-bathy-plot",
   width       = 8,
-  height      = 5.0,
+  height      = 4,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
 # ── Limmen ────────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(135.0, 137.6, -16.0, -13.5),  # TODO: verify extent
+  plot_limits = c(135.0, 137.1, -16.0, -14),  # TODO: verify extent
   save_name   = "limmen_AMP-bathy-plot",
   width       = 7.5,
   height      = 5.5,
@@ -634,7 +634,7 @@ network_map_wms_zoomed(
 
 # ── North Kimberley ───────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(122.5, 127.1, -15.5, -12.5),  # TODO: verify extent
+  plot_limits = c(120.5, 127.1, -17.5, -13),  # TODO: verify extent
   save_name   = "north-kimberley_AMP-bathy-plot",
   width       = 8.5,
   height      = 4.5,
@@ -644,7 +644,7 @@ network_map_wms_zoomed(
 
 # ── Oceanic Shoals ────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(122.5, 130.5, -13.5, -8.5),  # TODO: verify extent (large park)
+  plot_limits = c(125.5, 132, -13.6, -9),  # TODO: verify extent (large park)
   save_name   = "oceanic-shoals_AMP-bathy-plot",
   width       = 9,
   height      = 4.5,
@@ -654,19 +654,19 @@ network_map_wms_zoomed(
 
 # ── West Cape York ────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(140.0, 142.6, -15.0, -10.5),  # TODO: verify extent
+  plot_limits = c(139.5, 142.9, -12.5, -9.5),  # TODO: verify extent
   save_name   = "west-cape-york_AMP-bathy-plot",
   thin_lon_breaks = TRUE,
   break_step      = 0.5,
   width       = 7,
-  height      = 9,
+  height      = 4.5,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
 # ── Wessel ────────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(135.5, 137.6, -12.5, -10.5),  # TODO: verify extent
+  plot_limits = c(136.0, 137.8, -12.5, -10.5),  # TODO: verify extent
   save_name   = "wessel_AMP-bathy-plot",
   width       = 7,
   height      = 5,
