@@ -1,10 +1,10 @@
 ###
-# Project: NESP 5.6 Project - North Network Report
+# Project: NESP 5.6 Project - North-West Network Report
 # Data:    Marine Park, oceanographic data, marine park boundary files
-# Task:    Create North network map
+# Task:    Create North-West network map
 # Author:  Annika Leunig (modified from Claude Spencer's code)
 # Date:    Jul 2026
-# Outputs: 1. North network zones map (overall location plot, with inset and legend)
+# Outputs: 1. North-West network zones map (overall location plot, with inset and legend)
 ###
 
 # Table of contents
@@ -12,7 +12,7 @@
 #     2.  Standardise State marine park zones
 #     3.  Plot inputs
 #     4.  Map function
-#     5.  FIGURE 1: North network zones map
+#     5.  FIGURE 1: North-West network zones map
 #     6.  Zoom-in set up and map function
 
 
@@ -24,7 +24,7 @@
 rm(list = ls())
 
 # Set the study name and marine park name (for folder structure)
-name <- "north"
+name <- "north-west"
 park <- "network"
 
 # Load libraries
@@ -50,16 +50,16 @@ e <- ext(120, 145.0, -20, -5)
 # ── Load spatial files ────────────────────────────────────────────────────────
 sf_use_s2(T)
 # Australian outline and state and commonwealth marine parks
-aus    <- st_read("data/north network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
+aus    <- st_read("data/north-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
   st_make_valid()
 ausc <- st_crop(aus, e)
 
 # For inset
-capad    <- st_read("data/north network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
+capad    <- st_read("data/north-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
   st_make_valid()
 
 #Add terrestrial parks in
-terrnp <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%  # Terrestrial reserves
+terrnp <- st_read("data/north-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%  # Terrestrial reserves
   dplyr::filter(TYPE %in% c("Nature Reserve", "National Park"))
 
 terr_fills <- scale_fill_manual(values = c("National Park" = "#c4cea6",          # Set the colours for terrestrial parks
@@ -68,25 +68,20 @@ terr_fills <- scale_fill_manual(values = c("National Park" = "#c4cea6",         
 
 
 # Coastal waters limit
-cwatr <- st_read("data/north network/spatial/shapefiles/amb_coastal_waters_limit.shp") %>%
+cwatr <- st_read("data/north-west network/spatial/shapefiles/amb_coastal_waters_limit.shp") %>%
   st_make_valid() %>%
   st_crop(e)
 
 # Bathymetry data
-bathy <- rast("data/north network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
+bathy <- rast("data/north-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
   crop(e) %>%
   clamp(upper = 0, values = F)
 names(bathy) <- "Depth"
 bathdf <- as.data.frame(bathy, xy = T)
 
 # Filter for N network
-marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpenteria", "Joseph Bonaparte Gulf",
-                            "Limmen", "Oceanic Shoals", "Wessel", "West Cape York","North Kimberley",
-                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet",
-                            "Staaten-Gilbert", "Nassau River", "Pine River Bay",
-                            "Dhimurru", "Thuwathu/Walalu", "Anindilyakwa", "Djelk", #IPAs
-                            "Crocodile Islands Maringa")) %>% # IPA
+marine_parks <- st_read("data/north-west network/spatial/shapefiles/north-west-network-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c("Argo-Rowley Terrace", "Ashmore Reef", "Carnarvon Canyon", "Cartier Island", "Dampier", "Eighty Mile Beach", "Gascoyne", "Kimberley", "Mermaid Reef", "Montebello", "Ningaloo", "Roebuck", "Shark Bay")) %>% # IPA
   glimpse()
 
 # ==============================================================================
@@ -115,7 +110,7 @@ unique(marine_parks_state$zone)
 # ==============================================================================
 # 3. PLOT INPUTS
 # ==============================================================================
-plot_limits = c(126, 143, -18, -9) # Extent of the main plot
+plot_limits = c(108, 133.0, -30, -10) # Extent of the main plot
 study_limits = NULL # Extent of sampling
 annotation_labels = NULL
 
@@ -210,7 +205,7 @@ network_map <- function(plot_limits, study_limits, annotation_labels) {
 }
 
 # ==============================================================================
-# 5. FIGURE 1: NORTH NETWORK ZONES MAP
+# 5. FIGURE 1: NORTH-WEST NETWORK ZONES MAP
 # ==============================================================================
 network_map(plot_limits,
             study_limits,

@@ -24,14 +24,14 @@ library(CheckEM)
 library(sf)
 library(tidyverse)
 
-crop <- st_bbox(c(xmin = 126, xmax = 143, ymin = -18, ymax = -9), crs = 4326) %>%
+crop <- st_bbox(c(xmin = 109, xmax = 133, ymin = -30, ymax = -10), crs = 4326) %>%
   st_as_sfc()
 
 # ==============================================================================
 # 2. Filter CAPAD to just South Australia parks
 # ==============================================================================
 # Load and filter CAPAD to just SA MPs and format colours
-capad <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
+capad <- st_read("data/north-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
   CheckEM::clean_names() %>%
   st_make_valid() %>%
   st_crop(crop) %>%
@@ -68,7 +68,7 @@ capad <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian
 
 
 # Save north shapefile
-st_write(capad, "data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp", append = F)
+st_write(capad, "data/north-west network/spatial/shapefiles/north-west-network-australia_marine-parks-all.shp", append = F)
 
 plot(capad) # check
 # ==============================================================================
