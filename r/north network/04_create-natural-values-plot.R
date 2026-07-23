@@ -3,7 +3,7 @@
 # Data:    Natural values ecosystems (NESP MERI), Commonwealth marine parks,
 #          terrestrial parks and aus outline
 # Task:    Creating natural values (benthic ecosystem) map — north network
-# Author:  Annika Leunig
+# Author:  Annika Leunig & Abbey Gibbons
 # Date:    July 2026
 # Outputs: 1. North network natural values map (original source colours,
 #             predicted reef layer removed, Commonwealth marine parks only)
@@ -48,7 +48,7 @@ aus <- st_read("data/north network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp"
 
 # Commonwealth marine parks only (same filter as network_map() KEF script)
 marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpenteria", "Joseph Bonaparte Gulf",
+  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
                             "Limmen", "Oceanic Shoals", "Wessel", "West Cape York","North Kimberley",
                             "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet",
                             "Staaten-Gilbert", "Nassau River", "Pine River Bay",
@@ -60,7 +60,8 @@ marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth")
 
 # Terrestrial parks for mapping
-terrnp <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
+terrnp <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
+  st_make_valid() %>%
   dplyr::filter(TYPE %in% c("Nature Reserve", "National Park"))
 
 # Natural values ecosystem — NESP MERI raster (has its own embedded colour table)
@@ -533,6 +534,232 @@ ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
        height = 8,
        bg     = "white")
 
+
+# ── Reusable natural values / benthic habitat plot function ──────────────────
+make_natural_values_plot <- function(plot_limits, break_step, save_name,
+                                     width, height, park, name,
+                                     legend_ncol = 4) {
+
+  check_ratio(plot_limits)
+
+  # Map itself already draws aus + terrnp (see naturalvalues_map_hillshade_north)
+  hs <- naturalvalues_map_hillshade_north(
+    plot_limits = plot_limits,
+    show_legend = FALSE,
+    break_step  = break_step
+  )
+
+  ext_crop <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
+
+  # ── Benthic habitat legend — restricted to shelf classes present here ─────
+  nv_crop <- crop(naturalvalues_clipped, ext_crop)
+  nv_df   <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
+  colnames(nv_df)[3] <- "value"
+  nv_df$classname <- nv_lookup[as.character(nv_df$value)]
+  nv_df <- dplyr::filter(nv_df, !is.na(classname), classname %in% shelf_classes)
+
+  level_order <- names(nv_lookup)[names(nv_lookup) %in% as.character(nv_df$value)]
+  level_order <- unname(nv_lookup[level_order])
+
+  # Benthic legend — no title baked in, added separately so it can align
+  # with the terrestrial parks legend below
+  legend_benthic <- ggplot(data.frame(x = 1, y = 1,
+                                      classname = factor(level_order, levels = level_order)),
+                           aes(x = x, y = y, fill = classname)) +
+    geom_tile() +
+    scale_fill_manual(
+      name   = NULL,
+      values = hab_colours_original[level_order],
+      breaks = level_order,
+      guide  = guide_legend(ncol = legend_ncol, direction = "horizontal", byrow = TRUE)
+    ) +
+    theme_void() +
+    theme(
+      legend.key.size = unit(0.45, "cm"),
+      legend.text     = element_text(size = 8),
+      legend.position = "bottom"
+    )
+
+  # ── Terrestrial parks legend — only include types actually present ────────
+  bbox_sf <- st_as_sfc(st_bbox(c(xmin = plot_limits[1], xmax = plot_limits[2],
+                                 ymin = plot_limits[3], ymax = plot_limits[4]),
+                               crs = st_crs(terrnp)))
+  terrnp_crop  <- suppressWarnings(sf::st_crop(terrnp, bbox_sf))
+  present_types <- intersect(c("National Park", "Nature Reserve"), unique(terrnp_crop$TYPE))
+
+  if (length(present_types) > 0) {
+
+    legend_tp <- ggplot(data.frame(x = 1, y = 1,
+                                   tp = factor(present_types, levels = present_types)),
+                        aes(x = x, y = y, fill = tp)) +
+      geom_tile() +
+      scale_fill_manual(
+        name   = NULL,
+        values = c("National Park" = "#c4cea6", "Nature Reserve" = "#e4d0bb")[present_types],
+        guide  = guide_legend(ncol = 1)
+      ) +
+      theme_void() +
+      theme(
+        legend.key.size = unit(0.45, "cm"),
+        legend.text     = element_text(size = 8),
+        legend.position = "top"
+      )
+
+    # ── Title row — shared baseline for both legend blocks ─────────────────
+    title_benthic <- cowplot::ggdraw() +
+      cowplot::draw_label("Benthic habitat", fontface = "bold", size = 9,
+                          hjust = 0, x = 0.01)
+    title_tp <- cowplot::ggdraw() +
+      cowplot::draw_label("Terrestrial Parks", fontface = "bold", size = 9,
+                          hjust = 0, x = 0.01)
+
+    title_row <- cowplot::plot_grid(title_benthic, title_tp,
+                                    nrow = 1, rel_widths = c(4, 1.1))
+
+    # ── Content row — first swatch rows now align since neither has a title ─
+    content_row <- cowplot::plot_grid(
+      cowplot::get_legend(legend_benthic),
+      cowplot::get_legend(legend_tp),
+      nrow       = 1,
+      rel_widths = c(4, 1.1),
+      align      = "h",
+      axis       = "t"
+    )
+
+    legend_row <- cowplot::plot_grid(title_row, content_row,
+                                     ncol = 1, rel_heights = c(0.15, 1))
+
+  } else {
+    # No terrestrial parks in view — keep title on the benthic legend itself
+    legend_benthic <- legend_benthic +
+      scale_fill_manual(
+        name   = "Benthic habitat",
+        values = hab_colours_original[level_order],
+        breaks = level_order,
+        guide  = guide_legend(ncol = legend_ncol, direction = "horizontal",
+                              title.position = "top", title.hjust = 0, byrow = TRUE)
+      ) +
+      theme(legend.title = element_text(size = 9, face = "bold"))
+
+    legend_row <- cowplot::get_legend(legend_benthic)
+  }
+
+  figure <- cowplot::plot_grid(
+    hs,
+    legend_row,
+    ncol        = 1,
+    rel_heights = c(1, 0.2),
+    align       = "v",
+    axis        = "t"
+  ) +
+    theme(plot.background = element_rect(fill = "white", colour = NA),
+          plot.margin     = margin(t = 2, r = 15, b = 15, l = 5))
+
+  ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+               paste0(save_name, "-natural-values.png"), sep = "-"),
+         plot   = figure,
+         dpi    = 600,
+         width  = width,
+         height = height,
+         bg     = "white")
+
+  invisible(figure)
+}
+# ── Arafura ───────────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(131.5, 135.5, -12.5, -8.6),
+  break_step  = 0.5,
+  save_name   = "arafura",
+  width       = 7,
+  height      = 7.5,
+  park        = park,
+  name        = name,
+  legend_ncol = 3
+)
+
+# ── Arnhem ────────────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(133.0, 134.8, -12.5, -10.5),
+  break_step  = 0.5,
+  save_name   = "arnhem",
+  width       = 5.5,
+  height      = 7,
+  park        = park,
+  name        = name,
+  legend_ncol = 3
+)
+
+# ── Gulf of Carpentaria ───────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(138.0, 142.6, -17.5, -13.8),
+  break_step  = 0.5,
+  save_name   = "gulf-of-carpentaria",
+  width       = 7,
+  height      = 7,
+  park        = park,
+  name        = name,
+  legend_ncol = 3
+)
+
+# ── Joseph Bonaparte Gulf ─────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(126.5, 130.5, -15.5, -13),
+  break_step  = 0.5,
+  save_name   = "joseph-bonaparte-gulf",
+  width       = 7.25,
+  height      = 5.5,
+  park        = park,
+  name        = name,
+  legend_ncol = 2
+)
+
+# ── Limmen ────────────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(135.0, 137.1, -16.0, -14),
+  break_step  = 0.3,
+  save_name   = "limmen",
+  width       = 6,
+  height      = 6.25,
+  park        = park,
+  name        = name,
+  legend_ncol = 2
+)
+
+# ── Oceanic Shoals ────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(125.5, 132, -13.6, -9),
+  break_step  = 0.8,
+  save_name   = "oceanic-shoals",
+  width       = 7.5,
+  height      = 6.5,
+  park        = park,
+  name        = name,
+  legend_ncol = 2
+)
+
+# ── West Cape York ────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(139.5, 142.7, -12.5, -9.5),
+  break_step  = 0.5,
+  save_name   = "west-cape-york",
+  width       = 6,
+  height      = 6,
+  park        = park,
+  name        = name,
+  legend_ncol = 3
+)
+
+# ── Wessel ────────────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(136.0, 137.8, -12.5, -10.5),
+  break_step  = 0.5,
+  save_name   = "wessel",
+  width       = 5,
+  height      = 6.5,
+  park        = park,
+  name        = name,
+  legend_ncol = 2
+)
 # ==============================================================================
-# End of script
+# End of script#
 # ==============================================================================
