@@ -65,7 +65,7 @@ capad <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian
   st_transform(aus_crs)
 
 marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpenteria", "Joseph Bonaparte Gulf",
+  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
                             "Limmen", "Oceanic Shoals", "Wessel", "West Cape York","North Kimberley",
                             "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet",
                             "Staaten-Gilbert", "Nassau River", "Pine River Bay",
@@ -86,12 +86,6 @@ terrnp <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Aust
 terr_fills <- scale_fill_manual(values = c("National Park" = "#c4cea6",          # Set the colours for terrestrial parks
                                            "Nature Reserve" = "#e4d0bb"),
                                 name = "Terrestrial Parks")
-
-bathy <- rast("data/north network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
-  project(paste0("EPSG:", aus_crs)) %>%
-  crop(e) %>%
-  clamp(upper = 0, values = F)
-names(bathy) <- "Depth"
 
 # ==============================================================================
 # 2. RECODE AND REORDER KEF

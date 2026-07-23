@@ -259,9 +259,9 @@ amp_bathy_map <- function(bbox, meri_img, bath_img, x_breaks = NULL, y_breaks = 
 
   # TPs legend
   p1_other_legend <- cowplot::get_legend(p1 + theme(
-    legend.text      = element_text(size = 7),
-    legend.title     = element_text(size = 8),
-    legend.key.size  = unit(0.3, "cm"),
+    legend.text      = element_text(size = 8),
+    legend.title     = element_text(size = 9),
+    legend.key.size  = unit(0.35, "cm"),
     legend.position  = "bottom",
     legend.box       = "horizontal",
     legend.direction = "vertical"
@@ -292,7 +292,7 @@ amp_bathy_map <- function(bbox, meri_img, bath_img, x_breaks = NULL, y_breaks = 
     plot_layout(widths = c(4, right_panel_w_in / (11 - right_panel_w_in) * 4))
 
   bottom_row <- p1.1 + wrap_elements(p1_other_legend) + plot_spacer() +
-    plot_layout(widths = c(0.28, 1, 0.5))
+    plot_layout(widths = c(0.28, 0.5, 2))
 
   map_row / bottom_row +
     plot_layout(heights = c(4, 1))
@@ -301,23 +301,23 @@ amp_bathy_map <- function(bbox, meri_img, bath_img, x_breaks = NULL, y_breaks = 
 # ==============================================================================
 # 4. FIGURE 1: NORTH NETWORK MAP (assemble and save)
 # ==============================================================================
-# SAve function
-# build_and_save <- function(bbox, save_name, width, height,
-#                            x_breaks = NULL, y_breaks = NULL) {
-#   meri_img <- get_meri_grey(bbox)
-#   bath_img <- get_amp_bathy(bbox)
-#   fig <- amp_bathy_map(bbox, meri_img, bath_img, x_breaks, y_breaks)
-#   ggsave(paste(paste0("plots/", park, "/spatial/AMP_bathy/", name),
-#                paste0(save_name, ".png"), sep = "-"),
-#          plot = fig, dpi = 600, width = width, height = height, bg = "white")
-#   invisible(fig)
-# }
-#
-# # Save
-# build_and_save(bbox_network,
-#                "network_AMP-bathy-plot",  width = 10, height = 5.5,
-#                x_breaks = seq(120, 145, by = 5),
-#                y_breaks = seq(-20, -10, by = 5))
+# Save function
+build_and_save <- function(bbox, save_name, width, height,
+                           x_breaks = NULL, y_breaks = NULL) {
+  meri_img <- get_meri_grey(bbox)
+  bath_img <- get_amp_bathy(bbox)
+  fig <- amp_bathy_map(bbox, meri_img, bath_img, x_breaks, y_breaks)
+  ggsave(paste(paste0("plots/", park, "/spatial/AMP_bathy/", name),
+               paste0(save_name, ".png"), sep = "-"),
+         plot = fig, dpi = 600, width = width, height = height, bg = "white")
+  invisible(fig)
+}
+
+# Save
+build_and_save(bbox_network,
+               "network_AMP-bathy-plot",  width = 10, height = 5.5,
+               x_breaks = seq(120, 145, by = 5),
+               y_breaks = seq(-20, -10, by = 5))
 
 # ==============================================================================
 # 5. ZOOM-IN MAP FUNCTION (LEGEND ON LEFT)
