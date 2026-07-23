@@ -232,8 +232,8 @@ naturalvalues_map_north <- function(plot_limits,
     theme_void() +
     theme(
       legend.key.size  = unit(0.45, "cm"),
-      legend.text      = element_text(size = 10),
-      legend.title     = element_text(size = 10),
+      legend.text      = element_text(size = 9),
+      legend.title     = element_text(size = 11),
       legend.position  = "bottom"
     )
 
@@ -252,8 +252,8 @@ naturalvalues_map_north <- function(plot_limits,
     theme_void() +
     theme(
       legend.key.size  = unit(0.45, "cm"),
-      legend.text      = element_text(size = 10),
-      legend.title     = element_text(size = 10),
+      legend.text      = element_text(size = 9),
+      legend.title     = element_text(size = 11),
       legend.position  = "top"
     )
 
@@ -368,7 +368,7 @@ shelf_classes <- c(
 
 # --- FUNCTION: hillshade background + NV colour on top, clipped to 200m ---
 naturalvalues_map_hillshade_north <- function(plot_limits,
-                                              use_clipped = TRUE,
+                                              use_clipped = FALSE,   # <- default now FALSE
                                               hs_altitude = 40,
                                               hs_azimuth  = 270,
                                               show_legend = TRUE,
@@ -378,9 +378,9 @@ naturalvalues_map_hillshade_north <- function(plot_limits,
   require(tidyverse); require(terra); require(sf); require(ggnewscale)
 
   ext_plot  <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
-  nv_source <- if (use_clipped) naturalvalues_clipped else naturalvalues
+  nv_source <- if (use_clipped) naturalvalues_clipped else naturalvalues   # full layer by default
 
-  # --- Hillshade from bathymetry (rendered everywhere, incl. past 200m) ---
+  # --- Hillshade from bathymetry (unchanged) ---
   bathy_crop <- crop(bathy, ext_plot)
   slope      <- terrain(bathy_crop, v = "slope",  unit = "radians")
   aspect     <- terrain(bathy_crop, v = "aspect", unit = "radians")
@@ -388,12 +388,12 @@ naturalvalues_map_hillshade_north <- function(plot_limits,
   hs_df      <- as.data.frame(hs, xy = TRUE, na.rm = TRUE)
   colnames(hs_df)[3] <- "hillshade"
 
-  # --- Natural values — shelf classes only, clipped to 200m ---
+  # --- Natural values — ALL classes present, no 200m clip, no shelf filter ---
   nv_crop <- crop(nv_source, ext_plot)
   nv_df   <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
   colnames(nv_df)[3] <- "value"
   nv_df$classname <- nv_lookup[as.character(nv_df$value)]
-  nv_df <- dplyr::filter(nv_df, !is.na(classname), classname %in% shelf_classes)
+  nv_df <- dplyr::filter(nv_df, !is.na(classname))   # shelf_classes filter removed
 
   present_classes <- unique(nv_df$classname)
   present_colours <- hab_colours_original[names(hab_colours_original) %in% present_classes]
@@ -413,12 +413,12 @@ naturalvalues_map_hillshade_north <- function(plot_limits,
 
   p <- ggplot() +
 
-    # --- Hillshade base (visible everywhere, including >200m) ---
+    # Hillshade base
     geom_tile(data = hs_df, aes(x = x, y = y, fill = hillshade),
               alpha = 0.4, show.legend = FALSE) +
     scale_fill_gradient(low = "#1a1a2e", high = "#e8e8e8", na.value = NA, guide = "none") +
 
-    # --- NV shelf classes on top, only present ≤200m ---
+    # Full natural values layer on top
     new_scale_fill() +
     geom_tile(data = nv_df, aes(x = x, y = y, fill = classname)) +
     scale_fill_manual(
@@ -465,7 +465,6 @@ naturalvalues_map_hillshade_north <- function(plot_limits,
 
   return(p)
 }
-
 
 # ==============================================================================
 # 6. FIGURE 2: North Kimberley (worked example — repeat per park)
@@ -552,11 +551,12 @@ make_natural_values_plot <- function(plot_limits, break_step, save_name,
   ext_crop <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
 
   # ── Benthic habitat legend — restricted to shelf classes present here ─────
-  nv_crop <- crop(naturalvalues_clipped, ext_crop)
+  # ── Benthic habitat legend — ALL classes present in this park's extent ────
+  nv_crop <- crop(naturalvalues, ext_crop)   # full layer, not naturalvalues_clipped
   nv_df   <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
   colnames(nv_df)[3] <- "value"
   nv_df$classname <- nv_lookup[as.character(nv_df$value)]
-  nv_df <- dplyr::filter(nv_df, !is.na(classname), classname %in% shelf_classes)
+  nv_df <- dplyr::filter(nv_df, !is.na(classname))   # shelf_classes filter removed
 
   level_order <- names(nv_lookup)[names(nv_lookup) %in% as.character(nv_df$value)]
   level_order <- unname(nv_lookup[level_order])
@@ -644,7 +644,7 @@ make_natural_values_plot(
   break_step  = 0.5,
   save_name   = "arafura",
   width       = 7.5,
-  height      = 7.5,
+  height      = 8,
   park        = park,
   name        = name,
   legend_ncol = 3
@@ -668,7 +668,7 @@ make_natural_values_plot(
   break_step  = 0.5,
   save_name   = "gulf-of-carpentaria",
   width       = 8.5,
-  height      = 7,
+  height      = 7.5,
   park        = park,
   name        = name,
   legend_ncol = 3
@@ -692,7 +692,7 @@ make_natural_values_plot(
   break_step  = 0.3,
   save_name   = "limmen",
   width       = 6,
-  height      = 6.25,
+  height      = 6.75,
   park        = park,
   name        = name,
   legend_ncol = 2
@@ -704,7 +704,7 @@ make_natural_values_plot(
   break_step  = 0.8,
   save_name   = "oceanic-shoals",
   width       = 8,
-  height      = 6.5,
+  height      = 7,
   park        = park,
   name        = name,
   legend_ncol = 3
@@ -728,7 +728,7 @@ make_natural_values_plot(
   break_step  = 0.5,
   save_name   = "wessel",
   width       = 5,
-  height      = 6.5,
+  height      = 7,
   park        = park,
   name        = name,
   legend_ncol = 2
