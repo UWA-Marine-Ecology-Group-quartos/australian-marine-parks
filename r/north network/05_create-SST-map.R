@@ -66,11 +66,11 @@ ausc <- st_crop(aus, e)
 # Marine parks - north network
 marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
   dplyr::filter(name %in% c(
-    "Arafura", "Arnhem", "Gulf of Carpenteria", "Joseph Bonaparte Gulf",
+    "Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
     "Limmen", "Oceanic Shoals", "Wessel", "West Cape York", "North Kimberley",
-    "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet",
+    "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet - Bynoe River",
     "Staaten-Gilbert", "Nassau River", "Pine River Bay",
-    "Dhimurru", "Thuwathu/Walalu", "Anindilyakwa", "Djelk",
+    "Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2",
     "Crocodile Islands Maringa"
   )) %>%
   st_transform(aus_crs)
@@ -228,7 +228,7 @@ p_sst_mean <- ggplot() +
   theme(
     legend.key.size      = unit(0.5, "cm"),
     legend.text          = element_text(size = 9),
-    legend.title         = element_text(size = 10, face = "bold"),
+    legend.title         = element_text(size = 10),
     legend.position      = "bottom",
     legend.box           = "horizontal",
     legend.margin        = margin(t = 4),

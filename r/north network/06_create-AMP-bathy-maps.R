@@ -49,7 +49,7 @@ shp_dir          <- "data/north network/spatial/shapefiles/"
 depth_legend_png <- "data/north network/spatial/rasters/depth-legend.png"
 
 # ── Map extents (xmin, ymin, xmax, ymax) ──────────────────────────────────────
-bbox_network <- c(xmin = 120,    ymin = -21,   xmax = 148,   ymax = -8)
+bbox_network <- c(xmin = 126,    ymin = -18,   xmax = 143,   ymax = -9)
 
 north_inset_xlim <- c(unname(bbox_network["xmin"]), unname(bbox_network["xmax"]))
 north_inset_ylim <- c(unname(bbox_network["ymin"]), unname(bbox_network["ymax"]))
@@ -74,8 +74,6 @@ capad <- sf::st_read(
   sf::st_transform(4326)
 
 # Terrestrial parks
-# NB: this shapefile is only stored under the south-west network folder and is
-# shared across networks, hence the different path from the layers above.
 terrnp <- sf::st_read(
   paste0("data/north network/spatial/shapefiles/",
          "Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp"),
@@ -315,7 +313,7 @@ build_and_save <- function(bbox, save_name, width, height,
 
 # Save
 build_and_save(bbox_network,
-               "network_AMP-bathy-plot",  width = 10, height = 5.5,
+               "network_AMP-bathy-plot",  width = 8.5, height = 5.5,
                x_breaks = seq(120, 145, by = 5),
                y_breaks = seq(-20, -10, by = 5))
 
@@ -324,8 +322,8 @@ build_and_save(bbox_network,
 # ==============================================================================
 network_map_wms_zoomed <- function(
     plot_limits,
-    inset_xlim = c(120, 148),
-    inset_ylim = c(-21, -8),
+    inset_xlim = c(126, 143),
+    inset_ylim = c(-18, -9),
     show_inset = TRUE,
     thin_lon_breaks = FALSE,   # thin the longitude axis breaks (useful for wide/short extents)
     break_step      = 0.2,     # spacing used by thin_breaks() before thinning; only used when thin_lon_breaks = TRUE
@@ -577,14 +575,9 @@ network_map_wms_zoomed <- function(
 # ==============================================================================
 # 6. FIGURES 2-10: INDIVIDUAL PARK ZOOM-INS (assemble and save)
 # ==============================================================================
-# NB: plot_limits below are rough estimates only (I don't have your AMP
-# shapefile extents to hand) — check each against your `amp` layer, e.g.
-#   st_bbox(amp %>% filter(NAME == "Arafura"))
-# and adjust before running. Format is c(xmin, xmax, ymin, ymax).
-
 # ── Arafura ───────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(131.5, 135.5, -12.5, -8.5),  # TODO: verify extent
+  plot_limits = c(131.5, 135.5, -12.5, -8.5),
   save_name   = "arafura_AMP-bathy-plot",
   width       = 5,
   height      = 3.5,
@@ -594,17 +587,17 @@ network_map_wms_zoomed(
 
 # ── Arnhem ────────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(133.0, 134.8, -12.5, -10.5),  # TODO: verify extent
+  plot_limits = c(133.0, 134.8, -12.5, -10.5),
   save_name   = "arnhem_AMP-bathy-plot",
-  width       = 5,
-  height      = 3.5,
+  width       = 8,
+  height      = 5.5,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
 # ── Gulf of Carpentaria ───────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(138.0, 142.6, -18, -13.8),  # TODO: verify extent
+  plot_limits = c(138.0, 142.6, -18, -13.8),
   save_name   = "gulf-of-carpentaria_AMP-bathy-plot",
   width       = 8,
   height      = 5.5,
@@ -614,7 +607,7 @@ network_map_wms_zoomed(
 
 # ── Joseph Bonaparte Gulf ─────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(126.5, 130.5, -15.5, -13),  # TODO: verify extent
+  plot_limits = c(126.5, 130.5, -15.5, -13),
   save_name   = "joseph-bonaparte-gulf_AMP-bathy-plot",
   width       = 8,
   height      = 4,
@@ -624,7 +617,7 @@ network_map_wms_zoomed(
 
 # ── Limmen ────────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(135.0, 137.1, -16.0, -14),  # TODO: verify extent
+  plot_limits = c(135.0, 137.1, -16.0, -14),
   save_name   = "limmen_AMP-bathy-plot",
   width       = 7.5,
   height      = 5.5,

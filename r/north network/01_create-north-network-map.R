@@ -1,9 +1,9 @@
 ###
-# Project: NESP 5.6 Project - North Network Report
-# Data:    Marine Park, oceanographic data, marine park boundary files
+# Project: North Network Report
+# Data:    Terrestrial CAPAD, bathy, marine park CAPAD, coastal waters boundary
 # Task:    Create North network map
-# Author:  Annika Leunig (modified from Claude Spencer's code)
-# Date:    Jul 2026
+# Author:  Annika Leunig
+# Date:    July2026
 # Outputs: 1. North network zones map (overall location plot, with inset and legend)
 ###
 
@@ -13,8 +13,6 @@
 #     3.  Plot inputs
 #     4.  Map function
 #     5.  FIGURE 1: North network zones map
-#     6.  Zoom-in set up and map function
-
 
 # ==============================================================================
 # 1. SET UP AND LOAD DATA
@@ -83,9 +81,9 @@ bathdf <- as.data.frame(bathy, xy = T)
 marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
   dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
                             "Limmen", "Oceanic Shoals", "Wessel", "West Cape York","North Kimberley",
-                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet",
+                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet - Bynoe River",
                             "Staaten-Gilbert", "Nassau River", "Pine River Bay",
-                            "Dhimurru", "Thuwathu/Walalu", "Anindilyakwa", "Djelk", #IPAs
+                            "Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2", #IPAs
                             "Crocodile Islands Maringa")) %>% # IPA
   glimpse()
 
@@ -97,7 +95,7 @@ marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth")
 
 # Indigenous Protected Areas (in state waters) - kept separate from other state zones
-ipa_names <- c("Dhimurru", "Thuwathu/Walalu", "Anindilyakwa", "Djelk", "Crocodile Islands Maringa")
+ipa_names <- c("Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2", "Crocodile Islands Maringa")
 
 # State Marine Parks only (for separate ggplot legends)
 marine_parks_state <- marine_parks %>%
@@ -111,7 +109,8 @@ marine_parks_state <- marine_parks %>%
       TRUE ~ zone
     ),
     colour = case_when(
-      name %in% ipa_names ~ "#FFD8A8",   # light orange
+      name %in% ipa_names ~ "#FFD8A8",
+      zone == "Other State Marine Park Zone" ~ "#f7d0dc",
       TRUE ~ colour
     )
   )
@@ -160,7 +159,7 @@ network_map <- function(plot_limits, study_limits, annotation_labels) {
     terr_fills_ordered +
     new_scale_fill() +
     geom_sf(data = marine_parks_state, aes(fill = zone), colour = NA, alpha = 0.6) +
-    scale_fill_manual(name = "State Marine Parks",
+    scale_fill_manual(name = "State and Territory Marine Parks",
                       guide = guide_legend(order = 3),
                       values = with(marine_parks_state, setNames(colour, zone)),
                       breaks = c("Sanctuary Zone", "General Use Zone", "Recreational Use Zone",

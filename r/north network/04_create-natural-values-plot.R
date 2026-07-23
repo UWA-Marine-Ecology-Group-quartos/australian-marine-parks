@@ -50,9 +50,9 @@ aus <- st_read("data/north network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp"
 marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
   dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
                             "Limmen", "Oceanic Shoals", "Wessel", "West Cape York","North Kimberley",
-                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet",
+                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet - Bynoe River",
                             "Staaten-Gilbert", "Nassau River", "Pine River Bay",
-                            "Dhimurru", "Thuwathu/Walalu", "Anindilyakwa", "Djelk", #IPAs
+                            "Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2", #IPAs
                             "Crocodile Islands Maringa")) %>%
   glimpse()
 
@@ -233,7 +233,7 @@ naturalvalues_map_north <- function(plot_limits,
     theme(
       legend.key.size  = unit(0.45, "cm"),
       legend.text      = element_text(size = 10),
-      legend.title     = element_text(size = 10, face = "bold"),
+      legend.title     = element_text(size = 10),
       legend.position  = "bottom"
     )
 
@@ -253,7 +253,7 @@ naturalvalues_map_north <- function(plot_limits,
     theme(
       legend.key.size  = unit(0.45, "cm"),
       legend.text      = element_text(size = 10),
-      legend.title     = element_text(size = 10, face = "bold"),
+      legend.title     = element_text(size = 10),
       legend.position  = "top"
     )
 
@@ -511,7 +511,7 @@ naturalvalues_map_hillshade_north <- function(plot_limits,
 #   theme(
 #     legend.key.size = unit(0.6, "cm"),
 #     legend.text     = element_text(size = 12),
-#     legend.title    = element_text(size = 13, face = "bold"),
+#     legend.title    = element_text(size = 13),
 #     legend.position = "bottom"
 #   )
 #

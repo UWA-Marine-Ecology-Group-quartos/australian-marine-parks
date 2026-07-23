@@ -67,9 +67,9 @@ capad <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian
 marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
   dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
                             "Limmen", "Oceanic Shoals", "Wessel", "West Cape York","North Kimberley",
-                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet",
+                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet - Bynoe River",
                             "Staaten-Gilbert", "Nassau River", "Pine River Bay",
-                            "Dhimurru", "Thuwathu/Walalu", "Anindilyakwa", "Djelk", #IPAs
+                            "Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2", #IPAs
                             "Crocodile Islands Maringa")) %>%
   st_transform(aus_crs) %>% # IPA
   glimpse()
@@ -234,7 +234,7 @@ network_map <- function(plot_limits, annotation_labels = NULL) {
 network_map(plot_limits)
 
 ggsave(paste(paste0("plots/", park, "/spatial/", name), "network_KEFs.png", sep = "-"),
-       dpi = 600, width = 7.5, height = 6, bg = "white")
+       dpi = 600, width = 7.5, height = 5.5, bg = "white")
 
 # ==============================================================================
 # End of script
