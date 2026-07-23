@@ -81,7 +81,7 @@ bathdf <- as.data.frame(bathy, xy = T)
 
 # Filter for N network
 marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpenteria", "Joseph Bonaparte Gulf",
+  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
                             "Limmen", "Oceanic Shoals", "Wessel", "West Cape York","North Kimberley",
                             "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet",
                             "Staaten-Gilbert", "Nassau River", "Pine River Bay",
@@ -96,18 +96,25 @@ marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-aus
 marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth")
 
+# Indigenous Protected Areas (in state waters) - kept separate from other state zones
+ipa_names <- c("Dhimurru", "Thuwathu/Walalu", "Anindilyakwa", "Djelk", "Crocodile Islands Maringa")
+
 # State Marine Parks only (for separate ggplot legends)
 marine_parks_state <- marine_parks %>%
-  dplyr::filter(epbc %in% "State")
-
-marine_parks_state <- marine_parks %>%
   dplyr::filter(epbc %in% "State") %>%
-  dplyr::mutate(zone = case_when(
-    zone == "Reef Observation Area" ~ "Sanctuary Zone",
-    zone == "National Park Zone" ~ "Sanctuary Zone",
-    zone == "Habitat Protection Zone" ~ "Recreational Use Zone",
-    TRUE ~ zone
-  ))
+  dplyr::mutate(
+    zone = case_when(
+      name %in% ipa_names ~ "Indigenous Protected Area",
+      zone == "Reef Observation Area" ~ "Sanctuary Zone",
+      zone == "National Park Zone" ~ "Sanctuary Zone",
+      zone == "Habitat Protection Zone" ~ "Recreational Use Zone",
+      TRUE ~ zone
+    ),
+    colour = case_when(
+      name %in% ipa_names ~ "#FFD8A8",   # light orange
+      TRUE ~ colour
+    )
+  )
 
 # check zone names
 unique(marine_parks_state$zone)
@@ -156,7 +163,8 @@ network_map <- function(plot_limits, study_limits, annotation_labels) {
     scale_fill_manual(name = "State Marine Parks",
                       guide = guide_legend(order = 3),
                       values = with(marine_parks_state, setNames(colour, zone)),
-                      breaks = c("Sanctuary Zone", "General Use Zone", "Recreational Use Zone", "Special Purpose Zone",
+                      breaks = c("Sanctuary Zone", "General Use Zone", "Recreational Use Zone",
+                                 "Special Purpose Zone", "Indigenous Protected Area",
                                  "Other State Marine Park Zone")) +
     new_scale_fill() +
     geom_sf(data = cwatr, colour = "firebrick", alpha = 1, linewidth = 0.1, lineend = "round") +
