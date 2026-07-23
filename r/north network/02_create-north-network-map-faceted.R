@@ -74,7 +74,12 @@ cwatr <- st_read("data/north network/spatial/shapefiles/amb_coastal_waters_limit
 
 # Marine parks
 marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Arafura", "Arnhem", "Garig Gunak Barlu", "Gulf of Carpentaria", "Joseph Bonaparte Gulf", "Limmen", "Oceanic Shoals", "Wessel", "West Cape York"))
+  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
+                            "Limmen", "Oceanic Shoals", "Wessel", "West Cape York","North Kimberley",
+                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet",
+                            "Staaten-Gilbert", "Nassau River", "Pine River Bay",
+                            "Dhimurru", "Thuwathu/Walalu", "Anindilyakwa", "Djelk", #IPAs
+                            "Crocodile Islands Maringa"))
 
 plot(marine_parks)
 
@@ -413,7 +418,6 @@ make_zone_plot_left_legend <- function(plot_limits,
     theme(plot.background = element_rect(fill = "white", colour = NA),
           plot.margin     = margin(5, 5, 5, 5))
 
-  print(fig)
 
   if (!is.null(save_name)) {
     dir.create(paste0("plots/", park, "/spatial/MPA_zoom-ins/"), recursive = TRUE, showWarnings = FALSE)
@@ -452,7 +456,7 @@ make_zone_plot_left_legend(
   break_step  = 0.2,
   show_inset = TRUE,
   save_name   = "arnhem-MPs",
-  width       = 6.25,
+  width       = 7.5,
   height      = 3.5
 )
 
@@ -488,19 +492,7 @@ make_zone_plot_left_legend(
   break_step  = 0.1,
   show_inset = TRUE,
   save_name   = "limmen-MPs",
-  width       = 7.4,
-  height      = 5.5
-)
-
-# ── North Kimberley ───────────────────────────────────────────────────────────
-make_zone_plot_left_legend(
-  plot_limits = c(122.5, 127.1, -15.5, -12.5),
-  inset_xlim  = c(126.0, 142.5),
-  inset_ylim  = c(-18, -8.5),
-  break_step  = 0.2,
-  show_inset  = TRUE,
-  save_name   = "north-kimberley-MPs",
-  width       = 8.5,
+  width       = 7.5,
   height      = 5.5
 )
 
@@ -509,7 +501,7 @@ make_zone_plot_left_legend(
   plot_limits = c(125.5, 132, -13.6, -9),
   inset_xlim  = c(126.0, 142.5),
   inset_ylim  = c(-18, -8.5),
-  break_step  = 0.2,
+  break_step  = 0.8,
   show_inset = TRUE,
   save_name   = "oceanic-shoals-MPs",
   width       = 9,
@@ -524,7 +516,7 @@ make_zone_plot_left_legend(
   break_step  = 0.2,
   show_inset = TRUE,
   save_name   = "west-cape-york-MPs",
-  width       = 7,
+  width       = 8,
   height      = 6
 )
 
@@ -536,10 +528,12 @@ make_zone_plot_left_legend(
   break_step  = 0.2,
   show_inset = TRUE,
   save_name   = "wessel-MPs",
-  width       = 7,
+  width       = 8,
   height      = 5
 )
-
+marine_parks %>%
+  filter(name == "North Kimberley") %>%
+  st_bbox()
 # ==============================================================================
 # End of script
 # ==============================================================================
