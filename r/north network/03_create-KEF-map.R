@@ -123,7 +123,7 @@ kef_colours <- c(
 # 4. PLOT INPUTS
 # ==============================================================================
 
-plot_limits     <- c(126, 143, -18, -9)
+plot_limits     <- c(126, 142.5, -18, -9)
 annotation_labels <- NULL
 
 # ==============================================================================
@@ -234,7 +234,7 @@ network_map <- function(plot_limits, annotation_labels = NULL) {
 network_map(plot_limits)
 
 ggsave(paste(paste0("plots/", park, "/spatial/", name), "network_KEFs.png", sep = "-"),
-       dpi = 600, width = 7.5, height = 5.5, bg = "white")
+       dpi = 600, width = 8, height = 5.5, bg = "white")
 
 # ==============================================================================
 # End of script

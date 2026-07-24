@@ -211,9 +211,7 @@ make_zone_panel <- function(plot_limits, mp_amp, mp_state, mp_ipa = NULL,
                  fontface      = "bold",
                  check_overlap = TRUE)
 
-  # Terrestrial parks — only added (and only legended) if there are
-  # terrestrial parks actually present within the current plot extent, and
-  # the legend only lists the type(s) that are actually shown on the map
+  # Terrestrial parks
   if (nrow(mp_terrnp) > 0) {
     terrnp_types <- intersect(c("National Park", "Nature Reserve"), unique(mp_terrnp$TYPE))
 
@@ -231,12 +229,7 @@ make_zone_panel <- function(plot_limits, mp_amp, mp_state, mp_ipa = NULL,
   p <- p +
 
     # State/Territory Marine Parks (incl. Indigenous Protected Areas) —
-    # drawn last (on top) among the marine park layers, so State/Territory
-    # zones render over Commonwealth Australian Marine Parks where the two
-    # overlap. Legend sits last among the park layers (order = 4), directly
-    # under Terrestrial Parks. Legend title configurable per park via
-    # `state_legend_title`.
-    geom_sf(data = mp_state, aes(fill = zone), colour = NA, alpha = 0.6) +
+    geom_sf(data = mp_state, aes(fill = zone), colour = NA, alpha = 0.4) +
     scale_fill_manual(name   = state_legend_title,
                       guide  = guide_legend(order = 4, ncol = 1,
                                             title.position = "top"),
@@ -281,10 +274,6 @@ make_zone_panel <- function(plot_limits, mp_amp, mp_state, mp_ipa = NULL,
 # 4. ZOOM-IN MAP FUNCTION (LEGEND ON LEFT)
 # ==============================================================================
 # Function
-# Note: inset_xlim / inset_ylim default to the standardised inset extent
-# (ext(120.0, 145.0, -20.0, -8.0)) so every individual park zoom-in map shares
-# the same inset footprint. Override only if a park genuinely needs a
-# different inset.
 make_zone_plot_left_legend <- function(plot_limits,
                                        inset_xlim         = c(120.0, 145.0),
                                        inset_ylim         = c(-20.0, -8.0),

@@ -77,6 +77,9 @@ bathy <- rast("data/north network/spatial/rasters/AusBathyTopo__Australia__2024_
 names(bathy) <- "Depth"
 bathdf <- as.data.frame(bathy, xy = T)
 
+# Extent for cropping MPAs - cuts off western extent at 126
+e_mpa <- ext(126, 142.5, -18, -9)
+
 # Filter for N network
 marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
   dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
@@ -85,6 +88,7 @@ marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-aus
                             "Staaten-Gilbert", "Nassau River", "Pine River Bay",
                             "Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2", #IPAs
                             "Crocodile Islands Maringa")) %>% # IPA
+  st_crop(e_mpa) %>%
   glimpse()
 
 # ==============================================================================
@@ -121,7 +125,7 @@ unique(marine_parks_state$zone)
 # ==============================================================================
 # 3. PLOT INPUTS
 # ==============================================================================
-plot_limits = c(126, 143, -18, -9) # Extent of the main plot
+plot_limits = c(126, 142.5, -18, -9) # Extent of the main plot
 study_limits = NULL # Extent of sampling
 annotation_labels = NULL
 
@@ -188,32 +192,38 @@ network_map <- function(plot_limits, study_limits, annotation_labels) {
           legend.title = element_text(size = 10),
           legend.position = "bottom",
           legend.box = "horizontal",
-          legend.direction = "vertical") +
+          legend.direction = "vertical",
+          panel.background = element_rect(fill = "white", colour = NA),
+          plot.background = element_rect(fill = "white", colour = NA),
+          panel.border = element_rect(colour = "grey80", fill = NA, linewidth = 0.5),
+          axis.ticks = element_line(colour = "grey80", linewidth = 0.3)) +
     guides(fill = guide_legend(ncol = 1))
   # Inset
-   p1.1 <- ggplot(data = aus) +
+  p1.1 <- ggplot(data = aus) +
     geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
     geom_sf(data = capad, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
-    coord_sf(xlim = c(105, 160), ylim = c(-48, -8)) +
-    annotate("rect", xmin = plot_limits[1], xmax = plot_limits[2], ymin = plot_limits[3], ymax = plot_limits[4],
+    annotate("rect", xmin = plot_limits[1], xmax = plot_limits[2],
+             ymin  = plot_limits[3], ymax = plot_limits[4],
              colour = "grey25", fill = "white", alpha = 1/5, linewidth = 0.2) +
+    coord_sf(xlim = c(105, 160), ylim = c(-48, -8)) +
     theme_bw() +
-    theme(axis.text = element_blank(),
-          axis.ticks = element_blank(),
+    theme(axis.text        = element_blank(),
+          axis.ticks       = element_blank(),
           panel.grid.major = element_blank(),
-          panel.border = element_rect(colour = "grey70"))
+          panel.border     = element_rect(colour = "grey70"))
 
-   legend <- cowplot::get_legend(p1 + theme(
-     legend.text = element_text(size = 7),
-     legend.title = element_text(size = 8),
-     legend.key.size = unit(0.3, "cm")
-   ))
+  legend <- cowplot::get_legend(p1 + theme(
+    legend.text = element_text(size = 7),
+    legend.title = element_text(size = 8),
+    legend.key.size = unit(0.3, "cm")
+  ))
 
-   p1_no_legend <- p1 + theme(legend.position = "none",
-                              plot.margin = margin(0, 0, 15, 0))
+  p1_no_legend <- p1 + theme(legend.position = "none",
+                             plot.margin = margin(0, 0, 15, 0))
 
-   (p1_no_legend) / (plot_spacer() + p1.1 + legend + plot_spacer() + plot_layout(widths = c(0.139, 0.3, 1, 0.08))) +
-     plot_layout(heights = c(4, 1))
+  (p1_no_legend) / (p1.1 + plot_spacer() + legend + plot_spacer() +
+                      plot_layout(widths = c(0.3, 0.02, 1, 0.095))) +
+    plot_layout(heights = c(4, 1))
 }
 
 # ==============================================================================
