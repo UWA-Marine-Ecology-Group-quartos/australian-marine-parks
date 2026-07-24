@@ -293,8 +293,8 @@ ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
              "network-natural-values.png", sep = "-"),
        plot   = figure_north_nv,
        dpi    = 600,
-       width  = 11,
-       height = 7.5,
+       width  = 11.5,
+       height = 7.75,
        bg     = "white")
 
 
@@ -349,8 +349,10 @@ check_ratio <- function(l) {
               l[2]-l[1], l[4]-l[3], (l[2]-l[1])/(l[4]-l[3]), rendered))
 }
 
-# Shelf classes only — same list the old south-west script used to decide
-# which NV classes sit "on the shelf" and get coloured over the hillshade
+# Shelf classes only — kept for reference, no longer used to filter the
+# individual park maps (they now plot the full natural values layer, see
+# naturalvalues_map_hillshade_north() below), but left defined in case it's
+# needed elsewhere in the pipeline.
 shelf_classes <- c(
   "Shelf unvegetated sediments",
   "Shelf vegetated sediments",
@@ -366,34 +368,23 @@ shelf_classes <- c(
   "Shelf incising canyons"
 )
 
-# --- FUNCTION: hillshade background + NV colour on top, clipped to 200m ---
+# --- FUNCTION: full natural values layer, ocean-colour background, no hillshade ---
 naturalvalues_map_hillshade_north <- function(plot_limits,
-                                              use_clipped = FALSE,   # <- default now FALSE
-                                              hs_altitude = 40,
-                                              hs_azimuth  = 270,
-                                              show_legend = TRUE,
-                                              title       = NULL,
-                                              break_step  = 0.2) {
+                                              ocean_colour = "#2d3a4a",
+                                              show_legend  = TRUE,
+                                              title        = NULL,
+                                              break_step   = 0.2) {
 
   require(tidyverse); require(terra); require(sf); require(ggnewscale)
 
-  ext_plot  <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
-  nv_source <- if (use_clipped) naturalvalues_clipped else naturalvalues   # full layer by default
+  ext_plot <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
 
-  # --- Hillshade from bathymetry (unchanged) ---
-  bathy_crop <- crop(bathy, ext_plot)
-  slope      <- terrain(bathy_crop, v = "slope",  unit = "radians")
-  aspect     <- terrain(bathy_crop, v = "aspect", unit = "radians")
-  hs         <- shade(slope, aspect, angle = hs_altitude, direction = hs_azimuth, normalize = TRUE)
-  hs_df      <- as.data.frame(hs, xy = TRUE, na.rm = TRUE)
-  colnames(hs_df)[3] <- "hillshade"
-
-  # --- Natural values — ALL classes present, no 200m clip, no shelf filter ---
-  nv_crop <- crop(nv_source, ext_plot)
+  # --- Natural values — full layer, all classes, no 200m clip ---
+  nv_crop <- crop(naturalvalues, ext_plot)
   nv_df   <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
   colnames(nv_df)[3] <- "value"
   nv_df$classname <- nv_lookup[as.character(nv_df$value)]
-  nv_df <- dplyr::filter(nv_df, !is.na(classname))   # shelf_classes filter removed
+  nv_df <- dplyr::filter(nv_df, !is.na(classname))
 
   present_classes <- unique(nv_df$classname)
   present_colours <- hab_colours_original[names(hab_colours_original) %in% present_classes]
@@ -413,13 +404,7 @@ naturalvalues_map_hillshade_north <- function(plot_limits,
 
   p <- ggplot() +
 
-    # Hillshade base
-    geom_tile(data = hs_df, aes(x = x, y = y, fill = hillshade),
-              alpha = 0.4, show.legend = FALSE) +
-    scale_fill_gradient(low = "#1a1a2e", high = "#e8e8e8", na.value = NA, guide = "none") +
-
-    # Full natural values layer on top
-    new_scale_fill() +
+    # Natural values layer — full raster, no hillshade underneath
     geom_tile(data = nv_df, aes(x = x, y = y, fill = classname)) +
     scale_fill_manual(
       name   = "Benthic ecosystem",
@@ -454,7 +439,7 @@ naturalvalues_map_hillshade_north <- function(plot_limits,
       legend.position  = if (show_legend) "right" else "none",
       legend.box       = "vertical",
       panel.grid       = element_blank(),
-      panel.background = element_rect(fill = "white", colour = NA),
+      panel.background = element_rect(fill = ocean_colour, colour = NA),
       plot.background  = element_rect(fill = "white", colour = NA),
       axis.text        = element_text(size = 10, colour = "grey40"),
       axis.ticks       = element_line(colour = "grey60"),
@@ -465,7 +450,6 @@ naturalvalues_map_hillshade_north <- function(plot_limits,
 
   return(p)
 }
-
 # ==============================================================================
 # 6. FIGURE 2: North Kimberley (worked example — repeat per park)
 # ==============================================================================
@@ -550,13 +534,12 @@ make_natural_values_plot <- function(plot_limits, break_step, save_name,
 
   ext_crop <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
 
-  # ── Benthic habitat legend — restricted to shelf classes present here ─────
   # ── Benthic habitat legend — ALL classes present in this park's extent ────
-  nv_crop <- crop(naturalvalues, ext_crop)   # full layer, not naturalvalues_clipped
+  nv_crop <- crop(naturalvalues, ext_crop)
   nv_df   <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
   colnames(nv_df)[3] <- "value"
   nv_df$classname <- nv_lookup[as.character(nv_df$value)]
-  nv_df <- dplyr::filter(nv_df, !is.na(classname))   # shelf_classes filter removed
+  nv_df <- dplyr::filter(nv_df, !is.na(classname))
 
   level_order <- names(nv_lookup)[names(nv_lookup) %in% as.character(nv_df$value)]
   level_order <- unname(nv_lookup[level_order])
@@ -643,7 +626,7 @@ make_natural_values_plot(
   plot_limits = c(131.5, 135.5, -12.5, -8.6),
   break_step  = 0.5,
   save_name   = "arafura",
-  width       = 7.5,
+  width       = 8,
   height      = 8,
   park        = park,
   name        = name,
@@ -691,7 +674,7 @@ make_natural_values_plot(
   plot_limits = c(135.0, 137.1, -16.0, -14),
   break_step  = 0.3,
   save_name   = "limmen",
-  width       = 6,
+  width       = 6.5,
   height      = 6.75,
   park        = park,
   name        = name,
