@@ -1,11 +1,11 @@
 ###
-# Project: NESP 5.6 Project - North Network Report
+# Project: NESP 5.6 Project - North-west Network Report
 # Data:    BRAN2023 monthly SST, AusBathyTopo 2024 250 m topography,
 #          marine park shapefiles, aus outline
 # Task:    Extract June 2011 SST from BRAN2023 (Leeuwin Current heatwave)
-#          and map over North Network extent with MPAs and land topography
+#          and map over North-west Network extent with MPAs and land topography
 # Author:  Annika Leunig
-# Date:    May 2026
+# Date:    July 2026
 # Outputs: 1. June 2011 mean SST map (Leeuwin Current marine heatwave)
 #             with marine park boundaries and land topography overlaid
 ###
@@ -23,7 +23,7 @@
 rm(list = ls())
 
 # Set names
-name <- "north"
+name <- "north-west"
 park <- "network"
 
 # Load libraries
@@ -41,45 +41,48 @@ library(xml2)
 options(timeout = 6000)
 
 # Standardise every layer on GDA2020 geographic (EPSG:7844), matching the
-# north network KEF map script
+# north-west network KEF map script
 aus_crs <- 7844
 
-# Set cropping / download extents (matches north network KEF map script)
-e     <- ext(120, 148, -21, -7)
-e_vec <- c(120, 148, -21, -7)
+# Set cropping / download extents
+e     <- ext(106, 133, -28, -11)
+e_vec <- c(106, 133, -28, -11)
 
-# Final map panel extent (tighter than the crop/download extent)
-plot_limits <- c(126, 143, -18, -8.5)
+# Final map panel extent
+plot_limits <- c(109, 130, -26.5, -12.5)
 
 # ── Load spatial files ────────────────────────────────────────────────────────
 # Terrestrial parks
-terrnp <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
+terrnp <- st_read("data/north-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
   dplyr::filter(TYPE %in% c("Nature Reserve", "National Park")) %>%
   st_transform(aus_crs)
 
 # Aus outline
-aus <- st_read("data/north network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
+aus <- st_read("data/north-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
   st_make_valid() %>%
   st_transform(aus_crs)
 ausc <- st_crop(aus, e)
 
-# Marine parks - north network
-marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c(
-    "Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
-    "Limmen", "Oceanic Shoals", "Wessel", "West Cape York", "North Kimberley",
-    "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet - Bynoe River",
-    "Staaten-Gilbert", "Nassau River", "Pine River Bay",
-    "Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2",
-    "Crocodile Islands Maringa"
-  )) %>%
+# Marine parks - north-west network (Commonwealth AMPs + WA state marine parks,
+# matches the north-west network KEF map script)
+marine_parks <- st_read("data/north-west network/spatial/shapefiles/nw-network-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c(# Commonwealth AMPs (North-west Network)
+    "Argo-Rowley Terrace", "Ashmore Reef", "Carnarvon Canyon", "Cartier Island",
+    "Dampier", "Eighty Mile Beach", "Gascoyne", "Kimberley", "Mermaid Reef",
+    "Montebello", "Ningaloo", "Roebuck", "Shark Bay",
+    # WA state marine parks (Gascoyne-Pilbara-Kimberley)
+    "Hamelin Pool", "Muiron Islands", "Barrow Island", "Thevenard Island",
+    "Montebello Islands", "Yawuru Nagulagun / Roebuck Bay", "Yawuru", # IPA
+    "Nyangumarta Warrarn", # IPA
+    "Bardi Jawi Gaarra", "North Kimberley", "Mayala",
+    "Lalang-gaddam", "Rowley Shoals", "Scott Reef")) %>%
   st_transform(aus_crs)
 
 marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc == "Commonwealth")
 
 # ── Land topography (hillshade + DEM tint) ────────────────────────────────────
-topo <- rast("data/north network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
+topo <- rast("data/north-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
   project(paste0("EPSG:", aus_crs)) %>%
   crop(e) %>%
   aggregate(fact = 10) %>%
@@ -156,7 +159,7 @@ extract_sst_monthly_mean <- function(nc_file, extent_vec) {
 # 3. DOWNLOAD AND EXTRACT JUNE 2011 SST
 # ==============================================================================
 # ── Download and write file (if doesn't exist already) ────────────────────────
-# dest_dir <- "data/north network/spatial/rasters/BRAN/BRAN2023_SST_monthly/"
+# dest_dir <- "data/north-west network/spatial/rasters/BRAN/BRAN2023_SST_monthly/"
 #
 # file_june2011 <- download_BRAN2023_monthly(2011, 6, dest_dir)
 #
@@ -164,11 +167,11 @@ extract_sst_monthly_mean <- function(nc_file, extent_vec) {
 # names(sst_june2011) <- "sst_mean_june2011"
 #
 # writeRaster(sst_june2011,
-#             "data/north network/spatial/rasters/BRAN/BRAN2023_SST_june2011_mean.tif",
+#             "data/north-west network/spatial/rasters/BRAN/BRAN2023_SST_june2011_mean.tif",
 # overwrite = TRUE)
 
 # Load raster (if written already)
-sst_june2011 <- rast("data/north network/spatial/rasters/BRAN/BRAN2023_SST_june2011_mean.tif")
+sst_june2011 <- rast("data/north-west network/spatial/rasters/BRAN/BRAN2023_SST_june2011_mean.tif")
 
 # CRS is set explicitly here (BRAN2023 is on a regular lat/lon grid, WGS84)
 # before reprojecting to match the GDA2020 (7844) CRS used for the map
@@ -214,7 +217,7 @@ p_sst_mean <- ggplot() +
   # Coastline
   geom_sf(data = ausc, fill = NA, colour = "grey60", linewidth = 0.15) +
 
-  # Layer 3: Commonwealth marine parks (north network)
+  # Layer 3: Commonwealth marine parks (north-west network)
   geom_sf(data = marine_parks_amp,
           fill = alpha("white", 0.4), colour = "white", linewidth = 0.35) +
 

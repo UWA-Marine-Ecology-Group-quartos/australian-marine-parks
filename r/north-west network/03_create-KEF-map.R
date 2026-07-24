@@ -1,10 +1,10 @@
 ###
-# Project: NESP 5.6 Project - South west Corner Report
+# Project: North-west Network Report
 # Data:    Marine parks, key ecological features, terrestrial parks, aus outline
-# Task:    Create South-west network KEF map
+# Task:    Create North-west network KEF map
 # Author:  Annika Leunig
-# Date:    April 2026
-# Outputs: 1. South-west network KEF map
+# Date:    July 2026
+# Outputs: 1. North-west network KEF map
 ###
 
 # Table of contents
@@ -13,7 +13,7 @@
 #     3.  Colour palettes
 #     4.  Plot inputs
 #     5.  Map function
-#     6.  FIGURE 1: South-west network KEF map
+#     6.  FIGURE 1: North-west network KEF map
 
 
 # ==============================================================================
@@ -23,7 +23,7 @@
 rm(list = ls())
 
 # Set the study name and marine park name (for folder structure)
-name <- "north"
+name <- "north-west"
 park <- "network"
 
 # Load libraries
@@ -44,7 +44,7 @@ sapply(file.sources, source, .GlobalEnv)
 
 # Set cropping extent (buffered slightly beyond the network so the
 # terrestrial (seashell2) landmass isn't clipped flush against the panel edges)
-e <- ext(120, 148, -21, -8)
+e <- ext(106, 133, -28, -11)
 
 # Load necessary spatial files
 sf_use_s2(T)
@@ -52,33 +52,39 @@ sf_use_s2(T)
 # Standardise every layer on GDA2020 geographic (EPSG:7844)
 aus_crs <- 7844
 
-aus  <- st_read("data/north network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
+aus  <- st_read("data/north-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
   st_make_valid() %>% st_transform(aus_crs)
 ausc <- st_crop(aus, e)
 
+# KEF is a national dataset - not duplicated per network, so read from the
+# shared north network data folder
 KEF <- st_read("data/north network/spatial/shapefiles/Marine_Key_Ecological_Features.shp") %>%
   st_make_valid() %>%
   st_transform(aus_crs) %>%
   st_crop(e)
 
-capad <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
+capad <- st_read("data/north-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Marine.shp") %>%
   st_transform(aus_crs)
 
-marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
-                            "Limmen", "Oceanic Shoals", "Wessel", "West Cape York","North Kimberley",
-                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet - Bynoe River",
-                            "Staaten-Gilbert", "Nassau River", "Pine River Bay",
-                            "Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2", #IPAs
-                            "Crocodile Islands Maringa")) %>%
-  st_transform(aus_crs) %>% # IPA
+marine_parks <- st_read("data/north-west network/spatial/shapefiles/nw-network-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c(# Commonwealth AMPs (North-west Network)
+    "Argo-Rowley Terrace", "Ashmore Reef", "Carnarvon Canyon", "Cartier Island",
+    "Dampier", "Eighty Mile Beach", "Gascoyne", "Kimberley", "Mermaid Reef",
+    "Montebello", "Ningaloo", "Roebuck", "Shark Bay",
+    # WA state marine parks (Gascoyne-Pilbara-Kimberley)
+    "Hamelin Pool", "Muiron Islands", "Barrow Island", "Thevenard Island",
+    "Montebello Islands", "Yawuru Nagulagun / Roebuck Bay", "Yawuru", # IPA
+    "Nyangumarta Warrarn", # IPA
+    "Bardi Jawi Gaarra", "North Kimberley", "Mayala",
+    "Lalang-gaddam", "Rowley Shoals", "Scott Reef")) %>%
+  st_transform(aus_crs) %>%
   glimpse()
 
 marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth")
 
 
-terrnp <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%  # Terrestrial reserves
+terrnp <- st_read("data/north-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%  # Terrestrial reserves
   dplyr::filter(TYPE %in% c("Nature Reserve", "National Park")) %>%
   st_transform(aus_crs)
 
@@ -90,40 +96,61 @@ terr_fills <- scale_fill_manual(values = c("National Park" = "#c4cea6",         
 # ==============================================================================
 # 2. RECODE AND REORDER KEF
 # ==============================================================================
+# Shorten the (often very long) official KEF names for a readable legend
 
 KEF$NAME <- dplyr::recode(KEF$NAME,
-                          "Carbonate bank and terrace system of the Sahul Shelf"      = "Sahul Shelf",
-                          "Carbonate bank and terrace system of the Van Diemen Rise"  = "Van Diemen Rise",
-                          "Gulf of Carpentaria basin"                                 = "Gulf of Carpentaria Basin",
-                          "Gulf of Carpentaria coastal zone"                          = "Gulf of Carpentaria Coastal Zone",
-                          "Pinnacles of the Bonaparte Basin"                          = "Pinnacles of the Bonaparte Basin",
-                          "Plateaux and saddle north-west of the Wellesley Islands"   = "Wellesley Islands",
-                          "Shelf break and slope of the Arafura Shelf"                = "Shelf break and slope Arafura Shelf",
-                          "Submerged coral reefs of the Gulf of Carpentaria"          = "Gulf of Carpentaria Coral Reefs",
-                          "Tributary Canyons of the Arafura Depression"               = "Tributary Canyons of the Arafura Depression"
+                          "Ancient coastline at 125 m depth contour"                                            = "Ancient Coastline (125 m)",
+                          "Ancient coastline at 90-120m depth"                                                  = "Ancient Coastline (90-120 m)",
+                          "Ashmore Reef and Cartier Island and surrounding Commonwealth waters"                 = "Ashmore Reef & Cartier Island",
+                          "Canyons linking the Argo Abyssal Plain with the Scott Plateau"                       = "Argo Abyssal Plain Canyons",
+                          "Canyons linking the Cuvier Abyssal Plain and the Cape Range Peninsula"                = "Cuvier Abyssal Plain Canyons",
+                          "Carbonate bank and terrace system of the Sahul Shelf"                                = "Sahul Shelf",
+                          "Carbonate bank and terrace system of the Van Diemen Rise"                            = "Van Diemen Rise",
+                          "Commonwealth marine environment surrounding the Houtman Abrolhos Islands"            = "Houtman Abrolhos Islands",
+                          "Commonwealth marine environment within and adjacent to the west coast inshore lagoons" = "West Coast Inshore Lagoons",
+                          "Commonwealth waters adjacent to Ningaloo Reef"                                       = "Ningaloo Reef",
+                          "Continental Slope Demersal Fish Communities"                                         = "Continental Slope Demersal Fish",
+                          "Mermaid Reef and Commonwealth waters surrounding Rowley Shoals"                      = "Mermaid Reef & Rowley Shoals",
+                          "Perth Canyon and adjacent shelf break, and other west coast canyons"                 = "Perth Canyon & West Coast Canyons",
+                          "Seringapatam Reef and Commonwealth waters in the Scott Reef Complex"                 = "Seringapatam & Scott Reef Complex",
+                          "Western demersal slope and associated fish communities"                              = "Western Demersal Slope"
 )
 
 # ==============================================================================
 # 3. COLOUR PALETTES
 # ==============================================================================
 
+kef_names <- c(
+  "Ancient Coastline (125 m)", "Ashmore Reef & Cartier Island",
+  "Argo Abyssal Plain Canyons", "Cuvier Abyssal Plain Canyons",
+  "Sahul Shelf", "Ningaloo Reef", "Continental Slope Demersal Fish",
+  "Exmouth Plateau", "Glomar Shoals", "Mermaid Reef & Rowley Shoals",
+  "Pinnacles of the Bonaparte Basin", "Seringapatam & Scott Reef Complex",
+  "Wallaby Saddle", "Western Demersal Slope"
+)
+
 kef_colours <- c(
-  "Sahul Shelf"                          = "#8D4C0B",
-  "Van Diemen Rise"                      = "#C68642",  # shifted from #8D4C0B (duplicate in source legend)
-  "Gulf of Carpentaria Basin"            = "#BBDAFE",
-  "Gulf of Carpentaria Coastal Zone"     = "#8C1108",
-  "Pinnacles of the Bonaparte Basin"     = "#F6429A",
-  "Wellesley Islands"                    = "#7A0891",
-  "Shelf break and slope Arafura Shelf"  = "#B33F1E",  # shifted from #8C1108 (duplicate in source legend)
-  "Gulf of Carpentaria Coral Reefs"      = "#D7D220",
-  "Tributary Canyons of the Arafura Depression" = "#124849"
+  "Ancient Coastline (125 m)"          = "#FCFF73",
+  "Ashmore Reef & Cartier Island"      = "#F8B87A",
+  "Argo Abyssal Plain Canyons"         = "#B56DFD",
+  "Cuvier Abyssal Plain Canyons"       = "#7BB4FD",
+  "Sahul Shelf"                        = "#8D4C0B",
+  "Ningaloo Reef"                      = "#F772B6",
+  "Continental Slope Demersal Fish"    = "#C97A3D",  # shifted, dup of Ashmore Reef & Cartier Island
+  "Exmouth Plateau"                    = "#7E57C2",  # shifted, dup of Argo Abyssal Plain Canyons
+  "Glomar Shoals"                      = "#2F6FAD",  # shifted, dup of Cuvier Abyssal Plain Canyons
+  "Mermaid Reef & Rowley Shoals"       = "#77FD9D",
+  "Pinnacles of the Bonaparte Basin"   = "#F6429A",
+  "Seringapatam & Scott Reef Complex"  = "#BBDAFE",
+  "Wallaby Saddle"                     = "#8C1108",
+  "Western Demersal Slope"             = "#316BD9"
 )
 
 # ==============================================================================
 # 4. PLOT INPUTS
 # ==============================================================================
 
-plot_limits     <- c(126, 142.5, -18, -9)
+plot_limits     <- c(109, 130, -26.5, -12.5)
 annotation_labels <- NULL
 
 # ==============================================================================
@@ -148,14 +175,7 @@ network_map <- function(plot_limits, annotation_labels = NULL) {
                       guide  = guide_legend(order = 1, ncol = 2,
                                             title.position = "top"),
                       values = kef_colours,
-                      limits = c("Tributary Canyons of the Arafura Depression",
-                                 "Shelf break and slope Arafura Shelf",
-                                 "Pinnacles of the Bonaparte Basin",
-                                 "Gulf of Carpentaria Basin",
-                                 "Gulf of Carpentaria Coastal Zone",
-                                 "Gulf of Carpentaria Coral Reefs",
-                                 "Sahul Shelf", "Van Diemen Rise",
-                                 "Wellesley Islands")) +
+                      limits = kef_names) +
 
     # Terrestrial parks — no legend
     new_scale_fill() +
@@ -228,13 +248,13 @@ network_map <- function(plot_limits, annotation_labels = NULL) {
 }
 
 # ==============================================================================
-# 6. FIGURE 1: North network KEF map
+# 6. FIGURE 1: North-west network KEF map
 # ==============================================================================
 
 network_map(plot_limits)
 
 ggsave(paste(paste0("plots/", park, "/spatial/", name), "network_KEFs.png", sep = "-"),
-       dpi = 600, width = 8, height = 5.5, bg = "white")
+       dpi = 600, width = 7.5, height = 6.5, bg = "white")
 
 # ==============================================================================
 # End of script
