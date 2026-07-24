@@ -1,13 +1,14 @@
 ###
-# Project: NESP 5.6 Project - North Network Report
+# Project: NESP 5.6 Project - north-west Network Report
 # Data:    Marine Parks, Indigenous Protected Areas, bathymetry, terrestrial
 #          parks, aus outline
-# Task:    North network park zone maps — individual zoom-ins
+# Task:    North-west network park zone maps — individual zoom-ins
 # Author:  Annika Leunig and Abbey Gibbons
 # Date:    May 2026
-# Outputs: Individual park zoom-in zone maps for the north network (Arafura,
-#          Arnhem, Gulf of Carpentaria, Joseph Bonaparte Gulf, Limmen,
-#          Oceanic Shoals, West Cape York, Wessel)
+# Outputs: Individual park zoom-in zone maps for the north-west network (Argo-
+#          Rowley Terrace, Ashmore Reef, Carnarvon Canyon, Cartier Island,
+#          Dampier, Eighty Mile Beach, Gascoyne, Kimberley, Mermaid Reef)
+#          Montebello, Ningaloo, Roebuck, Shark Bay,)
 ###
 
 # Table of contents
@@ -25,7 +26,7 @@
 rm(list = ls())
 
 # Set study name
-name <- "north"
+name <- "north-west"
 park <- "network"
 
 # Load libraries
@@ -37,21 +38,21 @@ library(ggnewscale)
 library(cowplot)
 
 # Set cropping and plot extents
-e                <- ext(120.0, 145.0, -20.0, -8.0)
+e                <- ext(108.5, 130, -28, -10)
 
 # Standardised inset extent — used for ALL inset overview plots across every
 # individual park zoom-in map, so the inset always shows the same footprint
-inset_extent_std <- ext(120.0, 145.0, -20.0, -8.0)
+inset_extent_std <- ext(108.5, 130, -28, -10)
 
 # ── Load spatial files  ───────────────────────────────────────────────────────
 sf_use_s2(TRUE)
 # Aus outline, terrestrial parks and coastal waters outline
-aus <- st_read("data/north network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
+aus <- st_read("data/north-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
   st_make_valid()
 
 # CAPAD Marine 2024 — used for the inset overview maps AND as the source of
 # Commonwealth zone RES_NUMBER labels (see below)
-capad <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Marine.shp")
+capad <- st_read("data/north-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Marine.shp")
 
 # Commonwealth AMP zone labels: last 5 characters of RES_NUMBER (e.g. "npz03"),
 # plotted at each zone's CAPAD-supplied LONGITUDE/LATITUDE point
@@ -63,21 +64,25 @@ capad_amp_labels <- capad %>%
   dplyr::mutate(label = stringr::str_sub(RES_NUMBER, -5, -1)) %>%
   sf::st_as_sf(coords = c("LONGITUDE", "LATITUDE"), crs = 4326, remove = FALSE)
 
-terrnp <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
+terrnp <- st_read("data/north-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
   dplyr::filter(TYPE %in% c("Nature Reserve", "National Park"))
 
-cwatr <- st_read("data/north network/spatial/shapefiles/amb_coastal_waters_limit.shp") %>%
+cwatr <- st_read("data/north-west network/spatial/shapefiles/amb_coastal_waters_limit.shp") %>%
   st_make_valid() %>%
   st_crop(e)
 
-# Marine parks — north network parks, including Indigenous Protected Areas
-marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
-                            "Limmen", "Oceanic Shoals", "Wessel", "West Cape York","North Kimberley",
-                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet - Bynoe River",
-                            "Staaten-Gilbert", "Nassau River", "Pine River Bay",
-                            "Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2", #IPAs
-                            "Crocodile Islands Maringa"))
+# Marine parks — north-west network parks, including Indigenous Protected Areas
+marine_parks <- st_read("data/north-west network/spatial/shapefiles/north-west-network-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c(
+    # Commonwealth AMPs (North-west Network)
+    "Argo-Rowley Terrace", "Ashmore Reef", "Carnarvon Canyon", "Cartier Island",
+    "Dampier", "Eighty Mile Beach", "Gascoyne", "Kimberley", "Mermaid Reef",
+    "Montebello", "Ningaloo", "Roebuck", "Shark Bay",
+    # WA state marine parks (Gascoyne–Pilbara–Kimberley)
+    "Hamelin Pool", "Muiron Islands", "Barrow Island", "Thevenard Island",
+    "Montebello Islands", "Yawuru Nagulagun / Roebuck Bay", "Yawuru",
+    "Nyangumarta Warrarn", "Bardi Jawi Gaarra", "North Kimberley", "Mayala",
+    "Lalang-gaddam", "Rowley Shoals", "Scott Reef" ))
 
 marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth")
@@ -103,7 +108,7 @@ marine_parks_state <- marine_parks %>%
   )
 
 # Bathymetry data
-bathy <- rast("data/north network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
+bathy <- rast("data/north-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
   crop(e) %>%
   clamp(upper = 0, values = FALSE)
 names(bathy) <- "Depth"
@@ -112,13 +117,14 @@ names(bathy) <- "Depth"
 # 2. HELPER FUNCTIONS
 # ==============================================================================
 filter_to_extent <- function(layer, limits) {
+  if (nrow(layer) == 0) return(layer)   # nothing to intersect — return as-is
+
   box <- st_as_sfc(st_bbox(
     c(xmin = limits[1], xmax = limits[2], ymin = limits[3], ymax = limits[4]),
     crs = st_crs(4326)
   ))
 
-
-  if (is.na(st_crs(layer)) ) {
+  if (is.na(st_crs(layer))) {
     stop("filter_to_extent(): input layer has no CRS set — assign one with st_set_crs() before filtering.")
   }
   if (st_crs(layer) != st_crs(4326)) {
@@ -127,7 +133,8 @@ filter_to_extent <- function(layer, limits) {
 
   layer <- st_make_valid(layer)
 
-  dplyr::filter(layer, st_intersects(geometry, box, sparse = FALSE)[, 1])
+  keep <- lengths(st_intersects(layer, box)) > 0   # sparse form — more robust than dense [,1]
+  layer[keep, ]
 }
 
 # to manually set the tick marks for the plots
@@ -198,8 +205,7 @@ make_zone_panel <- function(plot_limits, mp_amp, mp_state, mp_ipa = NULL,
                       guide  = guide_legend(order = 1, ncol = 1,
                                             title.position = "top"),
                       values = with(mp_amp, setNames(colour, zone)),
-                      breaks = c("National Park Zone", "Habitat Protection Zone",
-                                 "Multiple Use Zone", "Special Purpose Zone")) +
+                      breaks = sort(unique(mp_amp$zone))) +
     new_scale_fill() +
 
     # Commonwealth AMP zone labels (last 5 characters of CAPAD RES_NUMBER,
@@ -275,8 +281,8 @@ make_zone_panel <- function(plot_limits, mp_amp, mp_state, mp_ipa = NULL,
 # ==============================================================================
 # Function
 make_zone_plot_left_legend <- function(plot_limits,
-                                       inset_xlim         = c(120.0, 145.0),
-                                       inset_ylim         = c(-20.0, -8.0),
+                                       inset_xlim         = c(108.5, 130),
+                                       inset_ylim         = c(-28, -10),
                                        break_step         = 0.2,
                                        show_inset         = TRUE,
                                        state_legend_title = "State Marine Parks",
@@ -370,93 +376,148 @@ make_zone_plot_left_legend <- function(plot_limits,
 # ==============================================================================
 # 5. INDIVIDUAL PARK ZOOM-INS (assemble and save)
 # ==============================================================================
-# ── Arafura ───────────────────────────────────────────────────────────────────
+# ── Argo-Rowley Terrace ───────────────────────────────────────────────────────
 
 make_zone_plot_left_legend(
-  plot_limits         = c(131.5, 135.5, -12.5, -8.5),
+  plot_limits         = c(115.5, 121.0, -18.0, -13.0),
   break_step          = 0.5,
   show_inset          = TRUE,
-  state_legend_title  = "Territory Marine Parks",
-  save_name           = "arafura-MPs",
+  state_legend_title  = "State Marine Parks",
+  save_name           = "argo-rowley-terrace-MPs",
   width               = 7.75,
   height              = 4.75
 )
 
-# ── Arnhem ────────────────────────────────────────────────────────────────────
+# ── Ashmore Reef  ─────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits         = c(133.0, 134.8, -12.5, -10.5),
+  plot_limits         = c(122.5, 124.0, -13.0, -11.5),
   break_step          = 0.2,
   show_inset          = TRUE,
-  state_legend_title  = "Territory Marine Parks",
-  save_name           = "arnhem-MPs",
-  width               = 8,
-  height              = 5.5
+  state_legend_title  = "State Marine Parks",
+  save_name           = "ashmore-reef-MPs",
+  width               = 6.25,
+  height              = 4
 )
 
-# ── Gulf of Carpentaria ───────────────────────────────────────────────────────
+# ── Carnarvon Canyon ──────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits         = c(138.0, 142.6, -17.5, -13.8),
-  break_step          = 0.4,
+  plot_limits         = c(110.0, 112.1, -24.5, -23.0),
+  break_step          = 0.2,
   show_inset          = TRUE,
   state_legend_title  = "State Marine Parks",
-  save_name           = "gulf-of-carpentaria-MPs",
+  save_name           = "carnarvon-canyon-MPs",
+  width               = 8.4,
+  height              = 5
+)
+
+# ── Cartier Island ────────────────────────────────────────────────────────────
+make_zone_plot_left_legend(
+  plot_limits         = c(123.3, 123.8, -12.7, -12.3),
+  break_step          = 0.1,
+  show_inset          = TRUE,
+  state_legend_title  = "State Marine Parks",
+  save_name           = "cartier-island-MPs",
+  width               = 7,
+  height              = 4
+)
+
+# ── Dampier ───────────────────────────────────────────────────────────────────
+make_zone_plot_left_legend(
+  plot_limits         = c(116.6, 117.8, -21.0, -20.0),
+  break_step          = 0.1,
+  show_inset          = TRUE,
+  state_legend_title  = "State Marine Parks",
+  save_name           = "dampier-MPs",
+  width               = 7.4,
+  height              = 4.25
+)
+
+# ── Eighty Mile Beach ─────────────────────────────────────────────────────────
+make_zone_plot_left_legend(
+  plot_limits         = c(118.2, 122.0, -20.5, -18.0),
+  break_step          = 0.2,
+  show_inset          = TRUE,
+  state_legend_title  = "State Marine Parks",
+  save_name           = "eighty-mile-beach-MPs",
+  width               = 9.5,
+  height              = 4.5
+)
+
+# ── Gascoyne ──────────────────────────────────────────────────────────────────
+make_zone_plot_left_legend(
+  plot_limits         = c(109.5, 114.6, -24.2, -20.5),
+  break_step          = 0.5,
+  show_inset          = TRUE,
+  state_legend_title  = "State Marine Parks",
+  save_name           = "gascoyne-MPs",
   width               = 8.5,
   height              = 5.5
 )
 
-# ── Joseph Bonaparte Gulf ─────────────────────────────────────────────────────
+# ── Kimberley ─────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits         = c(126.5, 130.5, -15.5, -13),
-  break_step          = 0.2,
+  plot_limits         = c(120.5, 127.3, -17.5, -13.0),
+  break_step          = 0.5,
   show_inset          = TRUE,
-  state_legend_title  = "State and Territory Marine Parks",
-  save_name           = "joseph-bonaparte-gulf-MPs",
-  width               = 9,
+  state_legend_title  = "State Marine Parks",
+  save_name           = "kimberley-MPs",
+  width               = 8,
   height              = 4.5
 )
 
-# ── Limmen ────────────────────────────────────────────────────────────────────
+# ── Mermaid Reef  ─────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits         = c(135.0, 137.1, -16.0, -14),
+  plot_limits         = c(118.7, 119.8, -17.8, -16.7),
   break_step          = 0.1,
   show_inset          = TRUE,
-  state_legend_title  = "Territory Marine Parks",
-  save_name           = "limmen-MPs",
-  width               = 7.7,
-  height              = 5.5
+  state_legend_title  = "State Marine Parks",
+  save_name           = "mermaid-reef-MPs",
+  width               = 8,
+  height              = 5
 )
 
-# ── Oceanic Shoals ────────────────────────────────────────────────────────────
+# ── Montebello ────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits         = c(125.5, 132, -13.6, -9),
-  break_step          = 0.8,
-  show_inset          = TRUE,
-  state_legend_title  = "Territory Marine Parks",
-  save_name           = "oceanic-shoals-MPs",
-  width               = 9,
-  height              = 4.5
-)
-
-# ── West Cape York ────────────────────────────────────────────────────────────
-make_zone_plot_left_legend(
-  plot_limits         = c(139.5, 142.7, -12.5, -9.5),
+  plot_limits         = c(114.6, 116.6, -21.6, -19.4),
   break_step          = 0.2,
   show_inset          = TRUE,
   state_legend_title  = "State Marine Parks",
-  save_name           = "west-cape-york-MPs",
-  width               = 8,
-  height              = 6
+  save_name           = "montebello-MPs",
+  width               = 7.75,
+  height              = 5.5
 )
 
-# ── Wessel ────────────────────────────────────────────────────────────────────
+# ── Ningaloo ──────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits         = c(136.0, 137.8, -12.5, -10.5),
+  plot_limits         = c(113, 114.6, -23.7, -21.4),
   break_step          = 0.2,
   show_inset          = TRUE,
-  state_legend_title  = "Territory Marine Parks",
-  save_name           = "wessel-MPs",
+  state_legend_title  = "State Marine Parks",
+  save_name           = "ningaloo-MPs",
+  width               = 7.75,
+  height              = 5.75
+)
+
+# ── Roebuck ───────────────────────────────────────────────────────────────────
+make_zone_plot_left_legend(
+  plot_limits         = c(121.6, 122.8, -18.7, -17.2),
+  break_step          = 0.2,
+  show_inset          = TRUE,
+  state_legend_title  = "State Marine Parks",
+  save_name           = "roebuck-MPs",
+  width               = 7.75,
+  height              = 5.5
+)
+
+# ── Shark Bay ─────────────────────────────────────────────────────────────────
+make_zone_plot_left_legend(
+  plot_limits         = c(111.5, 114.5, -26.1, -24.1),
+  break_step          = 0.2,
+  show_inset          = TRUE,
+  state_legend_title  = "State Marine Parks",
+  save_name           = "shark-bay-MPs",
   width               = 8,
-  height              = 5
+  height              = 4.5
 )
 
 # ==============================================================================
