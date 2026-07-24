@@ -6,19 +6,20 @@
 # Task:    Plot AMP mosaics on network and individual MP extents
 # Author:  Annika Leunig
 # Date:    July 2026
-# Outputs: 1. North network AMP bathymetry map
-#          2. Individual park zoom-in AMP bathymetry maps (Arafura, Arnhem,
-#             Gulf of Carpentaria, Joseph Bonaparte Gulf, Limmen, North Kimberley,
-#             Oceanic Shoals, West Cape York, Wessel)
+# Outputs: 1. North-west network AMP bathymetry map
+#          2. Individual park zoom-in AMP bathymetry maps for the north-west
+#             network (Argo-Rowley Terrace, Ashmore Reef, Carnarvon Canyon,
+#             Cartier Island, Dampier, Eighty Mile Beach, Gascoyne, Kimberley,
+#             Mermaid Reef, Montebello, Ningaloo, Roebuck, Shark Bay)
 ###
 
 # Table of contents
 #     1.  Set up and load data
 #     2.  WMS download functions
 #     3.  Network figure builder (fixed Aus-extent inset)
-#     4.  FIGURE 1: NORTH NETWORK MAP (assemble and save)
+#     4.  FIGURE 1: NORTH-WEST NETWORK MAP (assemble and save)
 #     5.  Zoom-in map function (legend on left)
-#     6.  FIGURES 2-10: Individual park zoom-ins (assemble and save)
+#     6.  FIGURES 2-14: Individual park zoom-ins (assemble and save)
 
 
 # ==============================================================================
@@ -28,7 +29,7 @@
 rm(list = ls())
 
 # Set study name
-name <- "north"
+name <- "north-west"
 park <- "network"
 
 # Load libraries
@@ -45,18 +46,20 @@ sf::sf_use_s2(FALSE)
 options(timeout = 1200)
 
 # ── Paths (adjust if your tree differs) ───────────────────────────────────────
-shp_dir          <- "data/north network/spatial/shapefiles/"
-depth_legend_png <- "data/north network/spatial/rasters/depth-legend.png"
+shp_dir          <- "data/north-west network/spatial/shapefiles/"
+depth_legend_png <- "data/north-west network/spatial/rasters/depth-legend.png"
 
 # ── Map extents (xmin, ymin, xmax, ymax) ──────────────────────────────────────
-bbox_network <- c(xmin = 126,    ymin = -18,   xmax = 143,   ymax = -8)
+# Matches the north-west network KEF/SST/natural-values scripts' plot_limits
+bbox_network <- c(xmin = 106,    ymin = -28, xmax = 131,   ymax = -11)
 
 north_inset_xlim <- c(unname(bbox_network["xmin"]), unname(bbox_network["xmax"]))
 north_inset_ylim <- c(unname(bbox_network["ymin"]), unname(bbox_network["ymax"]))
 
-# Cropping box for all layers
+# Cropping box for all layers (matches the north-west network KEF script's
+# crop/download extent)
 crop_box <- sf::st_as_sfc(sf::st_bbox(
-  c(xmin = 117, ymin = -24, xmax = 151, ymax = -5), crs = 4326
+  c(xmin = 106, ymin = -30, xmax = 133, ymax = -11), crs = 4326
 ))
 
 # ── Load spatial files ────────────────────────────────────────────────────────
@@ -75,7 +78,7 @@ capad <- sf::st_read(
 
 # Terrestrial parks
 terrnp <- sf::st_read(
-  paste0("data/north network/spatial/shapefiles/",
+  paste0("data/north-west network/spatial/shapefiles/",
          "Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp"),
   quiet = TRUE
 ) %>%
@@ -297,7 +300,7 @@ amp_bathy_map <- function(bbox, meri_img, bath_img, x_breaks = NULL, y_breaks = 
 }
 
 # ==============================================================================
-# 4. FIGURE 1: NORTH NETWORK MAP (assemble and save)
+# 4. FIGURE 1: NORTH-WEST NETWORK MAP (assemble and save)
 # ==============================================================================
 # Save function
 build_and_save <- function(bbox, save_name, width, height,
@@ -311,11 +314,11 @@ build_and_save <- function(bbox, save_name, width, height,
   invisible(fig)
 }
 
-# Save
+# Save — x/y breaks and dimensions adjusted for the taller north-west network
 build_and_save(bbox_network,
-               "network_AMP-bathy-plot",  width = 8.5, height = 6,
-               x_breaks = seq(120, 145, by = 5),
-               y_breaks = seq(-20, -10, by = 5))
+               "network_AMP-bathy-plot",  width = 7.7, height = 6,
+               x_breaks = seq(110, 130, by = 5),
+               y_breaks = seq(-25, -15, by = 5))
 
 # ==============================================================================
 # 5. ZOOM-IN MAP FUNCTION (LEGEND ON LEFT)
@@ -584,86 +587,141 @@ network_map_wms_zoomed <- function(
 }
 
 # ==============================================================================
-# 6. FIGURES 2-10: INDIVIDUAL PARK ZOOM-INS (assemble and save)
+# 6. FIGURES 2-14: INDIVIDUAL PARK ZOOM-INS (assemble and save)
 # ==============================================================================
-# ── Arafura ───────────────────────────────────────────────────────────────────
+
+# ── Argo-Rowley Terrace ───────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(131.5, 135.5, -12.5, -8.5),
-  save_name   = "arafura_AMP-bathy-plot",
-  width       = 8,
-  height      = 5.7,
+  plot_limits = c(115.5, 121.0, -18.0, -13.0),
+  save_name   = "argo-rowley-terrace_AMP-bathy-plot",
+  width       = 7.75,
+  height      = 4.75,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
-# ── Arnhem ────────────────────────────────────────────────────────────────────
+# ── Ashmore Reef  ─────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(133.0, 134.8, -12.5, -10.5),
-  save_name   = "arnhem_AMP-bathy-plot",
-  width       = 8,
-  height      = 5.5,
-  inset_xlim  = north_inset_xlim,
-  inset_ylim  = north_inset_ylim
-)
-
-# ── Gulf of Carpentaria ───────────────────────────────────────────────────────
-network_map_wms_zoomed(
-  plot_limits = c(138.0, 142.6, -18, -13.8),
-  save_name   = "gulf-of-carpentaria_AMP-bathy-plot",
-  width       = 8,
-  height      = 5.5,
-  inset_xlim  = north_inset_xlim,
-  inset_ylim  = north_inset_ylim
-)
-
-# ── Joseph Bonaparte Gulf ─────────────────────────────────────────────────────
-network_map_wms_zoomed(
-  plot_limits = c(126.5, 130.5, -15.5, -13),
-  save_name   = "joseph-bonaparte-gulf_AMP-bathy-plot",
-  width       = 8,
+  plot_limits = c(122.5, 124.0, -13.0, -11.5),
+  save_name   = "ashmore-reef_AMP-bathy-plot",
+  width       = 6.25,
   height      = 4,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
-# ── Limmen ────────────────────────────────────────────────────────────────────
+# ── Carnarvon Canyon ──────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(135.0, 137.1, -16.0, -14),
-  save_name   = "limmen_AMP-bathy-plot",
-  width       = 7.5,
+  plot_limits = c(110.0, 112.1, -24.5, -23.0),
+  save_name   = "carnarvon-canyon_AMP-bathy-plot",
+  width       = 8.4,
+  height      = 5,
+  inset_xlim  = north_inset_xlim,
+  inset_ylim  = north_inset_ylim
+)
+
+# ── Cartier Island ────────────────────────────────────────────────────────────
+network_map_wms_zoomed(
+  plot_limits = c(123.3, 123.8, -12.7, -12.3),
+  save_name   = "cartier-island_AMP-bathy-plot",
+  width       = 7,
+  height      = 4,
+  inset_xlim  = north_inset_xlim,
+  inset_ylim  = north_inset_ylim
+)
+
+# ── Dampier ───────────────────────────────────────────────────────────────────
+network_map_wms_zoomed(
+  plot_limits = c(116.6, 117.8, -21.0, -20.0),
+  save_name   = "dampier_AMP-bathy-plot",
+  width       = 7.4,
+  height      = 4.25,
+  inset_xlim  = north_inset_xlim,
+  inset_ylim  = north_inset_ylim
+)
+
+# ── Eighty Mile Beach ─────────────────────────────────────────────────────────
+network_map_wms_zoomed(
+  plot_limits     = c(118.2, 122.0, -20.5, -18.0),
+  thin_lon_breaks = TRUE,
+  break_step      = 0.2,
+  save_name       = "eighty-mile-beach_AMP-bathy-plot",
+  width           = 9.5,
+  height          = 4.5,
+  inset_xlim      = north_inset_xlim,
+  inset_ylim      = north_inset_ylim
+)
+
+# ── Gascoyne ──────────────────────────────────────────────────────────────────
+network_map_wms_zoomed(
+  plot_limits     = c(109.5, 114.6, -24.2, -20.5),
+  thin_lon_breaks = TRUE,
+  break_step      = 0.5,
+  save_name       = "gascoyne_AMP-bathy-plot",
+  width           = 10,
+  height          = 5.5,
+  inset_xlim      = north_inset_xlim,
+  inset_ylim      = north_inset_ylim
+)
+
+# ── Kimberley ─────────────────────────────────────────────────────────────────
+network_map_wms_zoomed(
+  plot_limits     = c(120.5, 127.3, -17.5, -13.0),
+  thin_lon_breaks = TRUE,
+  break_step      = 0.5,
+  save_name       = "kimberley_AMP-bathy-plot",
+  width           = 8,
+  height          = 4.5,
+  inset_xlim      = north_inset_xlim,
+  inset_ylim      = north_inset_ylim
+)
+
+# ── Mermaid Reef  ─────────────────────────────────────────────────────────────
+network_map_wms_zoomed(
+  plot_limits = c(118.7, 119.8, -17.8, -16.7),
+  save_name   = "mermaid-reef_AMP-bathy-plot",
+  width       = 8,
+  height      = 5,
+  inset_xlim  = north_inset_xlim,
+  inset_ylim  = north_inset_ylim
+)
+
+# ── Montebello ────────────────────────────────────────────────────────────────
+network_map_wms_zoomed(
+  plot_limits = c(114.6, 116.6, -21.6, -19.4),
+  save_name   = "montebello_AMP-bathy-plot",
+  width       = 7.75,
   height      = 5.5,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
-# ── Oceanic Shoals ────────────────────────────────────────────────────────────
+# ── Ningaloo ──────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(125.5, 132, -13.6, -9),
-  save_name   = "oceanic-shoals_AMP-bathy-plot",
-  width       = 9,
-  height      = 4.5,
+  plot_limits = c(113, 114.6, -23.7, -21.4),
+  save_name   = "ningaloo_AMP-bathy-plot",
+  width       = 7.75,
+  height      = 5.75,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
-# ── West Cape York ────────────────────────────────────────────────────────────
+# ── Roebuck ───────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(139.5, 142.9, -12.5, -9.5),
-  save_name   = "west-cape-york_AMP-bathy-plot",
-  thin_lon_breaks = TRUE,
-  break_step      = 0.5,
-  width       = 7,
-  height      = 4.5,
+  plot_limits = c(121.6, 122.8, -18.7, -17.2),
+  save_name   = "roebuck_AMP-bathy-plot",
+  width       = 7.75,
+  height      = 5.5,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
-# ── Wessel ────────────────────────────────────────────────────────────────────
+# ── Shark Bay ─────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(136.0, 137.8, -12.5, -10.5),
-  save_name   = "wessel_AMP-bathy-plot",
-  width       = 7,
-  height      = 5,
+  plot_limits = c(111.5, 114.5, -26.1, -24.1),
+  save_name   = "shark-bay_AMP-bathy-plot",
+  width       = 10,
+  height      = 4.5,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )

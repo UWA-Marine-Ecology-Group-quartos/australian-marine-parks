@@ -53,7 +53,7 @@ aus    <- st_read("data/north network/spatial/shapefiles/STE_2021_AUST_GDA2020.s
 ausc <- st_crop(aus, e)
 
 # For inset
-capad    <- st_read("data/north network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
+capad    <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2022_-_Marine.shp") %>%
   st_make_valid()
 
 #Add terrestrial parks in
@@ -235,7 +235,7 @@ network_map(plot_limits,
 
 # Save plot
 ggsave(paste(paste0('plots/', park, '/spatial/', name) , 'network_zones.png',
-             sep = "-"), dpi = 600, width = 8, height = 5, bg = "white")
+             sep = "-"), dpi = 600, width = 7.5, height = 5, bg = "white")
 
 # ==============================================================================
 # End of script
