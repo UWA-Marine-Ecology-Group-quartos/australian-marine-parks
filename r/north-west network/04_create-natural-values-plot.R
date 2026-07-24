@@ -2,10 +2,10 @@
 # Project: NESP 5.6 Project - South west Corner Report
 # Data:    Natural values ecosystems (NESP MERI), Commonwealth marine parks,
 #          terrestrial parks and aus outline
-# Task:    Creating natural values (benthic ecosystem) map — north network
+# Task:    Creating natural values (benthic ecosystem) map — north-west network
 # Author:  Annika Leunig & Abbey Gibbons
 # Date:    July 2026
-# Outputs: 1. North network natural values map (original source colours,
+# Outputs: 1. North-west network natural values map (original source colours,
 #             predicted reef layer removed, Commonwealth marine parks only)
 ###
 
@@ -13,7 +13,7 @@
 #     1.  Set up and load data
 #     2.  CRS, colours and other housekeeping
 #     3.  Network-scale map function
-#     4.  FIGURE 1: North network natural values map
+#     4.  FIGURE 1: North-west network natural values map
 #     5.  Individual park functions — hillshade past 200m
 #     6.  FIGURE 2: North Kimberley (worked example)
 
@@ -26,7 +26,7 @@
 rm(list = ls())
 
 # Set study name (folder structure)
-name <- "north"
+name <- "north-west"
 park <- "network"
 
 # Load libraries
@@ -39,37 +39,43 @@ library(cowplot)
 library(ggplot2)
 library(dplyr)
 
-# Set cropping extent (matches north network KEF script)
-e <- ext(120, 148, -21, -8)
+# Set cropping extent (matches north-west network KEF/SST scripts)
+e <- ext(106, 133, -28, -11)
 
 # Aus outline
-aus <- st_read("data/north network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
+aus <- st_read("data/north-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
   st_make_valid()
 
-# Commonwealth marine parks only (same filter as network_map() KEF script)
-marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
-                            "Limmen", "Oceanic Shoals", "Wessel", "West Cape York","North Kimberley",
-                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet - Bynoe River",
-                            "Staaten-Gilbert", "Nassau River", "Pine River Bay",
-                            "Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2", #IPAs
-                            "Crocodile Islands Maringa")) %>%
+# Marine parks — Commonwealth AMPs + WA state marine parks (same list as the
+# north-west network KEF script's network_map() filter)
+marine_parks <- st_read("data/north-west network/spatial/shapefiles/nw-network-australia_marine-parks-all.shp") %>%
+  dplyr::filter(name %in% c(# Commonwealth AMPs (North-west Network)
+    "Argo-Rowley Terrace", "Ashmore Reef", "Carnarvon Canyon", "Cartier Island",
+    "Dampier", "Eighty Mile Beach", "Gascoyne", "Kimberley", "Mermaid Reef",
+    "Montebello", "Ningaloo", "Roebuck", "Shark Bay",
+    # WA state marine parks (Gascoyne-Pilbara-Kimberley)
+    "Hamelin Pool", "Muiron Islands", "Barrow Island", "Thevenard Island",
+    "Montebello Islands", "Yawuru Nagulagun / Roebuck Bay", "Yawuru", # IPA
+    "Nyangumarta Warrarn", # IPA
+    "Bardi Jawi Gaarra", "North Kimberley", "Mayala",
+    "Lalang-gaddam", "Rowley Shoals", "Scott Reef")) %>%
   glimpse()
 
+# Commonwealth marine parks only, for the natural values map
 marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth")
 
 # Terrestrial parks for mapping
-terrnp <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
+terrnp <- st_read("data/north-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
   st_make_valid() %>%
   dplyr::filter(TYPE %in% c("Nature Reserve", "National Park"))
 
 # Natural values ecosystem — NESP MERI raster (has its own embedded colour table)
-naturalvalues <- rast("data/north network/spatial/rasters/NESP_MERI_Natural_Values_Ecosystems.tif") %>%
+naturalvalues <- rast("data/north-west network/spatial/rasters/NESP_MERI_Natural_Values_Ecosystems.tif") %>%
   crop(e)
 
 # Bathymetry — used for hillshade background on individual park figures only
-bathy <- rast("data/north network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
+bathy <- rast("data/north-west network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
   crop(e)
 
 
@@ -143,11 +149,11 @@ hab_colours_original <- c(
 # 3. NETWORK-SCALE MAP FUNCTION — natural values only, no predicted reef
 # ==============================================================================
 
-naturalvalues_map_north <- function(plot_limits,
-                                    ocean_colour = "#2b3a4a",
-                                    show_legend  = TRUE,
-                                    title        = NULL,
-                                    break_step   = 2.0) {
+naturalvalues_map_northwest <- function(plot_limits,
+                                        ocean_colour = "#2b3a4a",
+                                        show_legend  = TRUE,
+                                        title        = NULL,
+                                        break_step   = 2.0) {
 
   require(tidyverse); require(terra); require(sf); require(ggnewscale); require(cowplot)
 
@@ -278,12 +284,12 @@ naturalvalues_map_north <- function(plot_limits,
 
 
 # ==============================================================================
-# 4. FIGURE 1: North network natural values map
+# 4. FIGURE 1: North-west network natural values map
 # ==============================================================================
 
-network_limits <- c(126, 143, -18, -9)
+network_limits <- c(109, 130, -26.5, -12.5)
 
-figure_north_nv <- naturalvalues_map_north(
+figure_northwest_nv <- naturalvalues_map_northwest(
   plot_limits  = network_limits,
   show_legend  = TRUE,
   break_step   = 2.0
@@ -291,15 +297,15 @@ figure_north_nv <- naturalvalues_map_north(
 
 ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
              "network-natural-values.png", sep = "-"),
-       plot   = figure_north_nv,
+       plot   = figure_northwest_nv,
        dpi    = 600,
-       width  = 11.5,
-       height = 7.75,
+       width  = 12,
+       height = 9.75,
        bg     = "white")
 
 
 # ==============================================================================
-# 5. INDIVIDUAL PARK FUNCTIONS — hillshade base, NV coloured to 200m only
+# 5. INDIVIDUAL PARK FUNCTIONS — hillshade past 200m
 # ==============================================================================
 # ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 # ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣶⣾⣿⣿⣿⣿⠿⣿⣿⣿⣿⡿⢿⣿⣿⣿⣿⣶⣶⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -310,7 +316,7 @@ ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
 # ⠀⠀⠀⠀⠀⠀⢠⣾⣿⣿⣿⣿⣿⣿⣿⣿⡿⣯⣶⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢻⣟⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⠂⣹⣿⣄⠀⠀⠀⠀⠀⠀
 # ⠀⠀⠀⠀⠀⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⢀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢉⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡟⢷⣟⣿⣿⣆⠀⠀⠀⠀⠀
 # ⠀⠀⠀⠀⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⢦⣿⣿⣿⣿⣧⠀⠀⠀⠀
-# ⠀⠀⠀⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⣤⣀⡀⠀⠀⠀⠀⢀⣀⣤⣼⣿⣿⣿⠿⠟⠛⠛⠉⠉⠋⠀⠀⠙⢻⣿⡝⢢⣿⣿⣿⣿⣿⠀⠀⠀⠀
+# ⠀⠀⠀⢠⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⣤⣀⡀⠀⠀⠀⠀⢀⣀⣤⣼⣿⣿⣿⠿⠟⠛⠛⠛⠉⠉⠋⠀⠀⠙⢻⣿⡝⢢⣿⣿⣿⣿⣿⠀⠀⠀⠀
 # ⠀⠀⢀⣿⣿⣿⣿⣿⣿⣿⠧⠿⠿⠟⠛⣿⠿⠿⠿⠿⠿⠿⢿⣿⣿⣿⣿⣿⣿⡿⠿⠿⠛⠛⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣽⣿⣾⣿⣿⣿⣿⣿⡀⠀⠀⠀
 # ⠀⠀⣾⣿⣿⣿⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣿⣿⣿⣿⣿⣿⣿⣷⠀⠀⠀
 # ⠀⠀⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣀⡠⠤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⠀
