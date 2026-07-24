@@ -1,24 +1,21 @@
 ###
-# Project: NESP 5.6 Project - South west Corner Report
-# Data:    Marine Parks, bathymetry, terrestrial parks, aus outline
-# Task:    Two Rocks & Geographe zone maps — network style, faceted
-# Author:  Annika Leunig
+# Project: NESP 5.6 Project - North Network Report
+# Data:    Marine Parks, Indigenous Protected Areas, bathymetry, terrestrial
+#          parks, aus outline
+# Task:    North network park zone maps — individual zoom-ins
+# Author:  Annika Leunig and Abbey Gibbons
 # Date:    May 2026
-# Outputs: 1. Two Rocks & Geographe faceted zone map
-#          2. Individual park zoom-in zone maps (Abrolhos, Jurien Bay, Two Rocks,
-#             Rottnest Island Canyon, Geographe, Bremer Bay, SWC east, Eastern
-#             Recherche, Great Australian Bight, Murat & Western Eyre,
-#             Kangaroo Island)
+# Outputs: Individual park zoom-in zone maps for the north network (Arafura,
+#          Arnhem, Gulf of Carpentaria, Joseph Bonaparte Gulf, Limmen,
+#          Oceanic Shoals, West Cape York, Wessel)
 ###
 
 # Table of contents
 #     1.  Set up and load data
 #     2.  Helper functions
 #     3.  Panel function
-#     4.  Build Two Rocks & Geographe panels
-#     5.  FIGURE 1: TWO ROCKS & GEOGRAPHE FACETED MAP (assemble and save)
-#     6.  Zoom-in map function (legend on left)
-#     7.  FIGURES 2-12: Individual park zoom-ins (assemble and save)
+#     4.  Zoom-in map function (legend on left)
+#     5.  Individual park zoom-ins (assemble and save)
 
 
 # ==============================================================================
@@ -38,12 +35,13 @@ library(terra)
 library(tidyterra)
 library(ggnewscale)
 library(cowplot)
-library(metR)
 
 # Set cropping and plot extents
 e                <- ext(120.0, 145.0, -20.0, -8.0)
-# tworocks_limits  <- c(114.7, 116.0, -32.0, -31.3)
-# geographe_limits <- c(114.4, 115.9, -33.9, -33.1)
+
+# Standardised inset extent — used for ALL inset overview plots across every
+# individual park zoom-in map, so the inset always shows the same footprint
+inset_extent_std <- ext(120.0, 145.0, -20.0, -8.0)
 
 # ── Load spatial files  ───────────────────────────────────────────────────────
 sf_use_s2(TRUE)
@@ -72,15 +70,21 @@ cwatr <- st_read("data/north network/spatial/shapefiles/amb_coastal_waters_limit
   st_make_valid() %>%
   st_crop(e)
 
-# Marine parks
+# Marine parks — north network parks, including Indigenous Protected Areas
 marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Arafura", "Arnhem", "Garig Gunak Barlu", "Gulf of Carpentaria", "Joseph Bonaparte Gulf", "Limmen", "Oceanic Shoals", "Wessel", "West Cape York"))
-
-plot(marine_parks)
+  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
+                            "Limmen", "Oceanic Shoals", "Wessel", "West Cape York","North Kimberley",
+                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet - Bynoe River",
+                            "Staaten-Gilbert", "Nassau River", "Pine River Bay",
+                            "Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2", #IPAs
+                            "Crocodile Islands Maringa"))
 
 marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth")
 
+# Indigenous Protected Areas
+marine_parks_ipa <- marine_parks %>%
+  dplyr::filter(name %in% c("Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2", "Crocodile Islands Maringa"))
 
 marine_parks_state <- marine_parks %>%
   dplyr::filter(epbc %in% "State") %>%
@@ -92,14 +96,14 @@ marine_parks_state <- marine_parks %>%
       TRUE                              ~ zone
     ),
     colour = case_when(
-      zone == "Other State Marine Park Zone" ~ "#f7d0dc",
+      zone == "Other State Marine Park Zone" ~ "#FFB6C1",   # pink
       zone == "Sanctuary Zone"               ~ "#bfd4a5",
       TRUE                                   ~ colour
     )
   )
 
 # Bathymetry data
-bathy <- rast("data/north network/spatial/rasters/Australian_Bathymetry_and_Topography_2023_250m_MSL_cog.tif") %>%
+bathy <- rast("data/north network/spatial/rasters/AusBathyTopo__Australia__2024_250m_MSL_cog.tif") %>%
   crop(e) %>%
   clamp(upper = 0, values = FALSE)
 names(bathy) <- "Depth"
@@ -112,6 +116,17 @@ filter_to_extent <- function(layer, limits) {
     c(xmin = limits[1], xmax = limits[2], ymin = limits[3], ymax = limits[4]),
     crs = st_crs(4326)
   ))
+
+
+  if (is.na(st_crs(layer)) ) {
+    stop("filter_to_extent(): input layer has no CRS set — assign one with st_set_crs() before filtering.")
+  }
+  if (st_crs(layer) != st_crs(4326)) {
+    layer <- st_transform(layer, 4326)
+  }
+
+  layer <- st_make_valid(layer)
+
   dplyr::filter(layer, st_intersects(geometry, box, sparse = FALSE)[, 1])
 }
 
@@ -127,19 +142,38 @@ thin_breaks <- function(limits, step = 0.2) {
 # 3. PANEL FUNCTION
 # ==============================================================================
 
-make_zone_panel <- function(plot_limits, mp_amp, mp_state, label_data = NULL, break_step = 0.1) {
+make_zone_panel <- function(plot_limits, mp_amp, mp_state, mp_ipa = NULL,
+                            mp_terrnp = NULL, label_data = NULL, break_step = 0.1,
+                            state_legend_title = "State Marine Parks") {
 
   x_breaks <- thin_breaks(plot_limits[1:2], step = break_step)
   y_breaks <- thin_breaks(abs(plot_limits[3:4]), step = break_step) * -1
-
-  # Coastal waters limit dummy data for legend
-  cwatr_legend <- data.frame(x = 1, y = 1, label = "Coastal Waters Limit")
 
   if (is.null(label_data)) {
     label_data <- capad_amp_labels[0, ]
   }
 
-  ggplot() +
+  if (is.null(mp_ipa)) {
+    mp_ipa <- marine_parks_ipa[0, ]
+  }
+
+  if (is.null(mp_terrnp)) {
+    mp_terrnp <- terrnp[0, ]
+  }
+
+  mp_ipa_recoded <- mp_ipa %>%
+    dplyr::mutate(zone = "Indigenous Protected Area", colour = "#FFD8A8")
+
+  mp_state <- dplyr::bind_rows(mp_state, mp_ipa_recoded)
+
+  state_breaks <- c("Sanctuary Zone", "General Use Zone",
+                    "Recreational Use Zone", "Special Purpose Zone",
+                    "Other State Marine Park Zone")
+  if ("Indigenous Protected Area" %in% unique(mp_state$zone)) {
+    state_breaks <- c(state_breaks, "Indigenous Protected Area")
+  }
+
+  p <- ggplot() +
 
     # Bathymetry filled contours
     geom_spatraster_contour_filled(data   = bathy,
@@ -158,7 +192,7 @@ make_zone_panel <- function(plot_limits, mp_amp, mp_state, label_data = NULL, br
     # Landmass
     geom_sf(data = aus, fill = "seashell2", colour = "grey80", linewidth = 0.1) +
 
-    # Australian Marine Parks
+    # Australian Marine Parks (Commonwealth) — legend sits first (order = 1)
     geom_sf(data = mp_amp, aes(fill = zone), colour = NA, alpha = 0.8) +
     scale_fill_manual(name   = "Australian Marine Parks",
                       guide  = guide_legend(order = 1, ncol = 1,
@@ -175,33 +209,40 @@ make_zone_panel <- function(plot_limits, mp_amp, mp_state, label_data = NULL, br
                  size          = 2.2,
                  colour        = "grey15",
                  fontface      = "bold",
-                 check_overlap = TRUE) +
+                 check_overlap = TRUE)
 
-    # Terrestrial parks
-    geom_sf(data = terrnp, aes(fill = TYPE), colour = NA, alpha = 0.8) +
-    scale_fill_manual(name   = "Terrestrial Parks",
-                      guide  = guide_legend(order = 2, ncol = 1,
-                                            title.position = "top"),
-                      values = c("National Park"  = "#c4cea6",
-                                 "Nature Reserve" = "#e4d0bb")) +
-    new_scale_fill() +
+  # Terrestrial parks
+  if (nrow(mp_terrnp) > 0) {
+    terrnp_types <- intersect(c("National Park", "Nature Reserve"), unique(mp_terrnp$TYPE))
 
-    # State Marine Parks
-    geom_sf(data = mp_state, aes(fill = zone), colour = NA, alpha = 0.6) +
-    scale_fill_manual(name   = "State Marine Parks",
-                      guide  = guide_legend(order = 2, ncol = 1,
+    p <- p +
+      geom_sf(data = mp_terrnp, aes(fill = TYPE), colour = NA, alpha = 0.8) +
+      scale_fill_manual(name   = "Terrestrial Parks",
+                        guide  = guide_legend(order = 3, ncol = 1,
+                                              title.position = "top"),
+                        values = c("National Park"  = "#c4cea6",
+                                   "Nature Reserve" = "#e4d0bb"),
+                        breaks = terrnp_types) +
+      new_scale_fill()
+  }
+
+  p <- p +
+
+    # State/Territory Marine Parks (incl. Indigenous Protected Areas) —
+    geom_sf(data = mp_state, aes(fill = zone), colour = NA, alpha = 0.4) +
+    scale_fill_manual(name   = state_legend_title,
+                      guide  = guide_legend(order = 4, ncol = 1,
                                             title.position = "top"),
                       values = with(mp_state, setNames(colour, zone)),
-                      breaks = c("Sanctuary Zone", "General Use Zone",
-                                 "Recreational Use Zone", "Special Purpose Zone",
-                                 "Other State Marine Park Zone")) +
+                      breaks = state_breaks) +
+    new_scale_fill() +
 
     # Coastal waters limit — mapped to colour for legend entry
     geom_sf(data  = cwatr, aes(colour = "Coastal Waters Limit"),
             linewidth = 0.1, lineend = "round") +
     scale_colour_manual(name   = NULL,
                         values = c("Coastal Waters Limit" = "firebrick"),
-                        guide  = guide_legend(order = 4,
+                        guide  = guide_legend(order = 5,
                                               override.aes = list(linewidth = 0.8))) +
 
     coord_sf(xlim = plot_limits[1:2], ylim = plot_limits[3:4],
@@ -225,135 +266,34 @@ make_zone_panel <- function(plot_limits, mp_amp, mp_state, label_data = NULL, br
       axis.text        = element_text(size = 8, colour = "grey40"),
       plot.margin      = margin(2, 2, 2, 2)
     )
+
+  return(p)
 }
 
 # ==============================================================================
-# 4. BUILD TWO ROCKS & GEOGRAPHE PANELS
-# ==============================================================================
-# Call functions
-# tr_amp   <- filter_to_extent(marine_parks_amp,   tworocks_limits)
-# tr_state <- filter_to_extent(marine_parks_state, tworocks_limits)
-# tr_labels <- filter_to_extent(capad_amp_labels,  tworocks_limits)
-#
-# geo_amp   <- filter_to_extent(marine_parks_amp,   geographe_limits)
-# geo_state <- filter_to_extent(marine_parks_state, geographe_limits)
-# geo_labels <- filter_to_extent(capad_amp_labels,  geographe_limits)
-#
-# p_tr  <- make_zone_panel(tworocks_limits,  tr_amp,  tr_state,  label_data = tr_labels,  break_step = 0.1)
-# p_geo <- make_zone_panel(geographe_limits, geo_amp, geo_state, label_data = geo_labels, break_step = 0.1)
-
-# Build the legend
-# legend <- cowplot::get_legend(p_tr + theme(
-#   legend.position  = "left",
-#   legend.box       = "vertical",
-#   legend.direction = "vertical",
-#   legend.text      = element_text(size = 9),
-#   legend.title     = element_text(size = 11),
-#   legend.key.size  = unit(0.5, "cm"),
-#   legend.spacing.y = unit(0.2, "cm")
-# ))
-#
-# # Build the inset map
-# p_inset <- ggplot(data = aus) +
-#   geom_sf(fill = "seashell1", colour = "grey90", linewidth = 0.05, alpha = 4/5) +
-#   geom_sf(data = capad, alpha = 5/6, colour = "grey85", linewidth = 0.02) +
-#   annotate("rect",
-#            xmin = tworocks_limits[1],  xmax = tworocks_limits[2],
-#            ymin = tworocks_limits[3],  ymax = tworocks_limits[4],
-#            colour = "grey25", fill = "white", alpha = 1/5, linewidth = 0.3) +
-#   annotate("rect",
-#            xmin = geographe_limits[1], xmax = geographe_limits[2],
-#            ymin = geographe_limits[3], ymax = geographe_limits[4],
-#            colour = "grey25", fill = "white", alpha = 1/5, linewidth = 0.3) +
-#   annotate("text",
-#            x     = mean(tworocks_limits[1:2]),
-#            y     = tworocks_limits[4],
-#            label = "Two Rocks",
-#            size  = 2.5, colour = "grey20", hjust = 0.5, vjust = -0.5) +
-#   annotate("text",
-#            x     = mean(geographe_limits[1:2]),
-#            y     = geographe_limits[3],
-#            label = "Geographe",
-#            size  = 2.5, colour = "grey20", hjust = 0.5, vjust = 1.5) +
-#   coord_sf(xlim = c(112, 122), ylim = c(-36, -28)) +
-#   theme_bw() +
-#   theme(axis.text        = element_blank(),
-#         axis.ticks       = element_blank(),
-#         panel.grid.major = element_blank(),
-#         panel.border     = element_rect(colour = "grey70"))
-
-# # ==============================================================================
-# # 5. FIGURE 1: TWO ROCKS & GEOGRAPHE FACETED MAP (assemble and save)
-# # ==============================================================================
-# # ── Assemble ──────────────────────────────────────────────────────────────────
-# label_tr  <- ggdraw() + draw_label("Two Rocks",  size = 14, angle = 90)
-# label_geo <- ggdraw() + draw_label("Geographe",  size = 14, angle = 90)
-#
-# p_tr_nl  <- p_tr  + theme(legend.position = "none", plot.margin = margin(0, 0, 0, 0))
-# p_geo_nl <- p_geo + theme(legend.position = "none", plot.margin = margin(0, 0, 0, 0))
-#
-# row_tr <- cowplot::plot_grid(
-#   label_tr, p_tr_nl,
-#   nrow = 1, rel_widths = c(0.06, 1)
-# )
-#
-# row_geo <- cowplot::plot_grid(
-#   label_geo, p_geo_nl,
-#   nrow = 1, rel_widths = c(0.06, 1)
-# )
-#
-# maps_grid <- cowplot::plot_grid(
-#   row_tr,
-#   row_geo,
-#   ncol        = 1,
-#   rel_heights = c(1, 1)
-# )
-#
-# left_col <- cowplot::plot_grid(
-#   legend,
-#   NULL,
-#   p_inset,
-#   ncol        = 1,
-#   rel_heights = c(0.45, 0.15, 0.45)
-# )
-#
-# figure <- cowplot::plot_grid(
-#   left_col,
-#   maps_grid,
-#   nrow       = 1,
-#   rel_widths = c(0.32, 1)
-# ) +
-#   theme(plot.background = element_rect(fill = "white", colour = NA),
-#         plot.margin     = margin(5, 5, 5, 5))
-#
-# # ── Save ──────────────────────────────────────────────────────────────────────
-# ggsave(paste(paste0("plots/", park, "/spatial/", name),
-#              "tworocks-geographe-MPs.png", sep = "-"),
-#        plot   = figure,
-#        dpi    = 600,
-#        width  = 9,
-#        height = 9,
-#        bg     = "white")
-#
-
-# ==============================================================================
-# 6. ZOOM-IN MAP FUNCTION (LEGEND ON LEFT)
+# 4. ZOOM-IN MAP FUNCTION (LEGEND ON LEFT)
 # ==============================================================================
 # Function
 make_zone_plot_left_legend <- function(plot_limits,
-                                       inset_xlim   = c(108, 138),
-                                       inset_ylim   = c(-40, -24),
-                                       break_step   = 0.2,
-                                       show_inset   = TRUE,
-                                       save_name    = NULL,
-                                       width        = 10,
-                                       height       = 6) {
+                                       inset_xlim         = c(120.0, 145.0),
+                                       inset_ylim         = c(-20.0, -8.0),
+                                       break_step         = 0.2,
+                                       show_inset         = TRUE,
+                                       state_legend_title = "State Marine Parks",
+                                       save_name          = NULL,
+                                       width              = 10,
+                                       height             = 6) {
 
   mp_amp    <- filter_to_extent(marine_parks_amp,   plot_limits)
   mp_state  <- filter_to_extent(marine_parks_state, plot_limits)
+  mp_ipa    <- filter_to_extent(marine_parks_ipa,   plot_limits)
+  mp_terrnp <- filter_to_extent(terrnp,             plot_limits)
   mp_labels <- filter_to_extent(capad_amp_labels,   plot_limits)
 
-  p_map <- make_zone_panel(plot_limits, mp_amp, mp_state, label_data = mp_labels, break_step = break_step)
+  p_map <- make_zone_panel(plot_limits, mp_amp, mp_state, mp_ipa = mp_ipa,
+                           mp_terrnp = mp_terrnp, label_data = mp_labels,
+                           break_step = break_step,
+                           state_legend_title = state_legend_title)
 
   # Legend
   legend_single <- cowplot::get_legend(p_map + theme(
@@ -413,7 +353,6 @@ make_zone_plot_left_legend <- function(plot_limits,
     theme(plot.background = element_rect(fill = "white", colour = NA),
           plot.margin     = margin(5, 5, 5, 5))
 
-  print(fig)
 
   if (!is.null(save_name)) {
     dir.create(paste0("plots/", park, "/spatial/MPA_zoom-ins/"), recursive = TRUE, showWarnings = FALSE)
@@ -429,115 +368,95 @@ make_zone_plot_left_legend <- function(plot_limits,
 }
 
 # ==============================================================================
-# 7. FIGURES 2-12: INDIVIDUAL PARK ZOOM-INS (assemble and save)
+# 5. INDIVIDUAL PARK ZOOM-INS (assemble and save)
 # ==============================================================================
 # ── Arafura ───────────────────────────────────────────────────────────────────
 
 make_zone_plot_left_legend(
-  plot_limits = c(131.5, 135.5, -12.5, -8.5),
-  inset_xlim  = c(126.0, 142.5),
-  inset_ylim  = c(-18, -8.5),
-  break_step  = 0.5,
-  show_inset = TRUE,
-  save_name   = "arafura-MPs",
-  width       = 7.75,
-  height      = 4.75
+  plot_limits         = c(131.5, 135.5, -12.5, -8.5),
+  break_step          = 0.5,
+  show_inset          = TRUE,
+  state_legend_title  = "Territory Marine Parks",
+  save_name           = "arafura-MPs",
+  width               = 7.75,
+  height              = 4.75
 )
 
 # ── Arnhem ────────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(133.0, 134.8, -12.5, -10.5),
-  inset_xlim  = c(126.0, 142.5),
-  inset_ylim  = c(-18, -8.5),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "arnhem-MPs",
-  width       = 6.25,
-  height      = 3.5
+  plot_limits         = c(133.0, 134.8, -12.5, -10.5),
+  break_step          = 0.2,
+  show_inset          = TRUE,
+  state_legend_title  = "Territory Marine Parks",
+  save_name           = "arnhem-MPs",
+  width               = 8,
+  height              = 5.5
 )
 
 # ── Gulf of Carpentaria ───────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(138.0, 142.6, -17.5, -13.8),
-  inset_xlim  = c(126.0, 142.5),
-  inset_ylim  = c(-18, -8.5),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "gulf-of-carpentaria-MPs",
-  width       = 8.5,
-  height      = 5.5
+  plot_limits         = c(138.0, 142.6, -17.5, -13.8),
+  break_step          = 0.4,
+  show_inset          = TRUE,
+  state_legend_title  = "State Marine Parks",
+  save_name           = "gulf-of-carpentaria-MPs",
+  width               = 8.5,
+  height              = 5.5
 )
 
 # ── Joseph Bonaparte Gulf ─────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(126.5, 130.5, -15.5, -13),
-  inset_xlim  = c(126.0, 142.5),
-  inset_ylim  = c(-18, -8.5),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "joseph-bonaparte-gulf-MPs",
-  width       = 8,
-  height      = 4.5
+  plot_limits         = c(126.5, 130.5, -15.5, -13),
+  break_step          = 0.2,
+  show_inset          = TRUE,
+  state_legend_title  = "State and Territory Marine Parks",
+  save_name           = "joseph-bonaparte-gulf-MPs",
+  width               = 9,
+  height              = 4.5
 )
 
 # ── Limmen ────────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(135.0, 137.1, -16.0, -14),
-  inset_xlim  = c(126.0, 142.5),
-  inset_ylim  = c(-18, -8.5),
-  break_step  = 0.1,
-  show_inset = TRUE,
-  save_name   = "limmen-MPs",
-  width       = 7.4,
-  height      = 5.5
-)
-
-# ── North Kimberley ───────────────────────────────────────────────────────────
-make_zone_plot_left_legend(
-  plot_limits = c(122.5, 127.1, -15.5, -12.5),
-  inset_xlim  = c(126.0, 142.5),
-  inset_ylim  = c(-18, -8.5),
-  break_step  = 0.2,
-  show_inset  = TRUE,
-  save_name   = "north-kimberley-MPs",
-  width       = 8.5,
-  height      = 5.5
+  plot_limits         = c(135.0, 137.1, -16.0, -14),
+  break_step          = 0.1,
+  show_inset          = TRUE,
+  state_legend_title  = "Territory Marine Parks",
+  save_name           = "limmen-MPs",
+  width               = 7.7,
+  height              = 5.5
 )
 
 # ── Oceanic Shoals ────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(125.5, 132, -13.6, -9),
-  inset_xlim  = c(126.0, 142.5),
-  inset_ylim  = c(-18, -8.5),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "oceanic-shoals-MPs",
-  width       = 9,
-  height      = 4.0
+  plot_limits         = c(125.5, 132, -13.6, -9),
+  break_step          = 0.8,
+  show_inset          = TRUE,
+  state_legend_title  = "Territory Marine Parks",
+  save_name           = "oceanic-shoals-MPs",
+  width               = 9,
+  height              = 4.5
 )
 
 # ── West Cape York ────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(139.5, 142.7, -12.5, -9.5),
-  inset_xlim  = c(126.0, 142.5),
-  inset_ylim  = c(-18, -8.5),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "west-cape-york-MPs",
-  width       = 7,
-  height      = 6
+  plot_limits         = c(139.5, 142.7, -12.5, -9.5),
+  break_step          = 0.2,
+  show_inset          = TRUE,
+  state_legend_title  = "State Marine Parks",
+  save_name           = "west-cape-york-MPs",
+  width               = 8,
+  height              = 6
 )
 
 # ── Wessel ────────────────────────────────────────────────────────────────────
 make_zone_plot_left_legend(
-  plot_limits = c(136.0, 137.8, -12.5, -10.5),
-  inset_xlim  = c(126.0, 142.5),
-  inset_ylim  = c(-18, -8.5),
-  break_step  = 0.2,
-  show_inset = TRUE,
-  save_name   = "wessel-MPs",
-  width       = 7,
-  height      = 5
+  plot_limits         = c(136.0, 137.8, -12.5, -10.5),
+  break_step          = 0.2,
+  show_inset          = TRUE,
+  state_legend_title  = "Territory Marine Parks",
+  save_name           = "wessel-MPs",
+  width               = 8,
+  height              = 5
 )
 
 # ==============================================================================

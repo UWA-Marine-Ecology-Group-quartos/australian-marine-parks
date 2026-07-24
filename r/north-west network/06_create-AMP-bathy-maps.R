@@ -49,7 +49,7 @@ shp_dir          <- "data/north network/spatial/shapefiles/"
 depth_legend_png <- "data/north network/spatial/rasters/depth-legend.png"
 
 # ── Map extents (xmin, ymin, xmax, ymax) ──────────────────────────────────────
-bbox_network <- c(xmin = 120,    ymin = -21,   xmax = 148,   ymax = -8)
+bbox_network <- c(xmin = 126,    ymin = -18,   xmax = 143,   ymax = -8)
 
 north_inset_xlim <- c(unname(bbox_network["xmin"]), unname(bbox_network["xmax"]))
 north_inset_ylim <- c(unname(bbox_network["ymin"]), unname(bbox_network["ymax"]))
@@ -74,8 +74,6 @@ capad <- sf::st_read(
   sf::st_transform(4326)
 
 # Terrestrial parks
-# NB: this shapefile is only stored under the south-west network folder and is
-# shared across networks, hence the different path from the layers above.
 terrnp <- sf::st_read(
   paste0("data/north network/spatial/shapefiles/",
          "Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp"),
@@ -259,9 +257,9 @@ amp_bathy_map <- function(bbox, meri_img, bath_img, x_breaks = NULL, y_breaks = 
 
   # TPs legend
   p1_other_legend <- cowplot::get_legend(p1 + theme(
-    legend.text      = element_text(size = 7),
-    legend.title     = element_text(size = 8),
-    legend.key.size  = unit(0.3, "cm"),
+    legend.text      = element_text(size = 9),
+    legend.title     = element_text(size = 11),
+    legend.key.size  = unit(0.35, "cm"),
     legend.position  = "bottom",
     legend.box       = "horizontal",
     legend.direction = "vertical"
@@ -292,7 +290,7 @@ amp_bathy_map <- function(bbox, meri_img, bath_img, x_breaks = NULL, y_breaks = 
     plot_layout(widths = c(4, right_panel_w_in / (11 - right_panel_w_in) * 4))
 
   bottom_row <- p1.1 + wrap_elements(p1_other_legend) + plot_spacer() +
-    plot_layout(widths = c(0.28, 1, 0.5))
+    plot_layout(widths = c(0.4, 0.5, 1.5))
 
   map_row / bottom_row +
     plot_layout(heights = c(4, 1))
@@ -301,31 +299,31 @@ amp_bathy_map <- function(bbox, meri_img, bath_img, x_breaks = NULL, y_breaks = 
 # ==============================================================================
 # 4. FIGURE 1: NORTH NETWORK MAP (assemble and save)
 # ==============================================================================
-# SAve function
-# build_and_save <- function(bbox, save_name, width, height,
-#                            x_breaks = NULL, y_breaks = NULL) {
-#   meri_img <- get_meri_grey(bbox)
-#   bath_img <- get_amp_bathy(bbox)
-#   fig <- amp_bathy_map(bbox, meri_img, bath_img, x_breaks, y_breaks)
-#   ggsave(paste(paste0("plots/", park, "/spatial/AMP_bathy/", name),
-#                paste0(save_name, ".png"), sep = "-"),
-#          plot = fig, dpi = 600, width = width, height = height, bg = "white")
-#   invisible(fig)
-# }
-#
-# # Save
-# build_and_save(bbox_network,
-#                "network_AMP-bathy-plot",  width = 10, height = 5.5,
-#                x_breaks = seq(120, 145, by = 5),
-#                y_breaks = seq(-20, -10, by = 5))
+# Save function
+build_and_save <- function(bbox, save_name, width, height,
+                           x_breaks = NULL, y_breaks = NULL) {
+  meri_img <- get_meri_grey(bbox)
+  bath_img <- get_amp_bathy(bbox)
+  fig <- amp_bathy_map(bbox, meri_img, bath_img, x_breaks, y_breaks)
+  ggsave(paste(paste0("plots/", park, "/spatial/AMP_bathy/", name),
+               paste0(save_name, ".png"), sep = "-"),
+         plot = fig, dpi = 600, width = width, height = height, bg = "white")
+  invisible(fig)
+}
+
+# Save
+build_and_save(bbox_network,
+               "network_AMP-bathy-plot",  width = 8.5, height = 6,
+               x_breaks = seq(120, 145, by = 5),
+               y_breaks = seq(-20, -10, by = 5))
 
 # ==============================================================================
 # 5. ZOOM-IN MAP FUNCTION (LEGEND ON LEFT)
 # ==============================================================================
 network_map_wms_zoomed <- function(
     plot_limits,
-    inset_xlim = c(120, 148),
-    inset_ylim = c(-21, -8),
+    inset_xlim = c(126, 143),
+    inset_ylim = c(-18, -9),
     show_inset = TRUE,
     thin_lon_breaks = FALSE,   # thin the longitude axis breaks (useful for wide/short extents)
     break_step      = 0.2,     # spacing used by thin_breaks() before thinning; only used when thin_lon_breaks = TRUE
@@ -357,15 +355,12 @@ network_map_wms_zoomed <- function(
   meri_img <- get_meri_grey(bbox)
   bath_img <- get_amp_bathy(bbox)
 
-  # TPs
-  terr_fills_ordered <- scale_fill_manual(
-    values = c(
-      "National Park" = "#c4cea6",
-      "Nature Reserve" = "#e4d0bb"
-    ),
-    name = "Terrestrial Parks",
-    guide = guide_legend(order = 2, ncol = 1)
-  )
+  # TPs cropped to this park's extent
+  bbox_sfc <- sf::st_as_sfc(sf::st_bbox(
+    c(xmin = unname(xmin), ymin = unname(ymin), xmax = unname(xmax), ymax = unname(ymax)),
+    crs = 4326
+  ))
+  mp_terrnp <- suppressWarnings(sf::st_intersection(terrnp, bbox_sfc))
 
   # main map
   p_map <- ggplot() +
@@ -394,17 +389,31 @@ network_map_wms_zoomed <- function(
       fill = "seashell2",
       colour = "grey80",
       linewidth = 0.1
-    ) +
+    )
 
-    # TPs
-    geom_sf(
-      data = terrnp,
-      aes(fill = TYPE),
-      colour = NA,
-      alpha = 0.8
-    ) +
+  # TPs
+  if (nrow(mp_terrnp) > 0) {
+    terrnp_types <- intersect(c("National Park", "Nature Reserve"), unique(mp_terrnp$TYPE))
 
-    terr_fills_ordered +
+    p_map <- p_map +
+      geom_sf(
+        data = mp_terrnp,
+        aes(fill = TYPE),
+        colour = NA,
+        alpha = 0.8
+      ) +
+      scale_fill_manual(
+        values = c(
+          "National Park" = "#c4cea6",
+          "Nature Reserve" = "#e4d0bb"
+        ),
+        name = "Terrestrial Parks",
+        breaks = terrnp_types,
+        guide = guide_legend(order = 2, ncol = 1)
+      )
+  }
+
+  p_map <- p_map +
 
     # Coastal waters
     geom_sf(
@@ -577,54 +586,49 @@ network_map_wms_zoomed <- function(
 # ==============================================================================
 # 6. FIGURES 2-10: INDIVIDUAL PARK ZOOM-INS (assemble and save)
 # ==============================================================================
-# NB: plot_limits below are rough estimates only (I don't have your AMP
-# shapefile extents to hand) — check each against your `amp` layer, e.g.
-#   st_bbox(amp %>% filter(NAME == "Arafura"))
-# and adjust before running. Format is c(xmin, xmax, ymin, ymax).
-
 # ── Arafura ───────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(130.0, 136.5, -11.5, -8.5),  # TODO: verify extent
+  plot_limits = c(131.5, 135.5, -12.5, -8.5),
   save_name   = "arafura_AMP-bathy-plot",
-  width       = 9,
-  height      = 3.5,
+  width       = 8,
+  height      = 5.7,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
 # ── Arnhem ────────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(133.0, 137.5, -12.5, -10.0),  # TODO: verify extent
+  plot_limits = c(133.0, 134.8, -12.5, -10.5),
   save_name   = "arnhem_AMP-bathy-plot",
   width       = 8,
-  height      = 3.5,
+  height      = 5.5,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
 # ── Gulf of Carpentaria ───────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(139.0, 142.6, -17.5, -13.5),  # TODO: verify extent
+  plot_limits = c(138.0, 142.6, -18, -13.8),
   save_name   = "gulf-of-carpentaria_AMP-bathy-plot",
   width       = 8,
-  height      = 7,
+  height      = 5.5,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
 # ── Joseph Bonaparte Gulf ─────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(126.5, 130.5, -15.5, -12.5),  # TODO: verify extent
+  plot_limits = c(126.5, 130.5, -15.5, -13),
   save_name   = "joseph-bonaparte-gulf_AMP-bathy-plot",
   width       = 8,
-  height      = 5.0,
+  height      = 4,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
 # ── Limmen ────────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(135.0, 137.6, -16.0, -13.5),  # TODO: verify extent
+  plot_limits = c(135.0, 137.1, -16.0, -14),
   save_name   = "limmen_AMP-bathy-plot",
   width       = 7.5,
   height      = 5.5,
@@ -632,19 +636,9 @@ network_map_wms_zoomed(
   inset_ylim  = north_inset_ylim
 )
 
-# ── North Kimberley ───────────────────────────────────────────────────────────
-network_map_wms_zoomed(
-  plot_limits = c(122.5, 127.1, -15.5, -12.5),  # TODO: verify extent
-  save_name   = "north-kimberley_AMP-bathy-plot",
-  width       = 8.5,
-  height      = 4.5,
-  inset_xlim  = north_inset_xlim,
-  inset_ylim  = north_inset_ylim
-)
-
 # ── Oceanic Shoals ────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(122.5, 130.5, -13.5, -8.5),  # TODO: verify extent (large park)
+  plot_limits = c(125.5, 132, -13.6, -9),
   save_name   = "oceanic-shoals_AMP-bathy-plot",
   width       = 9,
   height      = 4.5,
@@ -654,19 +648,19 @@ network_map_wms_zoomed(
 
 # ── West Cape York ────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(140.0, 142.6, -15.0, -10.5),  # TODO: verify extent
+  plot_limits = c(139.5, 142.9, -12.5, -9.5),
   save_name   = "west-cape-york_AMP-bathy-plot",
   thin_lon_breaks = TRUE,
   break_step      = 0.5,
   width       = 7,
-  height      = 9,
+  height      = 4.5,
   inset_xlim  = north_inset_xlim,
   inset_ylim  = north_inset_ylim
 )
 
 # ── Wessel ────────────────────────────────────────────────────────────────────
 network_map_wms_zoomed(
-  plot_limits = c(135.5, 137.6, -12.5, -10.5),  # TODO: verify extent
+  plot_limits = c(136.0, 137.8, -12.5, -10.5),
   save_name   = "wessel_AMP-bathy-plot",
   width       = 7,
   height      = 5,

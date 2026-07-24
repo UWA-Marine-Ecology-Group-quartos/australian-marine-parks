@@ -3,7 +3,7 @@
 # Data:    Natural values ecosystems (NESP MERI), Commonwealth marine parks,
 #          terrestrial parks and aus outline
 # Task:    Creating natural values (benthic ecosystem) map — north network
-# Author:  Annika Leunig
+# Author:  Annika Leunig & Abbey Gibbons
 # Date:    July 2026
 # Outputs: 1. North network natural values map (original source colours,
 #             predicted reef layer removed, Commonwealth marine parks only)
@@ -48,11 +48,11 @@ aus <- st_read("data/north network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp"
 
 # Commonwealth marine parks only (same filter as network_map() KEF script)
 marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
-  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpenteria", "Joseph Bonaparte Gulf",
+  dplyr::filter(name %in% c("Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
                             "Limmen", "Oceanic Shoals", "Wessel", "West Cape York","North Kimberley",
-                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet",
+                            "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet - Bynoe River",
                             "Staaten-Gilbert", "Nassau River", "Pine River Bay",
-                            "Dhimurru", "Thuwathu/Walalu", "Anindilyakwa", "Djelk", #IPAs
+                            "Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2", #IPAs
                             "Crocodile Islands Maringa")) %>%
   glimpse()
 
@@ -60,7 +60,8 @@ marine_parks_amp <- marine_parks %>%
   dplyr::filter(epbc %in% "Commonwealth")
 
 # Terrestrial parks for mapping
-terrnp <- st_read("data/south-west network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
+terrnp <- st_read("data/north network/spatial/shapefiles/Collaborative_Australian_Protected_Areas_Database_(CAPAD)_2024_-_Terrestrial__.shp") %>%
+  st_make_valid() %>%
   dplyr::filter(TYPE %in% c("Nature Reserve", "National Park"))
 
 # Natural values ecosystem — NESP MERI raster (has its own embedded colour table)
@@ -231,8 +232,8 @@ naturalvalues_map_north <- function(plot_limits,
     theme_void() +
     theme(
       legend.key.size  = unit(0.45, "cm"),
-      legend.text      = element_text(size = 10),
-      legend.title     = element_text(size = 10, face = "bold"),
+      legend.text      = element_text(size = 9),
+      legend.title     = element_text(size = 11),
       legend.position  = "bottom"
     )
 
@@ -251,8 +252,8 @@ naturalvalues_map_north <- function(plot_limits,
     theme_void() +
     theme(
       legend.key.size  = unit(0.45, "cm"),
-      legend.text      = element_text(size = 10),
-      legend.title     = element_text(size = 10, face = "bold"),
+      legend.text      = element_text(size = 9),
+      legend.title     = element_text(size = 11),
       legend.position  = "top"
     )
 
@@ -292,8 +293,8 @@ ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
              "network-natural-values.png", sep = "-"),
        plot   = figure_north_nv,
        dpi    = 600,
-       width  = 11,
-       height = 7.5,
+       width  = 11.5,
+       height = 7.75,
        bg     = "white")
 
 
@@ -348,8 +349,10 @@ check_ratio <- function(l) {
               l[2]-l[1], l[4]-l[3], (l[2]-l[1])/(l[4]-l[3]), rendered))
 }
 
-# Shelf classes only — same list the old south-west script used to decide
-# which NV classes sit "on the shelf" and get coloured over the hillshade
+# Shelf classes only — kept for reference, no longer used to filter the
+# individual park maps (they now plot the full natural values layer, see
+# naturalvalues_map_hillshade_north() below), but left defined in case it's
+# needed elsewhere in the pipeline.
 shelf_classes <- c(
   "Shelf unvegetated sediments",
   "Shelf vegetated sediments",
@@ -365,34 +368,23 @@ shelf_classes <- c(
   "Shelf incising canyons"
 )
 
-# --- FUNCTION: hillshade background + NV colour on top, clipped to 200m ---
+# --- FUNCTION: full natural values layer, ocean-colour background, no hillshade ---
 naturalvalues_map_hillshade_north <- function(plot_limits,
-                                              use_clipped = TRUE,
-                                              hs_altitude = 40,
-                                              hs_azimuth  = 270,
-                                              show_legend = TRUE,
-                                              title       = NULL,
-                                              break_step  = 0.2) {
+                                              ocean_colour = "#2d3a4a",
+                                              show_legend  = TRUE,
+                                              title        = NULL,
+                                              break_step   = 0.2) {
 
   require(tidyverse); require(terra); require(sf); require(ggnewscale)
 
-  ext_plot  <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
-  nv_source <- if (use_clipped) naturalvalues_clipped else naturalvalues
+  ext_plot <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
 
-  # --- Hillshade from bathymetry (rendered everywhere, incl. past 200m) ---
-  bathy_crop <- crop(bathy, ext_plot)
-  slope      <- terrain(bathy_crop, v = "slope",  unit = "radians")
-  aspect     <- terrain(bathy_crop, v = "aspect", unit = "radians")
-  hs         <- shade(slope, aspect, angle = hs_altitude, direction = hs_azimuth, normalize = TRUE)
-  hs_df      <- as.data.frame(hs, xy = TRUE, na.rm = TRUE)
-  colnames(hs_df)[3] <- "hillshade"
-
-  # --- Natural values — shelf classes only, clipped to 200m ---
-  nv_crop <- crop(nv_source, ext_plot)
+  # --- Natural values — full layer, all classes, no 200m clip ---
+  nv_crop <- crop(naturalvalues, ext_plot)
   nv_df   <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
   colnames(nv_df)[3] <- "value"
   nv_df$classname <- nv_lookup[as.character(nv_df$value)]
-  nv_df <- dplyr::filter(nv_df, !is.na(classname), classname %in% shelf_classes)
+  nv_df <- dplyr::filter(nv_df, !is.na(classname))
 
   present_classes <- unique(nv_df$classname)
   present_colours <- hab_colours_original[names(hab_colours_original) %in% present_classes]
@@ -412,13 +404,7 @@ naturalvalues_map_hillshade_north <- function(plot_limits,
 
   p <- ggplot() +
 
-    # --- Hillshade base (visible everywhere, including >200m) ---
-    geom_tile(data = hs_df, aes(x = x, y = y, fill = hillshade),
-              alpha = 0.4, show.legend = FALSE) +
-    scale_fill_gradient(low = "#1a1a2e", high = "#e8e8e8", na.value = NA, guide = "none") +
-
-    # --- NV shelf classes on top, only present ≤200m ---
-    new_scale_fill() +
+    # Natural values layer — full raster, no hillshade underneath
     geom_tile(data = nv_df, aes(x = x, y = y, fill = classname)) +
     scale_fill_manual(
       name   = "Benthic ecosystem",
@@ -448,12 +434,12 @@ naturalvalues_map_hillshade_north <- function(plot_limits,
     theme_minimal() +
     theme(
       legend.key.size  = unit(0.45, "cm"),
-      legend.text      = element_text(size = 8),
-      legend.title     = element_text(size = 9, face = "bold"),
+      legend.text      = element_text(size = 9),
+      legend.title     = element_text(size = 11),
       legend.position  = if (show_legend) "right" else "none",
       legend.box       = "vertical",
       panel.grid       = element_blank(),
-      panel.background = element_rect(fill = "white", colour = NA),
+      panel.background = element_rect(fill = ocean_colour, colour = NA),
       plot.background  = element_rect(fill = "white", colour = NA),
       axis.text        = element_text(size = 10, colour = "grey40"),
       axis.ticks       = element_line(colour = "grey60"),
@@ -464,8 +450,6 @@ naturalvalues_map_hillshade_north <- function(plot_limits,
 
   return(p)
 }
-
-
 # ==============================================================================
 # 6. FIGURE 2: North Kimberley (worked example — repeat per park)
 # ==============================================================================
@@ -473,66 +457,265 @@ naturalvalues_map_hillshade_north <- function(plot_limits,
 # extent for each park (check against the shapefile/QGIS) before running.
 # check_ratio() helps you tune width/height so panels aren't stretched.
 
-north_kimberley_limits <- c(123.0, 128.0, -15.0, -11.0)
-check_ratio(north_kimberley_limits)
+# north_kimberley_limits <- c(123.0, 128.0, -15.0, -11.0)
+# check_ratio(north_kimberley_limits)
+#
+# north_kimberley_hs <- naturalvalues_map_hillshade_north(
+#   plot_limits = north_kimberley_limits,
+#   show_legend = FALSE,
+#   break_step  = 0.5
+# )
+#
+# # Legend built the same way as the network-scale one, just restricted to the
+# # shelf classes actually present in this park's extent
+# nk_ext <- ext(north_kimberley_limits[1], north_kimberley_limits[2],
+#               north_kimberley_limits[3], north_kimberley_limits[4])
+# nk_nv_crop <- crop(naturalvalues_clipped, nk_ext)
+# nk_nv_df   <- as.data.frame(nk_nv_crop, xy = TRUE, na.rm = TRUE)
+# colnames(nk_nv_df)[3] <- "value"
+# nk_nv_df$classname <- nv_lookup[as.character(nk_nv_df$value)]
+# nk_nv_df <- dplyr::filter(nk_nv_df, !is.na(classname), classname %in% shelf_classes)
+#
+# nk_level_order <- names(nv_lookup)[names(nv_lookup) %in% as.character(nk_nv_df$value)]
+# nk_level_order <- unname(nv_lookup[nk_level_order])
+#
+# legend_nk <- ggplot(data.frame(x = 1, y = 1,
+#                                classname = factor(nk_level_order, levels = nk_level_order)),
+#                     aes(x = x, y = y, fill = classname)) +
+#   geom_tile() +
+#   scale_fill_manual(
+#     name   = "Benthic habitat",
+#     values = hab_colours_original[nk_level_order],
+#     breaks = nk_level_order,
+#     guide  = guide_legend(ncol = 4, direction = "horizontal",
+#                           title.position = "top", title.hjust = 0)
+#   ) +
+#   theme_void() +
+#   theme(
+#     legend.key.size = unit(0.6, "cm"),
+#     legend.text     = element_text(size = 12),
+#     legend.title    = element_text(size = 13),
+#     legend.position = "bottom"
+#   )
+#
+# figure_north_kimberley <- cowplot::plot_grid(
+#   north_kimberley_hs,
+#   cowplot::get_legend(legend_nk),
+#   ncol        = 1,
+#   rel_heights = c(1, 0.2),
+#   align       = "v",
+#   axis        = "t"
+# ) +
+#   theme(plot.background = element_rect(fill = "white", colour = NA),
+#         plot.margin     = margin(t = 2, r = 15, b = 15, l = 5))
+#
+# ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+#              "north-kimberley-natural-values.png", sep = "-"),
+#        plot   = figure_north_kimberley,
+#        dpi    = 600,
+#        width  = 9,
+#        height = 8,
+#        bg     = "white")
 
-north_kimberley_hs <- naturalvalues_map_hillshade_north(
-  plot_limits = north_kimberley_limits,
-  show_legend = FALSE,
-  break_step  = 0.5
-)
 
-# Legend built the same way as the network-scale one, just restricted to the
-# shelf classes actually present in this park's extent
-nk_ext <- ext(north_kimberley_limits[1], north_kimberley_limits[2],
-              north_kimberley_limits[3], north_kimberley_limits[4])
-nk_nv_crop <- crop(naturalvalues_clipped, nk_ext)
-nk_nv_df   <- as.data.frame(nk_nv_crop, xy = TRUE, na.rm = TRUE)
-colnames(nk_nv_df)[3] <- "value"
-nk_nv_df$classname <- nv_lookup[as.character(nk_nv_df$value)]
-nk_nv_df <- dplyr::filter(nk_nv_df, !is.na(classname), classname %in% shelf_classes)
+# ── Reusable natural values / benthic habitat plot function ──────────────────
+make_natural_values_plot <- function(plot_limits, break_step, save_name,
+                                     width, height, park, name,
+                                     legend_ncol = 4) {
 
-nk_level_order <- names(nv_lookup)[names(nv_lookup) %in% as.character(nk_nv_df$value)]
-nk_level_order <- unname(nv_lookup[nk_level_order])
+  check_ratio(plot_limits)
 
-legend_nk <- ggplot(data.frame(x = 1, y = 1,
-                               classname = factor(nk_level_order, levels = nk_level_order)),
-                    aes(x = x, y = y, fill = classname)) +
-  geom_tile() +
-  scale_fill_manual(
-    name   = "Benthic habitat",
-    values = hab_colours_original[nk_level_order],
-    breaks = nk_level_order,
-    guide  = guide_legend(ncol = 4, direction = "horizontal",
-                          title.position = "top", title.hjust = 0)
-  ) +
-  theme_void() +
-  theme(
-    legend.key.size = unit(0.6, "cm"),
-    legend.text     = element_text(size = 12),
-    legend.title    = element_text(size = 13, face = "bold"),
-    legend.position = "bottom"
+  # Map itself already draws aus + terrnp (see naturalvalues_map_hillshade_north)
+  hs <- naturalvalues_map_hillshade_north(
+    plot_limits = plot_limits,
+    show_legend = FALSE,
+    break_step  = break_step
   )
 
-figure_north_kimberley <- cowplot::plot_grid(
-  north_kimberley_hs,
-  cowplot::get_legend(legend_nk),
-  ncol        = 1,
-  rel_heights = c(1, 0.2),
-  align       = "v",
-  axis        = "t"
-) +
-  theme(plot.background = element_rect(fill = "white", colour = NA),
-        plot.margin     = margin(t = 2, r = 15, b = 15, l = 5))
+  ext_crop <- ext(plot_limits[1], plot_limits[2], plot_limits[3], plot_limits[4])
 
-ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
-             "north-kimberley-natural-values.png", sep = "-"),
-       plot   = figure_north_kimberley,
-       dpi    = 600,
-       width  = 9,
-       height = 8,
-       bg     = "white")
+  # ── Benthic habitat legend — ALL classes present in this park's extent ────
+  nv_crop <- crop(naturalvalues, ext_crop)
+  nv_df   <- as.data.frame(nv_crop, xy = TRUE, na.rm = TRUE)
+  colnames(nv_df)[3] <- "value"
+  nv_df$classname <- nv_lookup[as.character(nv_df$value)]
+  nv_df <- dplyr::filter(nv_df, !is.na(classname))
 
+  level_order <- names(nv_lookup)[names(nv_lookup) %in% as.character(nv_df$value)]
+  level_order <- unname(nv_lookup[level_order])
+
+  legend_benthic <- ggplot(data.frame(x = 1, y = 1,
+                                      classname = factor(level_order, levels = level_order)),
+                           aes(x = x, y = y, fill = classname)) +
+    geom_tile() +
+    scale_fill_manual(
+      name   = "Benthic habitat",
+      values = hab_colours_original[level_order],
+      breaks = level_order,
+      guide  = guide_legend(ncol = legend_ncol, direction = "horizontal",
+                            title.position = "top", title.hjust = 0, byrow = TRUE)
+    ) +
+    theme_void() +
+    theme(
+      legend.key.size = unit(0.45, "cm"),
+      legend.text     = element_text(size = 9),
+      legend.title    = element_text(size = 11),
+      legend.position = "bottom"
+    )
+
+  # ── Terrestrial parks legend — only include types actually present ────────
+  bbox_sf <- st_as_sfc(st_bbox(c(xmin = plot_limits[1], xmax = plot_limits[2],
+                                 ymin = plot_limits[3], ymax = plot_limits[4]),
+                               crs = st_crs(terrnp)))
+  terrnp_crop  <- suppressWarnings(st_intersection(terrnp, bbox_sf))
+  present_types <- intersect(c("National Park", "Nature Reserve"), unique(terrnp_crop$TYPE))
+
+  if (length(present_types) > 0) {
+
+    legend_tp <- ggplot(data.frame(x = 1, y = 1,
+                                   tp = factor(present_types, levels = present_types)),
+                        aes(x = x, y = y, fill = tp)) +
+      geom_tile() +
+      scale_fill_manual(
+        name   = "Terrestrial Parks",
+        values = c("National Park" = "#c4cea6", "Nature Reserve" = "#e4d0bb")[present_types],
+        guide  = guide_legend(ncol = 1, title.position = "top")
+      ) +
+      theme_void() +
+      theme(
+        legend.key.size = unit(0.45, "cm"),
+        legend.text     = element_text(size = 9),
+        legend.title    = element_text(size = 11),
+        legend.position = "top"
+      )
+
+    legend_row <- cowplot::plot_grid(
+      cowplot::get_legend(legend_benthic),
+      cowplot::get_legend(legend_tp),
+      nrow       = 1,
+      rel_widths = c(4, 1.1)
+    )
+
+  } else {
+    legend_row <- cowplot::get_legend(legend_benthic)
+  }
+
+  figure <- cowplot::plot_grid(
+    hs,
+    legend_row,
+    ncol        = 1,
+    rel_heights = c(1, 0.2),
+    align       = "v",
+    axis        = "t"
+  ) +
+    theme(plot.background = element_rect(fill = "white", colour = NA),
+          plot.margin     = margin(t = 2, r = 15, b = 15, l = 5))
+
+  ggsave(paste(paste0("plots/", park, "/spatial/benthic_habitat/", name),
+               paste0(save_name, "-natural-values.png"), sep = "-"),
+         plot   = figure,
+         dpi    = 600,
+         width  = width,
+         height = height,
+         bg     = "white")
+
+  invisible(figure)
+}
+# ── Arafura ───────────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(131.5, 135.5, -12.5, -8.6),
+  break_step  = 0.5,
+  save_name   = "arafura",
+  width       = 8,
+  height      = 8,
+  park        = park,
+  name        = name,
+  legend_ncol = 3
+)
+
+# ── Arnhem ────────────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(133.0, 134.8, -12.5, -10.6),
+  break_step  = 0.5,
+  save_name   = "arnhem",
+  width       = 6,
+  height      = 7.5,
+  park        = park,
+  name        = name,
+  legend_ncol = 2
+)
+
+# ── Gulf of Carpentaria ───────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(138.0, 142.6, -17.5, -13.8),
+  break_step  = 0.5,
+  save_name   = "gulf-of-carpentaria",
+  width       = 8.5,
+  height      = 7.5,
+  park        = park,
+  name        = name,
+  legend_ncol = 3
+)
+
+# ── Joseph Bonaparte Gulf ─────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(126.5, 130.6, -15.5, -13),
+  break_step  = 0.5,
+  save_name   = "joseph-bonaparte-gulf",
+  width       = 8.5,
+  height      = 6.5,
+  park        = park,
+  name        = name,
+  legend_ncol = 3
+)
+
+# ── Limmen ────────────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(135.0, 137.1, -16.0, -14),
+  break_step  = 0.3,
+  save_name   = "limmen",
+  width       = 6.5,
+  height      = 6.75,
+  park        = park,
+  name        = name,
+  legend_ncol = 2
+)
+
+# ── Oceanic Shoals ────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(125.5, 132, -13.6, -9),
+  break_step  = 0.8,
+  save_name   = "oceanic-shoals",
+  width       = 8,
+  height      = 7,
+  park        = park,
+  name        = name,
+  legend_ncol = 3
+)
+
+# ── West Cape York ────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(139.5, 142.7, -12.5, -9.5),
+  break_step  = 0.5,
+  save_name   = "west-cape-york",
+  width       = 6,
+  height      = 7,
+  park        = park,
+  name        = name,
+  legend_ncol = 2
+)
+
+# ── Wessel ────────────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(136.0, 137.8, -12.5, -10.5),
+  break_step  = 0.5,
+  save_name   = "wessel",
+  width       = 5,
+  height      = 7,
+  park        = park,
+  name        = name,
+  legend_ncol = 2
+)
 # ==============================================================================
-# End of script
+# End of script#
 # ==============================================================================

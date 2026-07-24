@@ -66,11 +66,11 @@ ausc <- st_crop(aus, e)
 # Marine parks - north network
 marine_parks <- st_read("data/north network/spatial/shapefiles/north-network-australia_marine-parks-all.shp") %>%
   dplyr::filter(name %in% c(
-    "Arafura", "Arnhem", "Gulf of Carpenteria", "Joseph Bonaparte Gulf",
+    "Arafura", "Arnhem", "Gulf of Carpentaria", "Joseph Bonaparte Gulf",
     "Limmen", "Oceanic Shoals", "Wessel", "West Cape York", "North Kimberley",
-    "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet",
+    "Garig Gunak Barlu", "Limmen Bight", "Eight Mile Creek", "Morning Inlet - Bynoe River",
     "Staaten-Gilbert", "Nassau River", "Pine River Bay",
-    "Dhimurru", "Thuwathu/Walalu", "Anindilyakwa", "Djelk",
+    "Dhimurru", "Thuwathu/Bujimulla", "Anindilyakwa", "Djelk - Stage 2",
     "Crocodile Islands Maringa"
   )) %>%
   st_transform(aus_crs)
@@ -227,22 +227,22 @@ p_sst_mean <- ggplot() +
   theme_minimal() +
   theme(
     legend.key.size      = unit(0.5, "cm"),
-    legend.text          = element_text(size = 9),
-    legend.title         = element_text(size = 10, face = "bold"),
+    legend.text          = element_text(size = 11),
+    legend.title         = element_text(size = 12),
     legend.position      = "bottom",
     legend.box           = "horizontal",
     legend.margin        = margin(t = 4),
     panel.grid           = element_blank(),
     panel.background     = element_rect(fill = "#abd3e5", colour = NA),
     plot.background      = element_rect(fill = "white",   colour = NA),
-    axis.text            = element_text(size = 9, colour = "grey40"),
+    axis.text            = element_text(size = 13, colour = "grey40"),
     axis.ticks           = element_line(colour = "grey60"),
     plot.margin          = margin(t = 5, r = 10, b = 5, l = 5)
   )
 
 ggsave(paste(paste0("plots/", park, "/spatial/SST/", name),
              "SST-june2011.png", sep = "-"),
-       plot = p_sst_mean, dpi = 300, width = 14, height = 9, bg = "white"
+       plot = p_sst_mean, dpi = 300, width = 12, height = 7, bg = "white"
 )
 
 # ==============================================================================
