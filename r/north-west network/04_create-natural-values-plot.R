@@ -1,5 +1,5 @@
 ###
-# Project: NESP 5.6 Project - South west Corner Report
+# Project: NESP 5.6 Project - North west Corner Report
 # Data:    Natural values ecosystems (NESP MERI), Commonwealth marine parks,
 #          terrestrial parks and aus outline
 # Task:    Creating natural values (benthic ecosystem) map — north-west network
@@ -40,7 +40,7 @@ library(ggplot2)
 library(dplyr)
 
 # Set cropping extent (matches north-west network KEF/SST scripts)
-e <- ext(106, 133, -28, -11)
+e <- ext(108.5, 130, -28, -10)
 
 # Aus outline
 aus <- st_read("data/north-west network/spatial/shapefiles/STE_2021_AUST_GDA2020.shp") %>%
@@ -150,7 +150,7 @@ hab_colours_original <- c(
 # ==============================================================================
 
 naturalvalues_map_northwest <- function(plot_limits,
-                                        ocean_colour = "#2b3a4a",
+                                        ocean_colour = "#e8e8e8",
                                         show_legend  = TRUE,
                                         title        = NULL,
                                         break_step   = 2.0) {
@@ -287,7 +287,7 @@ naturalvalues_map_northwest <- function(plot_limits,
 # 4. FIGURE 1: North-west network natural values map
 # ==============================================================================
 
-network_limits <- c(109, 130, -26.5, -12.5)
+network_limits <- c(108.5, 130, -28, -10)
 
 figure_northwest_nv <- naturalvalues_map_northwest(
   plot_limits  = network_limits,
@@ -376,7 +376,7 @@ shelf_classes <- c(
 
 # --- FUNCTION: full natural values layer, ocean-colour background, no hillshade ---
 naturalvalues_map_hillshade_north <- function(plot_limits,
-                                              ocean_colour = "#2d3a4a",
+                                              ocean_colour = "#e8e8e8",
                                               show_legend  = TRUE,
                                               title        = NULL,
                                               break_step   = 0.2) {
@@ -627,71 +627,98 @@ make_natural_values_plot <- function(plot_limits, break_step, save_name,
 
   invisible(figure)
 }
-# ── Arafura ───────────────────────────────────────────────────────────────────
+# ==============================================================================
+# 6. INDIVIDUAL PARK ZOOM-INS (assemble and save)
+# ==============================================================================
+# ── Argo-Rowley Terrace ───────────────────────────────────────────────────────
 make_natural_values_plot(
-  plot_limits = c(131.5, 135.5, -12.5, -8.6),
-  break_step  = 0.5,
-  save_name   = "arafura",
-  width       = 8,
-  height      = 8,
-  park        = park,
-  name        = name,
-  legend_ncol = 3
-)
-
-# ── Arnhem ────────────────────────────────────────────────────────────────────
-make_natural_values_plot(
-  plot_limits = c(133.0, 134.8, -12.5, -10.6),
-  break_step  = 0.5,
-  save_name   = "arnhem",
+  plot_limits = c(115.5, 121.0, -18.0, -13.0),
+  break_step  = 1.0,
+  save_name   = "argo-rowley-terrace",
   width       = 6,
-  height      = 7.5,
-  park        = park,
-  name        = name,
-  legend_ncol = 2
-)
-
-# ── Gulf of Carpentaria ───────────────────────────────────────────────────────
-make_natural_values_plot(
-  plot_limits = c(138.0, 142.6, -17.5, -13.8),
-  break_step  = 0.5,
-  save_name   = "gulf-of-carpentaria",
-  width       = 8.5,
-  height      = 7.5,
+  height      = 7,
   park        = park,
   name        = name,
   legend_ncol = 3
 )
 
-# ── Joseph Bonaparte Gulf ─────────────────────────────────────────────────────
+# ── Ashmore Reef  ─────────────────────────────────────────────────────────────
 make_natural_values_plot(
-  plot_limits = c(126.5, 130.6, -15.5, -13),
+  plot_limits = c(122.5, 124.0, -13.0, -11.4),
   break_step  = 0.5,
-  save_name   = "joseph-bonaparte-gulf",
-  width       = 8.5,
+  save_name   = "ashmore-reef",
+  width       = 7.5,
+  height      = 9.0,
+  park        = park,
+  name        = name,
+  legend_ncol = 3
+)
+
+# ── Carnarvon Canyon ──────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(110.0, 112.1, -24.5, -23.0),
+  break_step  = 0.5,
+  save_name   = "carnarvon-canyon",
+  width       = 6.5,
+  height      = 6.0,
+  park        = park,
+  name        = name,
+  legend_ncol = 3
+)
+
+# ── Cartier Island ────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(123.3, 123.8, -12.7, -12.3),
+  break_step  = 0.1,
+  save_name   = "cartier-island",
+  width       = 6.5,
   height      = 6.5,
   park        = park,
   name        = name,
   legend_ncol = 3
 )
 
-# ── Limmen ────────────────────────────────────────────────────────────────────
+# ── Dampier ───────────────────────────────────────────────────────────────────
 make_natural_values_plot(
-  plot_limits = c(135.0, 137.1, -16.0, -14),
-  break_step  = 0.3,
-  save_name   = "limmen",
-  width       = 6.5,
-  height      = 6.75,
+  plot_limits = c(116.6, 117.8, -21.0, -20.0),
+  break_step  = 0.2,
+  save_name   = "dampier",
+  width       = 7.0,
+  height      = 7.5,
   park        = park,
   name        = name,
   legend_ncol = 2
 )
 
-# ── Oceanic Shoals ────────────────────────────────────────────────────────────
+# ── Eighty Mile Beach ─────────────────────────────────────────────────────────
 make_natural_values_plot(
-  plot_limits = c(125.5, 132, -13.6, -9),
-  break_step  = 0.8,
-  save_name   = "oceanic-shoals",
+  plot_limits = c(118.2, 122.1, -20.5, -18.0),
+  break_step  = 0.5,
+  save_name   = "eighty-mile-beach",
+  width       = 9,
+  height      = 7.5,
+  park        = park,
+  name        = name,
+  legend_ncol = 3
+)
+
+# ── Gascoyne ──────────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(109.5, 114.6, -24.2, -20.5),
+  break_step  = 0.5,
+  save_name   = "gascoyne",
+  width       = 8.0,
+  height      = 8.0,
+  park        = park,
+  name        = name,
+  legend_ncol = 3
+)
+
+# ── Kimberley ─────────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(120.5, 127.3, -17.5, -13.0),
+  break_step  = 1,
+  save_name   = "kimberley",
   width       = 8,
   height      = 7,
   park        = park,
@@ -699,29 +726,66 @@ make_natural_values_plot(
   legend_ncol = 3
 )
 
-# ── West Cape York ────────────────────────────────────────────────────────────
+# ── Mermaid Reef  ─────────────────────────────────────────────────────────────
 make_natural_values_plot(
-  plot_limits = c(139.5, 142.7, -12.5, -9.5),
+  plot_limits = c(118.7, 119.8, -17.8, -16.7),
   break_step  = 0.5,
-  save_name   = "west-cape-york",
-  width       = 6,
-  height      = 7,
+  save_name   = "mermaid-reef",
+  width       = 5,
+  height      = 6.5,
   park        = park,
   name        = name,
   legend_ncol = 2
 )
 
-# ── Wessel ────────────────────────────────────────────────────────────────────
+# ── Montebello ────────────────────────────────────────────────────────────────
 make_natural_values_plot(
-  plot_limits = c(136.0, 137.8, -12.5, -10.5),
+  plot_limits = c(114.6, 116.6, -21.6, -19.4),
   break_step  = 0.5,
-  save_name   = "wessel",
-  width       = 5,
-  height      = 7,
+  save_name   = "montebello",
+  width       = 7,
+  height      = 10,
   park        = park,
   name        = name,
   legend_ncol = 2
 )
+
+# ── Ningaloo ──────────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(113, 114.6, -23.7, -21.5),
+  break_step  = 0.2,
+  save_name   = "ningaloo",
+  width       = 7.0,
+  height      = 11,
+  park        = park,
+  name        = name,
+  legend_ncol = 2
+)
+
+# ── Roebuck ───────────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(121.6, 122.8, -18.7, -17.2),
+  break_step  = 0.5,
+  save_name   = "roebuck",
+  width       = 5.5,
+  height      = 5.75,
+  park        = park,
+  name        = name,
+  legend_ncol = 2
+)
+
+# ── Shark Bay ─────────────────────────────────────────────────────────────────
+make_natural_values_plot(
+  plot_limits = c(111.5, 114.6, -26.1, -24.1),
+  break_step  = 0.5,
+  save_name   = "shark-bay",
+  width       = 9,
+  height      = 7.5,
+  park        = park,
+  name        = name,
+  legend_ncol = 3
+)
+
 # ==============================================================================
-# End of script#
+# End of script
 # ==============================================================================
